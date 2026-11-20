@@ -7,7 +7,6 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
-  rmSync,
   statSync
 } from 'node:fs'
 import { dirname, extname, join, parse, relative } from 'node:path'
@@ -117,7 +116,17 @@ export abstract class CodexRuntimeHomeLegacyMigration extends CodexRuntimeHomePa
           this.migrateLegacySessions(managedHomePath, accountId, conflicts)
         }
       }
-      this.preserveLegacySessionConflicts(conflicts)
+      for (const conflict of conflicts) {
+        const preserved = this.preserveLegacySessionConflict(conflict)
+        if (preserved.copied) {
+          this.appendMigrationDiagnostic({
+            type: 'session-conflict',
+            accountId: conflict.accountId,
+            runtimeFilePath: conflict.runtimeFilePath,
+            preservedPath: preserved.path
+          })
+        }
+      }
     } catch (error) {
       this.writeMigrationRecord(historyStatePath, recordLegacySessionPassFailure(state))
       throw error
@@ -182,33 +191,6 @@ export abstract class CodexRuntimeHomeLegacyMigration extends CodexRuntimeHomePa
       ) {
         conflicts.push({ legacyFilePath, runtimeFilePath, accountId })
       }
-    }
-  }
-
-  // All or none: a failure removes the copies this pass made, so failing passes never pile copies
-  // up. Codex never writes these names, and each was created exclusively by this pass.
-  protected preserveLegacySessionConflicts(conflicts: readonly LegacySessionConflict[]): void {
-    const created: { conflict: LegacySessionConflict; path: string }[] = []
-    try {
-      for (const conflict of conflicts) {
-        const preserved = this.preserveLegacySessionConflict(conflict)
-        if (preserved.copied) {
-          created.push({ conflict, path: preserved.path })
-        }
-      }
-    } catch (error) {
-      for (const { path } of created) {
-        rmSync(path, { force: true })
-      }
-      throw error
-    }
-    for (const { conflict, path } of created) {
-      this.appendMigrationDiagnostic({
-        type: 'session-conflict',
-        accountId: conflict.accountId,
-        runtimeFilePath: conflict.runtimeFilePath,
-        preservedPath: path
-      })
     }
   }
 
