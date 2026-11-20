@@ -396,10 +396,17 @@ it('reports a validated installed copy while an older sibling is unreadable and 
   const dataDirectory = await mkdtemp(join(tmpdir(), 'orca-runtime-install-'))
   roots.push(dataDirectory)
   const root = join(dataDirectory, 'agent-runtimes', 'agent')
+  const onRelease = vi.fn()
   const installation = new ManagedRuntimeInstallation(
     'agent',
     { label: 'Agent', root: () => root, pin: () => null, refreshPin: async () => {} },
-    { dataDirectory, program: 'cli', findExternal: async () => false, fence: (work) => work() }
+    {
+      dataDirectory,
+      program: 'cli',
+      findExternal: async () => false,
+      fence: (work) => work(),
+      onRelease
+    }
   )
   vi.mocked(resolveInstalledRuntimeRelease).mockReturnValueOnce({
     release: { folder: join(root, '2.0'), version: '2.0', current: false },
@@ -413,6 +420,7 @@ it('reports a validated installed copy while an older sibling is unreadable and 
     version: null,
     source: 'managed'
   })
+  expect(onRelease).toHaveBeenLastCalledWith(join(root, '2.0'))
 })
 
 it("doesn't keep a copy current while Orca is told not to", async () => {

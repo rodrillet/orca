@@ -19,6 +19,12 @@ it('only checks the agent being re-enabled across repeated unrelated settings wr
   const update = vi
     .spyOn(ManagedRuntimeInstallation.prototype, 'updateIfBehind')
     .mockResolvedValue()
+  update.mockImplementationOnce(
+    (signal) =>
+      new Promise((_resolve, reject) => {
+        signal?.addEventListener('abort', () => reject(signal.reason), { once: true })
+      })
+  )
   let settings = { disabledTuiAgents: ['kimi'] }
   const listeners = new Set<(updates: Record<string, unknown>, value: typeof settings) => void>()
   const store = {
@@ -40,19 +46,24 @@ it('only checks the agent being re-enabled across repeated unrelated settings wr
     reclaimManagedRuntimeReleasesAtLaunch(runtime)
     startManagedRuntimeAutoUpdates(runtime)
     for (const count of [10, 100]) {
-      update.mockClear()
       for (let index = 0; index < count; index += 1) {
         publish({ disabledTuiAgents: ['kimi'] })
         publish({ agentCmdOverrides: {} })
+        settings = { disabledTuiAgents: [] }
+        publish({ disabledTuiAgents: [] })
+        settings = { disabledTuiAgents: ['kimi'] }
+        publish({ disabledTuiAgents: ['kimi'] })
+        await Promise.resolve()
+        await Promise.resolve()
+        await Promise.resolve()
       }
-      expect(update).toHaveBeenCalledTimes(0)
-      settings = { disabledTuiAgents: [] }
-      publish({ disabledTuiAgents: [] })
-      expect(update).toHaveBeenCalledTimes(1)
-      settings = { disabledTuiAgents: ['kimi'] }
-      publish({ disabledTuiAgents: ['kimi'] })
       expect(update).toHaveBeenCalledTimes(1)
     }
+    expect(update.mock.calls[0]?.[0]?.aborted).toBe(true)
+    vi.setSystemTime(Date.now() + 600_001)
+    settings = { disabledTuiAgents: [] }
+    publish({ disabledTuiAgents: [] })
+    expect(update).toHaveBeenCalledTimes(2)
   } finally {
     vi.clearAllTimers()
     vi.useRealTimers()

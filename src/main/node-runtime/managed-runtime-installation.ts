@@ -106,14 +106,12 @@ export class ManagedRuntimeInstallation {
   private async readInstalledFacts(): Promise<InstalledFacts> {
     const pin = this.runtime.pin()
     const { release, broken, unreadable } = resolveInstalledRuntimeRelease(this.root, pin)
-    if (!unreadable) {
-      this.deps.onRelease?.(release?.folder ?? null)
-    }
     const installedCurrent = release !== null && (pin === null || release.current)
     // Unknown siblings cannot hide a validated copy before the latest release is known.
     if (unreadable && !installedCurrent) {
       throw new Error(`Couldn't read the installed ${this.runtime.label} files on this host.`)
     }
+    this.deps.onRelease?.(release?.folder ?? null)
     const source = (await this.deps.findExternal()) ? 'external' : release ? 'managed' : null
     return {
       available:
@@ -133,40 +131,41 @@ export class ManagedRuntimeInstallation {
   }
 
   /** Bring Orca's own copy to the latest release; never installs one nobody asked for or touches a user's own. */
-  async updateIfBehind(): Promise<void> {
+  async updateIfBehind(signal?: AbortSignal): Promise<void> {
+    signal?.throwIfAborted()
     if (!this.runtime.refreshPin || this.running || this.deps.updatesEnabled?.() === false) {
       return
     }
     // Nothing installed has nothing to update, so the latest release isn't looked up.
+    const published = await runtimeReleaseMayBePublished(this.root)
+    if (!published || signal?.aborted || this.deps.updatesEnabled?.() === false) {
+      return
+    }
+    await this.runtime.refreshPin(signal).catch((error: unknown) => {
+      console.warn(`[managed-runtime] ${this.agent} latest release unknown:`, error)
+    })
+    signal?.throwIfAborted()
+    const state = await this.status()
     if (
-      !(await runtimeReleaseMayBePublished(this.root)) ||
-      this.deps.updatesEnabled?.() === false
+      state.source !== 'managed' ||
+      !state.available ||
+      state.version === null ||
+      state.installedCurrent ||
+      this.deps.updatesEnabled?.() === false ||
+      signal?.aborted ||
+      this.running
     ) {
       return
     }
-    await this.runtime.refreshPin().catch((error: unknown) => {
-      console.warn(`[managed-runtime] ${this.agent} latest release unknown:`, error)
-    })
-    const state = await this.status()
+    const { lastAutoUpdate } = this
     if (
-      state.source === 'managed' &&
-      state.installedVersion !== null &&
-      state.available &&
-      state.version !== null &&
-      !state.installedCurrent &&
-      this.deps.updatesEnabled?.() !== false &&
-      !this.running
+      lastAutoUpdate?.version === state.version &&
+      Date.now() - lastAutoUpdate.at < AUTO_UPDATE_RETRY_MS
     ) {
-      const { lastAutoUpdate } = this
-      if (
-        lastAutoUpdate?.version === state.version &&
-        Date.now() - lastAutoUpdate.at < AUTO_UPDATE_RETRY_MS
-      ) {
-        return
-      }
-      this.lastAutoUpdate = { version: state.version, at: Date.now() }
-      this.install()
+      return
     }
+    this.lastAutoUpdate = { version: state.version, at: Date.now() }
+    this.install()
   }
 
   /** Join installs; canceled work must finish cleanup before another begins. */

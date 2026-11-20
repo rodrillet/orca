@@ -1,3 +1,4 @@
+import { startManagedRuntimeAutoUpdates as startAutoUpdates } from './managed-runtime-auto-updates'
 // Install on the agent's chat host without a workspace; negotiate install.v1/remove.v1 and stream a snapshot followed by state revisions.
 
 import type { OrcaRuntimeService } from '../../../orca-runtime'
@@ -30,7 +31,6 @@ import {
   isManagedAgentCli,
   MANAGED_AGENT_CLI_IDS,
   managedAgentCli,
-  onManagedAgentUse,
   rememberManagedAgentRelease,
   type ManagedAgentCliId
 } from '../../../../managed-agent-cli/managed-agent-cli-registry'
@@ -217,59 +217,8 @@ export function reclaimManagedRuntimeReleasesAtLaunch(runtime: OrcaRuntimeServic
   noteManagedReleasesRead()
 }
 
-const AUTO_UPDATE_FIRST_CHECK_MS = 2 * 60_000
-const AUTO_UPDATE_USE_THROTTLE_MS = 10 * 60_000
-let autoUpdatesStarted = false
-const lastUseCheck = new Map<string, number>()
-
-function checkForUpdate(key: string): void {
-  installations
-    .get(key)
-    ?.updateIfBehind()
-    .catch((error: unknown) => {
-      console.warn(`[managed-runtime] ${key} update check failed:`, error)
-    })
-}
-
-/** Keep Orca's own copies current without a client ever prompting: once after launch, then as they're used. */
 export function startManagedRuntimeAutoUpdates(runtime: OrcaRuntimeService): void {
-  if (autoUpdatesStarted) {
-    return
-  }
-  autoUpdatesStarted = true
-  const store = runtime.requireStore()
-  let disabled = store.getSettings().disabledTuiAgents
-  store.onSettingsChanged((updates, settings) => {
-    if (!('disabledTuiAgents' in updates)) {
-      return
-    }
-    const previous = disabled
-    disabled = settings.disabledTuiAgents
-    for (const key of installations.keys()) {
-      const agent = key.slice(key.indexOf(':') + 1)
-      if (
-        isTuiAgent(agent) &&
-        !isTuiAgentEnabled(agent, previous) &&
-        isTuiAgentEnabled(agent, disabled)
-      ) {
-        checkForUpdate(key)
-      }
-    }
-  })
-  // Wait out startup so the first check never competes with launching the app.
-  setTimeout(() => {
-    for (const key of installations.keys()) {
-      checkForUpdate(key)
-    }
-  }, AUTO_UPDATE_FIRST_CHECK_MS).unref()
-  // Use is the signal a copy matters; the release lookup itself is cached for an hour.
-  onManagedAgentUse((agent) => {
-    const now = Date.now()
-    if (now - (lastUseCheck.get(agent) ?? 0) >= AUTO_UPDATE_USE_THROTTLE_MS) {
-      lastUseCheck.set(agent, now)
-      checkForUpdate(`cli:${agent}`)
-    }
-  })
+  startAutoUpdates(runtime.requireStore(), installations)
 }
 
 export const MANAGED_RUNTIME_INSTALL_METHODS = [

@@ -1,10 +1,12 @@
 import type { ManagedRuntime, ManagedRuntimePin } from './managed-runtime-release'
+import { PromiseSettlementWaiters } from '../../shared/concurrency/promise-settlement-waiters'
 
 const REFRESH_MS = 60 * 60_000
 
 export type HourlyLookup<T> = {
   /** The last value a lookup answered, or undefined before one has. */
   latest: () => T | undefined
+  fresh: () => boolean
   /** Look up again when the last answer is over an hour old, joining a lookup in flight. */
   refresh: (signal?: AbortSignal) => Promise<void>
 }
@@ -14,21 +16,41 @@ export function hourlyLookup<T>(
   fetchLatest: (signal?: AbortSignal) => Promise<T>
 ): HourlyLookup<T> {
   let latest: { value: T; at: number } | null = null
-  let lookup: Promise<void> | null = null
+  let lookup: { controller: AbortController; waiters: PromiseSettlementWaiters<void> } | null = null
+  const fresh = () => latest !== null && Date.now() - latest.at < REFRESH_MS
   return {
     latest: () => latest?.value,
+    fresh,
     refresh: async (signal) => {
-      if (latest && Date.now() - latest.at < REFRESH_MS) {
+      signal?.throwIfAborted()
+      if (fresh()) {
         return
       }
-      lookup ??= fetchLatest(signal)
-        .then((value) => {
+      if (!lookup) {
+        const controller = new AbortController()
+        const promise = fetchLatest(controller.signal).then((value) => {
+          controller.signal.throwIfAborted()
           latest = { value, at: Date.now() }
         })
-        .finally(() => {
-          lookup = null
+        const waiters = new PromiseSettlementWaiters<void>(promise, () => {
+          if (lookup?.waiters === waiters) {
+            lookup = null
+          }
         })
-      await lookup
+        lookup = { controller, waiters }
+      }
+      const current = lookup
+      await current.waiters.wait({
+        signal,
+        onAbandon: () => {
+          if (current.waiters.waiterCount === 0) {
+            if (lookup === current) {
+              lookup = null
+            }
+            current.controller.abort()
+          }
+        }
+      })
     }
   }
 }
@@ -40,7 +62,7 @@ export function followLatestRelease(
   const release = hourlyLookup(fetchLatest)
   return {
     pin: () => release.latest() ?? null,
-    available: () => release.latest() !== null,
+    available: () => release.latest() !== null || !release.fresh(),
     refreshPin: release.refresh
   }
 }
