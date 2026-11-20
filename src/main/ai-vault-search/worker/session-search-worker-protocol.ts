@@ -57,4 +57,6 @@ export type SearchWorkerResponse = {
   counts?: SessionSearchStateCounts
   generation?: number
   result?: AiVaultSearchResponse
+  /** A compacted copy of the index is ready to swap in. */
+  copied?: boolean
 }

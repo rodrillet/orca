@@ -10,6 +10,10 @@ import { SessionSearchIndexer } from './indexing/session-search-indexer'
 import { SessionSearchReaders } from './worker/session-search-readers'
 import { sessionSearchHistoryCutoffMs } from './session-search-retention-policy'
 import { removeSessionSearchDatabaseAsync } from './storage/session-search-schema'
+import {
+  removeSessionSearchCopies,
+  swapInSessionSearchCopy
+} from './storage/session-search-copy-files'
 import type { SessionSearchScanRoots } from './discovery/session-search-scan-roots'
 import type { SessionSearchIndexerOptions } from './indexing/session-search-indexer-options'
 import type { SessionSearchHostScope } from './session-search-service'
@@ -66,13 +70,19 @@ export class SessionSearchInstance {
       await this.closeLive()
       if (clear) {
         await removeSessionSearchDatabaseAsync(this.options.databasePath)
+        await removeSessionSearchCopies(this.options.databasePath)
+      } else {
+        // Nothing has the index open here, so a finished compacted copy can replace it.
+        await swapInSessionSearchCopy(this.options.databasePath)
       }
       if (!settings.enabled) {
         return
       }
       const indexer = new SessionSearchIndexer({
         ...this.options,
-        historyDays: settings.historyDays
+        historyDays: settings.historyDays,
+        // Reopening swaps the copy in; searches answer "not ready" for that moment.
+        onIndexCopied: () => void this.apply(this.settings)
       })
       try {
         await indexer.initialize()

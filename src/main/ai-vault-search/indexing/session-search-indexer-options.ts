@@ -22,4 +22,6 @@ export type SessionSearchIndexerOptions = {
   passDeadlineMs?: number
   fullSweepEveryCycles?: number
   onError?: (error: unknown) => void
+  /** The writer finished a compacted copy of the index, to swap in while nothing has it open. */
+  onIndexCopied?: () => void
 }

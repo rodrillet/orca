@@ -39,7 +39,8 @@ export class SessionSearchWorkerStoreBase extends SessionSearchCursorSnapshot {
   constructor(
     protected readonly path: string,
     protected readonly onError: (error: unknown) => void,
-    private readonly onInvalidated: () => void = () => undefined
+    private readonly onInvalidated: () => void = () => undefined,
+    private readonly onCopied: () => void = () => undefined
   ) {
     super()
     this.client = new SessionSearchWorkerClient(
@@ -108,6 +109,9 @@ export class SessionSearchWorkerStoreBase extends SessionSearchCursorSnapshot {
     }
     if (response.counts) {
       this.counts = response.counts
+    }
+    if (response.copied) {
+      this.onCopied()
     }
   }
   protected send(command: SearchWorkerCommand): Promise<SearchWorkerResponse> {
