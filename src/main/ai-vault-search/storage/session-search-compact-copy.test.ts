@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, expect, it } from 'vitest'
@@ -141,5 +141,18 @@ it('drops a finished copy when the index changed after it was taken', async () =
   session(file.db, 'two', 5)
   file.db.close()
   expect(await swapInSessionSearchCopy(file.path)).toBe(false)
+  expect(existsSync(sessionSearchCopiedPath(file.path))).toBe(false)
+})
+
+it('puts the old index back when a swap stopped between its renames', async () => {
+  const file = index()
+  session(file.db, 'kept', 30)
+  file.db.close()
+  renameSync(file.path, `${file.path}.replaced`)
+  writeFileSync(sessionSearchCopiedPath(file.path), 'not an index')
+  expect(await swapInSessionSearchCopy(file.path)).toBe(false)
+  const reopened = openSessionSearchDatabase(file.path)
+  open.push(reopened)
+  expect(Number(reopened.prepare('SELECT COUNT(*) AS n FROM messages').get()!.n)).toBe(30)
   expect(existsSync(sessionSearchCopiedPath(file.path))).toBe(false)
 })

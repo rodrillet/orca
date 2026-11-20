@@ -76,8 +76,9 @@ export class SessionSearchInstance {
         await removeSessionSearchDatabaseAsync(this.options.databasePath)
         await removeSessionSearchCopies(this.options.databasePath)
       } else {
-        // Nothing has the index open here, so a finished compacted copy can replace it.
-        await swapInSessionSearchCopy(this.options.databasePath)
+        // Nothing has the index open here, so a finished compacted copy can replace it. A failed
+        // swap leaves the index as it was, and search reopens on it.
+        await swapInSessionSearchCopy(this.options.databasePath).catch(this.onError)
       }
       if (!settings.enabled) {
         return

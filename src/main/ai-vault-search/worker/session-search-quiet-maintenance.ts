@@ -11,6 +11,7 @@ export class SessionSearchQuietMaintenance {
   private lastWrite = 0
   private timer: NodeJS.Timeout | undefined
   private copy: SessionSearchCompactCopy | null = null
+  private ops = 0
 
   open(db: SyncDatabase, path: string): void {
     // A copy left by an earlier writer was swapped in or is stale.
@@ -24,9 +25,18 @@ export class SessionSearchQuietMaintenance {
     this.wrote()
   }
 
-  /** Every writer command but a sync counts as indexing. */
+  /** Every writer command but a sync counts as indexing and pauses a copy. Only a change to what
+   *  the index holds, or a copy to resume, schedules maintenance; periodic purges and state
+   *  updates alone do not. */
   observe(op: string): void {
-    if (op !== 'sync') {
+    if (op === 'sync') {
+      return
+    }
+    this.lastWrite = performance.now()
+    if (++this.ops % 1024 === 0) {
+      void this.copy?.boundChanges().catch(() => undefined)
+    }
+    if (op === 'finish' || op === 'remove' || this.copy?.active) {
       this.wrote()
     }
   }

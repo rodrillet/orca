@@ -1,7 +1,7 @@
 import { rm } from 'node:fs/promises'
 import { setImmediate as yieldToEventLoop, setTimeout as delay } from 'node:timers/promises'
 import type SyncDatabase from '../../sqlite/sync-database'
-import type { SqliteRow } from '../../sqlite/sqlite-statement'
+import { SEARCH_COPY_ROWS, writeSearchCopyRows } from './session-search-copy-rows'
 import { renameFileWithWindowsRetryAsync } from '../../../shared/file-write/windows-retry-file-operations'
 import { openSessionSearchDatabase } from './session-search-schema'
 import { readIndexGeneration } from './session-search-index-generation'
@@ -29,9 +29,9 @@ const MAX_ROWS = 1024
 // Under this many changed rows, the last catch-up and table copy run in one step.
 const FINAL_CHANGES = 256
 const RETRY_AFTER_MS = 60 * 60 * 1000
+// Changed rows a paused copy may hold before it is dropped.
+const MAX_PENDING_CHANGES = 100_000
 
-const MESSAGE_COLUMNS = 'id, session_row_id, role, ts, text_truncated'
-const TEXT_COLUMNS = 'user_text, assistant_text, tool_text, identifiers'
 // Small tables are copied whole in the last step.
 const WHOLE_TABLES = ['meta', 'sessions', 'files', 'sqlite_sequence'] as const
 
@@ -131,6 +131,10 @@ export class SessionSearchCompactCopy {
     }
     try {
       traceSessionSearch('copy', () => this.finish(copy))
+      if (this.db.pragma('data_version', { simple: true }) !== copy.dataVersion) {
+        await this.abandon()
+        return false
+      }
       await this.close(copy)
       const copying = sessionSearchCopyingPath(this.path)
       await renameFileWithWindowsRetryAsync(copying, sessionSearchCopiedPath(this.path))
@@ -139,6 +143,25 @@ export class SessionSearchCompactCopy {
     } catch (error) {
       await this.abandon()
       throw error
+    }
+  }
+
+  /** A copy is under way, paused or caught up. */
+  get active(): boolean {
+    return this.copy !== null
+  }
+
+  /** A copy paused while indexing keeps logging changed rows; past a bound it is dropped and the
+   *  copy starts again at a later quiet moment. */
+  async boundChanges(): Promise<void> {
+    if (!this.copy || this.running) {
+      return
+    }
+    const pending = Number(
+      this.db.prepare('SELECT COUNT(*) AS n FROM temp.search_copy_changes').get()!.n
+    )
+    if (pending > MAX_PENDING_CHANGES) {
+      await this.abandon()
     }
   }
 
@@ -152,9 +175,10 @@ export class SessionSearchCompactCopy {
     }
     await removeSessionSearchCopies(this.path)
     const target = openSessionSearchDatabase(sessionSearchCopyingPath(this.path))
-    // A crash discards this file, so it needs no sync; it can never outgrow its source.
+    // A crash discards this file, so it needs no sync until it is finished. Free space is checked
+    // as it grows; the cap only stops a runaway copy.
     target.exec('PRAGMA synchronous = OFF')
-    target.pragma(`max_page_count = ${Number(this.db.pragma('page_count', { simple: true }))}`)
+    target.pragma(`max_page_count = ${2 * Number(this.db.pragma('page_count', { simple: true }))}`)
     // Temp triggers live only on this connection: the file is never changed for other readers.
     this.db.exec(`
       CREATE TEMP TABLE IF NOT EXISTS search_copy_changes(id INTEGER PRIMARY KEY);
@@ -179,10 +203,7 @@ export class SessionSearchCompactCopy {
   /** Copies the next rows by id; a change to one already copied is caught up later. */
   private copyNextRows(copy: Copy): number {
     const rows = this.db
-      .prepare(`SELECT m.id, m.session_row_id, m.role, m.ts, m.text_truncated,
-          f.user_text, f.assistant_text, f.tool_text, f.identifiers
-        FROM messages m JOIN messages_fts f ON f.rowid = m.id
-        WHERE m.id > ? ORDER BY m.id LIMIT ?`)
+      .prepare(`${SEARCH_COPY_ROWS} WHERE m.id > ? ORDER BY m.id LIMIT ?`)
       .all(copy.cursor, copy.rows)
     if (rows.length === 0) {
       copy.cursor = Number.POSITIVE_INFINITY
@@ -193,7 +214,7 @@ export class SessionSearchCompactCopy {
     this.db
       .prepare('DELETE FROM temp.search_copy_changes WHERE id > ? AND id <= ?')
       .run(copy.cursor, last)
-    this.write(copy.target, rows, [])
+    writeSearchCopyRows(copy.target, rows, [])
     copy.cursor = last
     return rows.length
   }
@@ -209,15 +230,12 @@ export class SessionSearchCompactCopy {
     }
     const list = JSON.stringify(ids)
     const rows = this.db
-      .prepare(`SELECT m.id, m.session_row_id, m.role, m.ts, m.text_truncated,
-          f.user_text, f.assistant_text, f.tool_text, f.identifiers
-        FROM messages m JOIN messages_fts f ON f.rowid = m.id
-        WHERE m.id IN (SELECT value FROM json_each(?)) ORDER BY m.id`)
+      .prepare(`${SEARCH_COPY_ROWS} WHERE m.id IN (SELECT value FROM json_each(?)) ORDER BY m.id`)
       .all(list)
     this.db
       .prepare('DELETE FROM temp.search_copy_changes WHERE id IN (SELECT value FROM json_each(?))')
       .run(list)
-    this.write(copy.target, rows, ids)
+    writeSearchCopyRows(copy.target, rows, ids)
     return ids.length
   }
 
@@ -226,58 +244,34 @@ export class SessionSearchCompactCopy {
     while (this.catchUp(copy, MAX_ROWS) > 0) {
       // Under FINAL_CHANGES rows remain.
     }
-    const target = copy.target
-    target.exec('BEGIN')
+    // SQLite copies the small tables itself: no row crosses into JS, whatever its integers hold.
+    this.db.prepare('ATTACH DATABASE ? AS search_copy').run(sessionSearchCopyingPath(this.path))
     try {
-      for (const table of WHOLE_TABLES) {
-        const columns = this.db
-          .prepare(`SELECT name FROM pragma_table_info(?)`)
-          .all(table)
-          .map((row) => String(row.name))
-        target.exec(`DELETE FROM ${table}`)
-        const insert = target.prepare(
-          `INSERT INTO ${table}(${columns.join(',')}) VALUES (${columns.map(() => '?').join(',')})`
-        )
-        for (const row of this.db.prepare(`SELECT ${columns.join(',')} FROM ${table}`).iterate()) {
-          insert.run(...columns.map((column) => row[column]))
+      this.db.exec('BEGIN')
+      try {
+        for (const table of WHOLE_TABLES) {
+          const columns = this.db
+            .prepare(`SELECT name FROM pragma_table_info(?)`)
+            .all(table)
+            .map((row) => String(row.name))
+            .join(',')
+          this.db.exec(`DELETE FROM search_copy.${table};
+            INSERT INTO search_copy.${table}(${columns}) SELECT ${columns} FROM main.${table};`)
         }
+        this.db.exec('COMMIT')
+      } catch (error) {
+        if (this.db.isTransaction) {
+          this.db.exec('ROLLBACK')
+        }
+        throw error
       }
-      const setMeta = target.prepare('INSERT OR REPLACE INTO meta(key, value) VALUES (?, ?)')
-      setMeta.run(SESSION_SEARCH_COPY_SOURCE_KEY, String(readIndexGeneration(this.db)))
-      setMeta.run(...sessionSearchCopiedSizeRow(target))
-      target.exec('COMMIT')
-    } catch (error) {
-      target.exec('ROLLBACK')
-      throw error
+    } finally {
+      this.db.exec('DETACH DATABASE search_copy')
     }
+    const setMeta = copy.target.prepare('INSERT OR REPLACE INTO meta(key, value) VALUES (?, ?)')
+    setMeta.run(SESSION_SEARCH_COPY_SOURCE_KEY, String(readIndexGeneration(this.db)))
+    setMeta.run(...sessionSearchCopiedSizeRow(copy.target))
     return 1
-  }
-
-  private write(target: SyncDatabase, rows: SqliteRow[], replaced: number[]): void {
-    target.exec('BEGIN')
-    try {
-      if (replaced.length) {
-        const list = JSON.stringify(replaced)
-        target
-          .prepare('DELETE FROM messages WHERE id IN (SELECT value FROM json_each(?))')
-          .run(list)
-        target
-          .prepare('DELETE FROM messages_fts WHERE rowid IN (SELECT value FROM json_each(?))')
-          .run(list)
-      }
-      const message = target.prepare(`INSERT INTO messages(${MESSAGE_COLUMNS}) VALUES (?,?,?,?,?)`)
-      const text = target.prepare(
-        `INSERT INTO messages_fts(rowid, ${TEXT_COLUMNS}) VALUES (?,?,?,?,?)`
-      )
-      for (const row of rows) {
-        message.run(row.id, row.session_row_id, row.role, row.ts, row.text_truncated)
-        text.run(row.id, row.user_text, row.assistant_text, row.tool_text, row.identifiers)
-      }
-      target.exec('COMMIT')
-    } catch (error) {
-      target.exec('ROLLBACK')
-      throw error
-    }
   }
 
   /** Runs one step, sizing the next to the target and resting nine times its length. */
@@ -306,6 +300,8 @@ export class SessionSearchCompactCopy {
   private async close(copy: Copy): Promise<void> {
     this.copy = null
     this.dropChangeLog()
+    // Synced before it can be swapped in: a torn copy would replace a good index.
+    copy.target.exec('PRAGMA synchronous = FULL')
     copy.target.pragma('wal_checkpoint(TRUNCATE)')
     copy.target.close()
   }

@@ -164,7 +164,9 @@ export class SessionSearchIndexer {
     if (this.closed) {
       return this.store.retired()
     }
+    // No pass or transcript consumer may write between the copy's last step and the swap.
     this.loop.close()
+    this.unregister()
     await this.store.finishCopy()
     return this.close()
   }

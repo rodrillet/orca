@@ -11,7 +11,7 @@ const sessionSearchReplacedPath = (path: string): string => `${path}.replaced`
 export const SESSION_SEARCH_COPY_SOURCE_KEY = 'copied_from_generation'
 
 export async function removeSessionSearchCopies(path: string): Promise<void> {
-  await rm(sessionSearchReplacedPath(path), { force: true })
+  await restoreReplacedIndex(path)
   for (const file of [sessionSearchCopyingPath(path), sessionSearchCopiedPath(path)]) {
     for (const suffix of ['', '-wal', '-shm', '-journal']) {
       await rm(`${file}${suffix}`, { force: true })
@@ -19,45 +19,72 @@ export async function removeSessionSearchCopies(path: string): Promise<void> {
   }
 }
 
+/** A swap cut short between its renames left the old index aside: it goes back. */
+async function restoreReplacedIndex(path: string): Promise<void> {
+  const replaced = sessionSearchReplacedPath(path)
+  if (path !== ':memory:' && existsSync(replaced)) {
+    await (existsSync(path)
+      ? rm(replaced, { force: true })
+      : renameFileWithWindowsRetryAsync(replaced, path))
+  }
+}
+
+/** The index's generation once its WAL is folded in; null when another connection holds it open. */
+function closedIndexGeneration(path: string): number | null {
+  const source = new SyncDatabase(path, { fileMustExist: true })
+  let generation: number
+  try {
+    generation = readIndexGeneration(source)
+    source.pragma('wal_checkpoint(TRUNCATE)')
+  } finally {
+    source.close()
+  }
+  // Closing the last connection deletes the WAL; one still present means another holds it.
+  return existsSync(`${path}-wal`) ? null : generation
+}
+
 /**
  * Swaps a finished copy in while nothing has the index open. A copy is kept only when the index
- * has not changed since it was taken (an older build may have written to it since).
+ * has not changed since it was taken (an older build may have written to it since). Any other
+ * leftover copy is removed.
  */
 export async function swapInSessionSearchCopy(path: string): Promise<boolean> {
   const copied = sessionSearchCopiedPath(path)
-  if (path === ':memory:' || !existsSync(copied)) {
+  if (path === ':memory:') {
     return false
   }
-  let current = false
+  await restoreReplacedIndex(path)
+  let taken: number | null = null
   try {
-    const source = new SyncDatabase(path, { fileMustExist: true })
-    let generation: number
-    try {
-      generation = readIndexGeneration(source)
-      // Folds the WAL in; closing the last connection deletes it.
-      source.pragma('wal_checkpoint(TRUNCATE)')
-    } finally {
-      source.close()
-    }
     const copy = new SyncDatabase(copied, { readonly: true, fileMustExist: true })
     try {
-      const row = copy
-        .prepare('SELECT value FROM meta WHERE key = ?')
-        .get(SESSION_SEARCH_COPY_SOURCE_KEY)
-      current = Number(row?.value) === generation
+      taken = Number(
+        copy.prepare('SELECT value FROM meta WHERE key = ?').get(SESSION_SEARCH_COPY_SOURCE_KEY)
+          ?.value
+      )
     } finally {
       copy.close()
     }
-    // A WAL still present means another connection holds the index open.
-    current &&= !existsSync(`${path}-wal`)
   } catch {
-    current = false
+    taken = null
   }
-  if (!current) {
+  const current = () => {
+    try {
+      return taken !== null && closedIndexGeneration(path) === taken
+    } catch {
+      return false
+    }
+  }
+  if (!current()) {
     await removeSessionSearchCopies(path)
     return false
   }
   await rm(`${path}-shm`, { force: true })
+  // Checked again right before the renames, so only that instant is open to another writer.
+  if (!current()) {
+    await removeSessionSearchCopies(path)
+    return false
+  }
   // Freeing a multi-GB file can take seconds, so the old one is deleted after the index reopens.
   const replaced = sessionSearchReplacedPath(path)
   await renameFileWithWindowsRetryAsync(path, replaced)
