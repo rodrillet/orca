@@ -6,10 +6,12 @@ import { readIndexGeneration } from './session-search-index-generation'
 
 export const sessionSearchCopyingPath = (path: string): string => `${path}.copying`
 export const sessionSearchCopiedPath = (path: string): string => `${path}.copied`
+const sessionSearchReplacedPath = (path: string): string => `${path}.replaced`
 /** The index generation a finished copy was taken at. */
 export const SESSION_SEARCH_COPY_SOURCE_KEY = 'copied_from_generation'
 
 export async function removeSessionSearchCopies(path: string): Promise<void> {
+  await rm(sessionSearchReplacedPath(path), { force: true })
   for (const file of [sessionSearchCopyingPath(path), sessionSearchCopiedPath(path)]) {
     for (const suffix of ['', '-wal', '-shm', '-journal']) {
       await rm(`${file}${suffix}`, { force: true })
@@ -56,6 +58,15 @@ export async function swapInSessionSearchCopy(path: string): Promise<boolean> {
     return false
   }
   await rm(`${path}-shm`, { force: true })
-  await renameFileWithWindowsRetryAsync(copied, path)
+  // Freeing a multi-GB file can take seconds, so the old one is deleted after the index reopens.
+  const replaced = sessionSearchReplacedPath(path)
+  await renameFileWithWindowsRetryAsync(path, replaced)
+  try {
+    await renameFileWithWindowsRetryAsync(copied, path)
+  } catch (error) {
+    await renameFileWithWindowsRetryAsync(replaced, path)
+    throw error
+  }
+  void rm(replaced, { force: true }).catch(() => undefined)
   return true
 }
