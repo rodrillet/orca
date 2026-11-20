@@ -10,6 +10,7 @@ import type * as ReleaseModule from './managed-runtime-release'
 import {
   ManagedRuntimeStartError,
   RUNTIME_RELEASE_RECEIPT,
+  resolveInstalledRuntimeRelease,
   writeRuntimeReleaseReceipt,
   type ManagedRuntime,
   type ManagedRuntimePin
@@ -19,7 +20,11 @@ import { getTarProgram } from '../../shared/archives/zip-extractor-command'
 
 vi.mock('./managed-runtime-release', async (importOriginal) => {
   const actual = await importOriginal<typeof ReleaseModule>()
-  return { ...actual, reclaimRuntimeReleases: vi.fn(actual.reclaimRuntimeReleases) }
+  return {
+    ...actual,
+    reclaimRuntimeReleases: vi.fn(actual.reclaimRuntimeReleases),
+    resolveInstalledRuntimeRelease: vi.fn(actual.resolveInstalledRuntimeRelease)
+  }
 })
 
 const sha256 = (bytes: string | Uint8Array) => createHash('sha256').update(bytes).digest('hex')
@@ -385,6 +390,29 @@ it('never looks up the latest release for a copy that is not installed', async (
 
   expect(refreshPin).not.toHaveBeenCalled()
   expect(fetcher).not.toHaveBeenCalled()
+})
+
+it('reports a validated installed copy while an older sibling is unreadable and latest is unknown', async () => {
+  const dataDirectory = await mkdtemp(join(tmpdir(), 'orca-runtime-install-'))
+  roots.push(dataDirectory)
+  const root = join(dataDirectory, 'agent-runtimes', 'agent')
+  const installation = new ManagedRuntimeInstallation(
+    'agent',
+    { label: 'Agent', root: () => root, pin: () => null, refreshPin: async () => {} },
+    { dataDirectory, program: 'cli', findExternal: async () => false, fence: (work) => work() }
+  )
+  vi.mocked(resolveInstalledRuntimeRelease).mockReturnValueOnce({
+    release: { folder: join(root, '2.0'), version: '2.0', current: false },
+    broken: [],
+    unreadable: true
+  })
+
+  expect(await installation.status()).toMatchObject({
+    installedVersion: '2.0',
+    installedCurrent: true,
+    version: null,
+    source: 'managed'
+  })
 })
 
 it("doesn't keep a copy current while Orca is told not to", async () => {

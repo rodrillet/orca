@@ -109,17 +109,20 @@ export class ManagedRuntimeInstallation {
     if (!unreadable) {
       this.deps.onRelease?.(release?.folder ?? null)
     }
-    // Unreadable is not absent; preserve clients’ last known installation state.
-    if (unreadable && !release?.current) {
+    const installedCurrent = release !== null && (pin === null || release.current)
+    // Unknown siblings cannot hide a validated copy before the latest release is known.
+    if (unreadable && !installedCurrent) {
       throw new Error(`Couldn't read the installed ${this.runtime.label} files on this host.`)
     }
     const source = (await this.deps.findExternal()) ? 'external' : release ? 'managed' : null
     return {
-      available: this.deps.available?.() ?? (pin !== null || this.runtime.refreshPin !== undefined),
+      available:
+        (this.deps.available?.() ?? true) &&
+        (this.runtime.available?.() ?? (pin !== null || this.runtime.refreshPin !== undefined)),
       version: pin?.version ?? null,
       ...(pin && { downloadBytes: pin.archiveBytes }),
       installedVersion: release?.version ?? null,
-      installedCurrent: release?.current ?? false,
+      installedCurrent,
       ...(pin && !release?.current && broken.includes(pin.version) && { damaged: true }),
       canRemove: release !== null || broken.length > 0,
       source,
@@ -135,17 +138,15 @@ export class ManagedRuntimeInstallation {
       return
     }
     // Nothing installed has nothing to update, so the latest release isn't looked up.
-    if (!(await runtimeReleaseMayBePublished(this.root))) {
+    if (
+      !(await runtimeReleaseMayBePublished(this.root)) ||
+      this.deps.updatesEnabled?.() === false
+    ) {
       return
     }
-    const installed = await this.status()
-    if (installed.source !== 'managed' || this.deps.updatesEnabled?.() === false) {
-      return
-    }
-    await this.runtime.refreshPin()
-    if (this.deps.updatesEnabled?.() === false) {
-      return
-    }
+    await this.runtime.refreshPin().catch((error: unknown) => {
+      console.warn(`[managed-runtime] ${this.agent} latest release unknown:`, error)
+    })
     const state = await this.status()
     if (
       state.source === 'managed' &&
@@ -153,6 +154,7 @@ export class ManagedRuntimeInstallation {
       state.available &&
       state.version !== null &&
       !state.installedCurrent &&
+      this.deps.updatesEnabled?.() !== false &&
       !this.running
     ) {
       const { lastAutoUpdate } = this

@@ -33,6 +33,8 @@ export type ManagedRuntime = {
   label: string
   root(dataDirectory: string): string
   pin(): ManagedRuntimePin | null
+  /** False after a successful lookup finds no usable release; unknown still permits Install. */
+  available?(): boolean
   /** Runtimes that follow a published latest release look it up here; pin() answers from it. */
   refreshPin?(signal?: AbortSignal): Promise<void>
   /** Validate startup without user credentials before publishing/reusing this pinned copy. */

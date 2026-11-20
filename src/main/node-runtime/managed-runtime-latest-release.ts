@@ -36,7 +36,11 @@ export function hourlyLookup<T>(
 /** Follow a published latest release, looked up at most hourly; a failed lookup keeps the last known release. */
 export function followLatestRelease(
   fetchLatest: (signal?: AbortSignal) => Promise<ManagedRuntimePin | null>
-): Required<Pick<ManagedRuntime, 'pin' | 'refreshPin'>> {
+): Required<Pick<ManagedRuntime, 'pin' | 'refreshPin' | 'available'>> {
   const release = hourlyLookup(fetchLatest)
-  return { pin: () => release.latest() ?? null, refreshPin: release.refresh }
+  return {
+    pin: () => release.latest() ?? null,
+    available: () => release.latest() !== null,
+    refreshPin: release.refresh
+  }
 }

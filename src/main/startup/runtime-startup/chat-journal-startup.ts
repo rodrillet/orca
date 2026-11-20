@@ -44,7 +44,7 @@ export function chatJournalHostServing(): void {
       if (state.core.runtime) {
         state.core.runtime.startPullRequestWatches({ admit: true })
         reclaimManagedRuntimeReleasesAtLaunch(state.core.runtime)
-        startManagedRuntimeAutoUpdates()
+        startManagedRuntimeAutoUpdates(state.core.runtime)
       }
     })
 }

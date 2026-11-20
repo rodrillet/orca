@@ -30,13 +30,13 @@ export type ManagedRuntimeInstallState = {
   program?: ManagedRuntimeProgram
   /** Rises with every change the host publishes, across operations. */
   revision: number
-  /** The host has a pinned release; otherwise no Install is offered. */
+  /** This host can attempt an install; the release may be looked up only when requested. */
   available: boolean
   version: string | null
   /** The pinned release's download size; absent without one. */
   downloadBytes?: number
   installedVersion: string | null
-  /** False with an installed version: an update is available. */
+  /** False with an installed version: a known release differs from the installed copy. */
   installedCurrent: boolean
   /** Orca keeps its copy on the latest release by itself, so clients never prompt to update it. */
   updatesAutomatically?: true

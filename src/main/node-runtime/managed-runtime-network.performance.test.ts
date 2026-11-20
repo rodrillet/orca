@@ -4,11 +4,33 @@ import { join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
 import type { ManagedRuntimePin } from './managed-runtime-release'
 import { ManagedRuntimeInstallation } from './managed-runtime-installation'
+import { followLatestRelease } from './managed-runtime-latest-release'
 
 const roots: string[] = []
 afterEach(() =>
   Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })))
 )
+
+it('offers an unknown release but stops offering Install after lookup confirms no usable build', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'orca-runtime-network-'))
+  roots.push(root)
+  const installation = new ManagedRuntimeInstallation(
+    'agent',
+    { label: 'Agent', root: () => root, ...followLatestRelease(async () => null) },
+    {
+      dataDirectory: root,
+      program: 'cli',
+      findExternal: async () => false,
+      fence: (work) => work()
+    }
+  )
+  expect(await installation.status()).toMatchObject({ available: true })
+  installation.install()
+  await vi.waitFor(async () =>
+    expect((await installation.status(false)).operation?.phase).toBe('failed')
+  )
+  expect(await installation.status()).toMatchObject({ available: false })
+})
 
 it.each([10, 100])(
   'reads %s installation cards without release requests, then installs on request',

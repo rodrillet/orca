@@ -232,11 +232,30 @@ function checkForUpdate(key: string): void {
 }
 
 /** Keep Orca's own copies current without a client ever prompting: once after launch, then as they're used. */
-export function startManagedRuntimeAutoUpdates(): void {
+export function startManagedRuntimeAutoUpdates(runtime: OrcaRuntimeService): void {
   if (autoUpdatesStarted) {
     return
   }
   autoUpdatesStarted = true
+  const store = runtime.requireStore()
+  let disabled = store.getSettings().disabledTuiAgents
+  store.onSettingsChanged((updates, settings) => {
+    if (!('disabledTuiAgents' in updates)) {
+      return
+    }
+    const previous = disabled
+    disabled = settings.disabledTuiAgents
+    for (const key of installations.keys()) {
+      const agent = key.slice(key.indexOf(':') + 1)
+      if (
+        isTuiAgent(agent) &&
+        !isTuiAgentEnabled(agent, previous) &&
+        isTuiAgentEnabled(agent, disabled)
+      ) {
+        checkForUpdate(key)
+      }
+    }
+  })
   // Wait out startup so the first check never competes with launching the app.
   setTimeout(() => {
     for (const key of installations.keys()) {
