@@ -58,12 +58,16 @@ export class SessionSearchInstance {
     this.transition = pending
     return pending
   }
-  private queue(settings: AiVaultSearchSettings, clear: boolean): Promise<void> {
+  private queue(
+    settings: AiVaultSearchSettings,
+    clear: boolean,
+    finishCopy = false
+  ): Promise<void> {
     const old = this.live
     this.live = null
-    old?.indexer.close()
+    const closing = finishCopy ? old?.indexer.closeAfterCopy() : old?.indexer.close()
     const retired = old
-      ? Promise.all([old.indexer.retired(), old.readers.close()])
+      ? Promise.all([closing?.then(() => old.indexer.retired()), old.readers.close()])
       : Promise.resolve()
     const operation = (this.transition ?? Promise.resolve()).then(async () => {
       await retired
@@ -82,7 +86,7 @@ export class SessionSearchInstance {
         ...this.options,
         historyDays: settings.historyDays,
         // Reopening swaps the copy in; searches answer "not ready" for that moment.
-        onIndexCopied: () => void this.apply(this.settings)
+        onIndexCopied: () => void this.queue(this.settings, false, true).catch(() => undefined)
       })
       try {
         await indexer.initialize()

@@ -110,7 +110,7 @@ export class SessionSearchWorkerStoreBase extends SessionSearchCursorSnapshot {
     if (response.counts) {
       this.counts = response.counts
     }
-    if (response.copied) {
+    if (response.copied && response.id === 0) {
       this.onCopied()
     }
   }
@@ -159,6 +159,17 @@ export class SessionSearchWorkerStoreBase extends SessionSearchCursorSnapshot {
   async purgeOlderThan(cutoff: number | null, signal?: AbortSignal): Promise<void> {
     await this.prepare()
     await abandonRemoteSessionScanOnCancel(this.send({ op: 'purge', cutoff }), signal)
+  }
+  /** Finishes a caught-up compacted copy before the writer closes; false when there is none. */
+  async finishCopy(): Promise<boolean> {
+    if (!this.acceptingReads) {
+      return false
+    }
+    try {
+      return (await this.client.request({ op: 'finishCopy' })).copied === true
+    } catch {
+      return false
+    }
   }
   close(): void {
     this.closed = true

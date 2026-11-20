@@ -1,6 +1,4 @@
-import { statfsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
-import { dirname } from 'node:path'
 import { setImmediate as yieldToEventLoop, setTimeout as delay } from 'node:timers/promises'
 import type SyncDatabase from '../../sqlite/sync-database'
 import type { SqliteRow } from '../../sqlite/sqlite-statement'
@@ -14,14 +12,15 @@ import {
   sessionSearchCopiedPath,
   sessionSearchCopyingPath
 } from './session-search-copy-files'
+import {
+  SESSION_SEARCH_FREE_RESERVE_BYTES as FREE_RESERVE_BYTES,
+  sessionSearchCopiedSizeRow,
+  sessionSearchCopyDue,
+  sessionSearchFreeBytes as freeBytes,
+  sessionSearchUsedBytes as usedBytes
+} from './session-search-copy-budget'
 
 // Deleted rows leave FTS segment data that merges rarely reach; a fresh copy drops it all.
-const BYTES_PER_MESSAGE_KEY = 'copied_bytes_per_message'
-// Smaller indexes are not worth rewriting; a copy is due again once rows grow to twice their copied size.
-const MIN_USED_BYTES = 512 * 1024 * 1024
-const GROWTH_BEFORE_COPY = 2
-// The copy never takes the disk below this.
-const FREE_RESERVE_BYTES = 2 * 1024 * 1024 * 1024
 // Steps aim at 25 ms and run at a tenth of the writer thread, so indexing and queries keep their latency.
 const STEP_TARGET_MS = 25
 const REST_PER_WORK = 9
@@ -36,46 +35,19 @@ const TEXT_COLUMNS = 'user_text, assistant_text, tool_text, identifiers'
 // Small tables are copied whole in the last step.
 const WHOLE_TABLES = ['meta', 'sessions', 'files', 'sqlite_sequence'] as const
 
-/** Due once for an index of 512 MiB or more, then when its rows take twice the space they did after the last copy. */
-export function sessionSearchCopyDue(db: SyncDatabase, minUsedBytes = MIN_USED_BYTES): boolean {
-  const used = usedBytes(db)
-  if (used < minUsedBytes) {
-    return false
-  }
-  const copied = Number(
-    db.prepare('SELECT value FROM meta WHERE key = ?').get(BYTES_PER_MESSAGE_KEY)?.value ?? 0
-  )
-  if (!(copied > 0)) {
-    return true
-  }
-  const live = Number(db.prepare('SELECT COUNT(*) AS n FROM messages').get()!.n)
-  return used / Math.max(live, 1) >= copied * GROWTH_BEFORE_COPY
-}
-
-function usedBytes(db: SyncDatabase): number {
-  const pages =
-    Number(db.pragma('page_count', { simple: true })) -
-    Number(db.pragma('freelist_count', { simple: true }))
-  return pages * Number(db.pragma('page_size', { simple: true }))
-}
-
-function freeBytes(path: string): number {
-  const stats = statfsSync(dirname(path))
-  return Number(stats.bavail) * Number(stats.bsize)
-}
-
 type Copy = {
   target: SyncDatabase
   cursor: number
   rows: number
   dataVersion: unknown
   steps: number
+  ready: boolean
 }
 
 /**
  * Copies the index into a new file next to it in small paced steps, catching up rows the writer
- * changes meanwhile, then hands the finished file to `onCopied` for the owner to swap in while
- * nothing has the index open. The source is never modified; an abandoned copy is deleted.
+ * changes meanwhile. `onCopied` tells the owner it caught up; the owner then calls `complete` as it
+ * closes the writer and swaps the file in while nothing has the index open. The source is never modified; an abandoned copy is deleted.
  */
 export class SessionSearchCompactCopy {
   private copy: Copy | null = null
@@ -129,12 +101,11 @@ export class SessionSearchCompactCopy {
           await this.step(() => this.catchUp(copy, copy.rows))
           continue
         }
-        await this.step(() => this.finish(copy))
-        await this.close(copy)
-        const copying = sessionSearchCopyingPath(this.path)
-        await renameFileWithWindowsRetryAsync(copying, sessionSearchCopiedPath(this.path))
-        await rm(`${copying}-shm`, { force: true })
-        this.onCopied()
+        // Caught up: the owner finishes it with `complete` as it closes the writer.
+        if (!copy.ready) {
+          copy.ready = true
+          this.onCopied()
+        }
         return
       }
     } catch (error) {
@@ -142,6 +113,32 @@ export class SessionSearchCompactCopy {
       throw error
     } finally {
       this.running = false
+    }
+  }
+
+  /** Ends a caught-up copy with the writer's last changes; no write may follow before the swap. */
+  async complete(): Promise<boolean> {
+    const copy = this.copy
+    if (!copy?.ready || this.running) {
+      return false
+    }
+    if (
+      this.db.isTransaction ||
+      this.db.pragma('data_version', { simple: true }) !== copy.dataVersion
+    ) {
+      await this.abandon()
+      return false
+    }
+    try {
+      traceSessionSearch('copy', () => this.finish(copy))
+      await this.close(copy)
+      const copying = sessionSearchCopyingPath(this.path)
+      await renameFileWithWindowsRetryAsync(copying, sessionSearchCopiedPath(this.path))
+      await rm(`${copying}-shm`, { force: true })
+      return true
+    } catch (error) {
+      await this.abandon()
+      throw error
     }
   }
 
@@ -173,7 +170,8 @@ export class SessionSearchCompactCopy {
       cursor: 0,
       rows: FIRST_ROWS,
       dataVersion: this.db.pragma('data_version', { simple: true }),
-      steps: 0
+      steps: 0,
+      ready: false
     }
     return true
   }
@@ -244,10 +242,9 @@ export class SessionSearchCompactCopy {
           insert.run(...columns.map((column) => row[column]))
         }
       }
-      const live = Number(target.prepare('SELECT COUNT(*) AS n FROM messages').get()!.n)
       const setMeta = target.prepare('INSERT OR REPLACE INTO meta(key, value) VALUES (?, ?)')
       setMeta.run(SESSION_SEARCH_COPY_SOURCE_KEY, String(readIndexGeneration(this.db)))
-      setMeta.run(BYTES_PER_MESSAGE_KEY, String(usedBytes(target) / Math.max(live, 1)))
+      setMeta.run(...sessionSearchCopiedSizeRow(target))
       target.exec('COMMIT')
     } catch (error) {
       target.exec('ROLLBACK')

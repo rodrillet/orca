@@ -44,6 +44,8 @@ export type SearchWorkerCommand =
   | { op: 'remove'; path: string }
   | { op: 'purge'; cutoff: number | null }
   | { op: 'sync' }
+  /** Ends a caught-up compacted copy; the writer closes next. */
+  | { op: 'finishCopy' }
   | { op: 'query'; request: AiVaultSearchRequest; scope?: SessionSearchHostScope }
 export type SearchWorkerRequest = { id: number; command: SearchWorkerCommand }
 export type SearchWorkerResponse = {
@@ -57,6 +59,6 @@ export type SearchWorkerResponse = {
   counts?: SessionSearchStateCounts
   generation?: number
   result?: AiVaultSearchResponse
-  /** A compacted copy of the index is ready to swap in. */
+  /** A compacted copy caught up (pushed), or was finished (reply to finishCopy). */
   copied?: boolean
 }

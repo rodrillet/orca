@@ -184,9 +184,10 @@ async function execute({ id, command: c }: SearchWorkerRequest): Promise<SearchW
     reset = snapshot()
     void toolPurge?.request()
   }
-  if (c.op !== 'sync') {
-    maintenance.wrote()
+  if (c.op === 'finishCopy') {
+    return { id, copied: await maintenance.finishCopy() }
   }
+  maintenance.observe(c.op)
   let path: string | undefined
   let accepted = true
   switch (c.op) {

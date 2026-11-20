@@ -24,11 +24,23 @@ export class SessionSearchQuietMaintenance {
     this.wrote()
   }
 
-  wrote(): void {
+  /** Every writer command but a sync counts as indexing. */
+  observe(op: string): void {
+    if (op !== 'sync') {
+      this.wrote()
+    }
+  }
+
+  private wrote(): void {
     this.lastWrite = performance.now()
     clearTimeout(this.timer)
     this.timer = setTimeout(() => this.runQuiet(), QUIET_INDEXING_MS)
     this.timer.unref()
+  }
+
+  /** Finishes a caught-up copy; true when it is ready to swap in. */
+  finishCopy(): Promise<boolean> {
+    return this.copy?.complete() ?? Promise.resolve(false)
   }
 
   private get quiet(): boolean {

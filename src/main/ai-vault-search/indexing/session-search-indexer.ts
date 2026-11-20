@@ -159,6 +159,16 @@ export class SessionSearchIndexer {
     }
   }
 
+  /** Stops indexing, lets the writer finish a caught-up compacted copy, then closes. */
+  async closeAfterCopy(): Promise<void> {
+    if (this.closed) {
+      return this.store.retired()
+    }
+    this.loop.close()
+    await this.store.finishCopy()
+    return this.close()
+  }
+
   close(): Promise<void> {
     if (this.closed) {
       return this.store.retired()

@@ -106,6 +106,9 @@ it('copies a churned index into a smaller file, catching up writes made while it
   paused = false
   await copy.run()
   expect(copied).toBe(1)
+  // Written after it caught up, before the writer closes for the swap.
+  session(db, 'last', 20)
+  expect(await copy.complete()).toBe(true)
 
   const expected = contents(db)
   db.close()
@@ -125,14 +128,16 @@ it('drops a finished copy when the index changed after it was taken', async () =
   const file = index()
   session(file.db, 'one', 50)
   let copied = 0
-  await new SessionSearchCompactCopy(
+  const copy = new SessionSearchCompactCopy(
     file.db,
     file.path,
     () => false,
     () => copied++,
     () => true
-  ).run()
+  )
+  await copy.run()
   expect(copied).toBe(1)
+  expect(await copy.complete()).toBe(true)
   session(file.db, 'two', 5)
   file.db.close()
   expect(await swapInSessionSearchCopy(file.path)).toBe(false)
