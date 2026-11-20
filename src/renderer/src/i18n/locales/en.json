@@ -25980,6 +25980,9 @@
     "linkedMessageMissing": "Couldn't find that message.",
     "math": {
       "scrollDisplayEquation": "Scroll display equation"
+    },
+    "messageTime": {
+      "yesterday": "Yesterday {{time}}"
     }
   },
   "quitAndStopAllSessions": {
@@ -29319,7 +29322,7 @@
         "links": "Links",
         "showLess": "Show less",
         "showMore": "Show more",
-        "sub": "Item {{number}} · {{chat}} · {{when}}",
+        "subWhere": "Item {{number}} · {{chat}}",
         "showEarlier": "Show earlier",
         "next": "Next item",
         "previous": "Previous item",

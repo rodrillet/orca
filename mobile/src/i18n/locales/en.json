@@ -3851,6 +3851,9 @@
       "title": "{{worker}} · {{title}}",
       "allow": "Allow",
       "deny": "Deny"
+    },
+    "messageTime": {
+      "yesterday": "Yesterday {{time}}"
     }
   },
   "sourceControl": {
@@ -5552,7 +5555,7 @@
       "loading": "Loading items…",
       "view": {
         "title": "Item",
-        "chatAndWhen": "{{chat}} · {{when}}",
+        "subWhere": "Item {{number}} · {{chat}}",
         "canceledNote": "Canceled:",
         "doneNote": "Done:",
         "links": "Links",

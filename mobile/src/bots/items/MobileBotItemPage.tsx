@@ -16,8 +16,8 @@ import { ListGroup, ListRow, SectionHeader } from '../../components/list/ListGro
 import { MobileEdgeFade } from '../../components/list/MobileEdgeFade'
 import { MobileMarkdown } from '../../components/markdown/MobileMarkdown'
 import { SheetHeader } from '../../components/nav-bar/SheetHeader'
-import { getUiIntlLocale } from '../../i18n/ui-intl-locale'
 import { useMobileTranslation } from '../../i18n/use-mobile-translation'
+import { useMobileMessageTime } from '../../session/native-chat/transcript/messages/use-mobile-message-time'
 import type { RpcClient } from '../../transport/rpc/rpc-client-contract'
 import { colors, radii, spacing, typography } from '../../theme/mobile-theme'
 import { themedStyleSheet } from '../../theme/themed-styles'
@@ -70,6 +70,7 @@ export function MobileBotItemPage({
 }) {
   useMobileColorScheme()
   const t = useMobileTranslation()
+  const time = useMobileMessageTime()
   const view = usePhoneBotItemView({ client, uid, reads })
   const now = useNow(60_000)
   const comment = useRef<BotItemCommentBoxHandle>(null)
@@ -121,6 +122,7 @@ export function MobileBotItemPage({
     )
   }
   const chatTitle = botItemChatName(item, t)
+  const made = time.label(item.createdAt)
   const ChatIcon = item.chat.kind === 'home' ? House : MessageSquare
   const closed = item.status === 'done' || item.status === 'canceled'
   return (
@@ -145,16 +147,19 @@ export function MobileBotItemPage({
               <Text style={styles.number}>{formatBotItemNumber(item.number)} </Text>
               {item.title}
             </Text>
-            <Text style={styles.sub} numberOfLines={1}>
-              {t('bots.items.view.chatAndWhen', '{{chat}} · {{when}}', {
-                chat: chatTitle,
-                when: new Intl.DateTimeFormat(getUiIntlLocale(), {
-                  weekday: 'short',
-                  hour: 'numeric',
-                  minute: '2-digit'
-                }).format(item.createdAt)
-              })}
-            </Text>
+            <View style={styles.subRow}>
+              <Text style={[styles.sub, styles.subWhere]} numberOfLines={1}>
+                {t('bots.items.view.subWhere', 'Item {{number}} · {{chat}}', {
+                  number: item.number,
+                  chat: chatTitle
+                })}
+              </Text>
+              {made ? (
+                <Text style={styles.sub} accessibilityLabel={time.full(item.createdAt)}>
+                  {` · ${made}`}
+                </Text>
+              ) : null}
+            </View>
             {item.description ? <ClampedDescription text={item.description} /> : null}
           </View>
           {view.failed ? (
@@ -342,6 +347,8 @@ const styles = themedStyleSheet(() => ({
   title: { fontSize: typography.titleSize, fontWeight: '600', color: colors.textPrimary },
   number: { fontWeight: '400', color: colors.textMuted, fontVariant: ['tabular-nums'] },
   sub: { fontSize: typography.metaSize, color: colors.textMuted },
+  subRow: { flexDirection: 'row' },
+  subWhere: { flexShrink: 1 },
   description: { marginTop: spacing.xs, gap: spacing.xs },
   clamped: { maxHeight: DESCRIPTION_LINES_HEIGHT, overflow: 'hidden' },
   showMore: { fontSize: 13, fontWeight: '600', color: colors.textPrimary },
