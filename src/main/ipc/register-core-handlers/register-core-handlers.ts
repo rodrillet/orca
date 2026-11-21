@@ -108,6 +108,7 @@ import { registerBotOrganizationHandlers } from '../../orca-fork/organization/bo
 import { registerForkWorkspacesHandlers } from '../../orca-fork/workspaces/fork-workspaces-store' // orca-fork:
 import { registerForkAppearanceHandlers } from '../../orca-fork/appearance/fork-window-opacity' // orca-fork:
 import { registerChatStructureHandlers } from '../../orca-fork/channels/chat-structure-store' // orca-fork:
+import { registerTokenSavingSettingsHandlers } from '../../orca-fork/token-saving/token-saving-settings-file' // orca-fork:
 
 let registration: Promise<void> | null = null
 
@@ -203,6 +204,7 @@ export async function registerCoreHandlers(
     registerForkWorkspacesHandlers() // orca-fork: Workspaces
     registerForkAppearanceHandlers() // orca-fork: window opacity
     registerChatStructureHandlers() // orca-fork: Channels and categories
+    registerTokenSavingSettingsHandlers() // orca-fork: token saving
     if (!lifecycleOptions.orcaAccount) {
       throw new Error('Orca account service must be initialized before core handlers')
     }

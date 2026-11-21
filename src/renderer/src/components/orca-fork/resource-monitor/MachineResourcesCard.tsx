@@ -21,6 +21,8 @@ import {
   type ExecutionHostId
 } from '../../../../../shared/execution-host/execution-host'
 import { ForkWorkspaceMark } from '../workspaces/ForkWorkspaceMark'
+import { TokenSavingMachineSection } from '../token-saving/TokenSavingMachineSection'
+import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import { useForkWorkspaces } from '../workspaces/fork-workspaces-store'
 import {
   forkWorkspaceOfItem,
@@ -366,6 +368,9 @@ export function MachineResourcesCard({
             </>
           ) : null}
         </>
+      ) : null}
+      {FORK_FEATURES.tokenSaving ? (
+        <TokenSavingMachineSection target={machine.target} bots={bots} open />
       ) : null}
     </div>
   )

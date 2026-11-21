@@ -50,6 +50,11 @@ import {
   ForkDriveUploadIdParams,
   ForkDriveUploadStartParams
 } from '../orca-fork/drive/drive-rpc-params'
+import {
+  TokenSavingProxyParams,
+  TokenSavingSetPolicyParams,
+  TokenSavingStatusParams
+} from '../orca-fork/token-saving/token-saving-rpc'
 import { OrcadMigrationBlobChunkRequestSchema } from '../orcad-migration/orcad-migration-blob-transfer'
 import { OrcadMigrationSnapshotChunkRequestSchema } from '../orcad-migration/orcad-migration-scrollback'
 import {
@@ -1853,6 +1858,9 @@ export const RPC_PARAMS_BY_METHOD = {
   'orcaFork.teams.get': AgentTeamsGet,
   'orcaFork.teams.post': AgentTeamsPost,
   'orcaFork.teams.set': AgentTeamsSet,
+  'orcaFork.tokenSaving.proxy': TokenSavingProxyParams,
+  'orcaFork.tokenSaving.setPolicy': TokenSavingSetPolicyParams,
+  'orcaFork.tokenSaving.status': TokenSavingStatusParams,
   'orcaFork.wiki.activity': ForkWikiActivity,
   'orcaFork.wiki.create': ForkWikiCreate,
   'orcaFork.wiki.history': ForkWikiPageRef,

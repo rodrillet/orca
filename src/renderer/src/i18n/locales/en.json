@@ -29887,6 +29887,49 @@
         "earlier": "Earlier"
       }
     },
+    "tokenSaving": {
+      "proxy": {
+        "running": "Proxy running",
+        "stopped": "Proxy stopped",
+        "unhealthy": "Proxy not answering properly",
+        "notInstalled": "Caveman not installed",
+        "failed": "The Caveman proxy did not do that. See ~/.caveman/proxy.log on that machine.",
+        "restart": "Restart",
+        "stop": "Stop",
+        "start": "Start"
+      },
+      "usageLine": "−{{saved}} · in {{input}} · out {{output}} · cache {{cache}}",
+      "savingsTitle": "Last {{days}} days through the proxy",
+      "savedTotal": "{{saved}} context tokens removed in {{requests}} model calls",
+      "noTraffic": "No agent has gone through the proxy yet.",
+      "otherAgents": "Workers and other chats",
+      "byDepartment": "By department",
+      "title": "Token saving (Caveman)",
+      "globalLabel": "Every agent, by default",
+      "workspaceLabel": "Workspace {{name}}",
+      "modeLabel": "Proxy mode",
+      "modeCompress": "Compress",
+      "modeRecord": "Measure only",
+      "stockServer": "This server runs the stock orca-server: token saving there needs the fork's server.",
+      "installHint": "Agents here still answer tersely. To also compress context and record savings, install Caveman's runtime in {{dir}}.",
+      "source": {
+        "bot": "this bot",
+        "department": "its department",
+        "workspace": "its workspace",
+        "global": "the global setting",
+        "default": "the default"
+      },
+      "inheritValue": "Inherit ({{value}})",
+      "on": "On",
+      "off": "Off",
+      "inherit": "Inherit",
+      "summaryOff": "Token saving off",
+      "summaryStats": "Token saving · −{{saved}} · out {{output}} (30 d)",
+      "summaryOn": "Token saving on",
+      "botTitle": "Token saving (Caveman)",
+      "inheritedFrom": "{{state}}, from {{source}}",
+      "botStats": "30 days: −{{saved}} context tokens · in {{input}} · out {{output}}"
+    },
     "chatStructure": {
       "addToChannels": "Add to Channels",
       "cancel": "Cancel",

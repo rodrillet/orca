@@ -1,4 +1,5 @@
 // orca-fork: one bot in the Tasks Agents view: what it is doing now, its open items, its workers' PRs.
+import { useBotTokenSavingSummary } from '../token-saving/BotTokenSavingRow'
 import React from 'react'
 import { MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -100,6 +101,7 @@ export function AgentTaskCard({
   const runningWorkers = workers.filter((worker) => worker.state === 'working').length
 
   const { presence, label: statusText } = useBotPresence(bot, needsYouItems)
+  const tokenSaving = useBotTokenSavingSummary(bot, !offline) // orca-fork: token saving
 
   const openItem = (item: BotItem): void => {
     if (openBotHome(bot)) {
@@ -128,6 +130,9 @@ export function AgentTaskCard({
             {statusText} · {hostLabel}
           </div>
           <ForkBotResourcesLine bot={bot} className="block truncate" />
+          {tokenSaving ? (
+            <div className="truncate text-[11px] text-muted-foreground">{tokenSaving}</div>
+          ) : null}
         </div>
         <Button
           variant="ghost"

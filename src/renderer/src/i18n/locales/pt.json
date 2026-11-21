@@ -25232,6 +25232,49 @@
         "earlier": "Mais antigos"
       }
     },
+    "tokenSaving": {
+      "botStats": "30 dias: −{{saved}} tokens de contexto · entrada {{input}} · saída {{output}}",
+      "botTitle": "Economia de tokens (Caveman)",
+      "byDepartment": "Por departamento",
+      "globalLabel": "Todos os agentes, por padrão",
+      "inherit": "Herdar",
+      "inheritValue": "Herdar ({{value}})",
+      "inheritedFrom": "{{state}}, herdado de {{source}}",
+      "installHint": "Os agentes daqui já respondem de forma enxuta. Para também comprimir contexto e medir a economia, instale o runtime do Caveman em {{dir}}.",
+      "modeCompress": "Comprimir",
+      "modeLabel": "Modo do proxy",
+      "modeRecord": "Só medir",
+      "noTraffic": "Nenhum agente passou pelo proxy ainda.",
+      "off": "Desligado",
+      "on": "Ligado",
+      "otherAgents": "Workers e outros chats",
+      "proxy": {
+        "failed": "O proxy do Caveman não respondeu. Veja ~/.caveman/proxy.log nessa máquina.",
+        "notInstalled": "Caveman não instalado",
+        "restart": "Reiniciar",
+        "running": "Proxy rodando",
+        "start": "Iniciar",
+        "stop": "Parar",
+        "stopped": "Proxy parado",
+        "unhealthy": "Proxy não está respondendo direito"
+      },
+      "savedTotal": "{{saved}} tokens de contexto removidos em {{requests}} chamadas ao modelo",
+      "savingsTitle": "Últimos {{days}} dias pelo proxy",
+      "source": {
+        "bot": "este bot",
+        "default": "o padrão",
+        "department": "o departamento",
+        "global": "a configuração global",
+        "workspace": "o workspace"
+      },
+      "stockServer": "Este servidor roda o orca-server original: a economia de tokens lá exige o servidor do fork.",
+      "summaryOff": "Economia de tokens desligada",
+      "summaryOn": "Economia de tokens ligada",
+      "summaryStats": "Economia de tokens · −{{saved}} · saída {{output}} (30 d)",
+      "title": "Economia de tokens (Caveman)",
+      "usageLine": "−{{saved}} · entrada {{input}} · saída {{output}} · cache {{cache}}",
+      "workspaceLabel": "Workspace {{name}}"
+    },
     "chatStructure": {
       "addToChannels": "Adicionar a Canais",
       "cancel": "Cancelar",

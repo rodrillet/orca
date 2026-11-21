@@ -1,4 +1,5 @@
 import { applyClaudeAgentViewEnv } from './claude-agent-view'
+import { applyTokenSavingTerminalEnv } from '../../../orca-fork/token-saving/token-saving-terminal' // orca-fork: token saving
 import { resolveSetupAgentSequenceLaunchCommand } from '../../../../shared/agent-launch/startup/setup-agent-sequencing'
 import {
   detectExplicitPiAgentKindFromCommand,
@@ -50,6 +51,9 @@ export function buildPtyHostEnv(
   const launchCommandHint = resolveSetupAgentSequenceLaunchCommand(baseEnv, opts.launchCommand)
   applyManagedDataAccountEnvironment(baseEnv, { ...opts, launchCommand: launchCommandHint })
   applyClaudeAgentViewEnv(baseEnv, opts)
+  if (!opts.isWsl) {
+    applyTokenSavingTerminalEnv(baseEnv, opts.userDataPath) // orca-fork: token saving
+  }
   const explicitPiAgentKind = isPiCompatibleAgentType(opts.launchAgent)
     ? opts.launchAgent
     : opts.launchAgent === undefined

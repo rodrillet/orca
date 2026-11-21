@@ -63,6 +63,7 @@ import { BotItemsSettingsGroup } from './BotItemsSettingsGroup'
 // orca-fork: agent teams
 import { BotTeamBuilderRow } from '../../orca-fork/agent-teams/BotTeamBuilderRow'
 import { ForkBotResourcesSettings } from '../../orca-fork/bot-resources/ForkBotResources' // orca-fork:
+import { BotTokenSavingRow } from '../../orca-fork/token-saving/BotTokenSavingRow' // orca-fork: token saving
 
 type Update = (updates: BotUpdateParams['updates']) => Promise<Bot | null>
 
@@ -371,6 +372,7 @@ export function BotSettingsRoot({
         <BotTeamBuilderRow bot={bot} />
         {/* orca-fork: memory and CPU of the bot's agents */}
         <ForkBotResourcesSettings bot={bot} />
+        <BotTokenSavingRow bot={bot} /> {/* orca-fork: token saving */}
       </SettingsInsetGroup>
       {lookAroundSupported(bot.agent) ? (
         <ScheduleGroup bot={bot} update={update} open={open} />
