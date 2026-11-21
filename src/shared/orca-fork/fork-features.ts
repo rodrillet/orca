@@ -17,6 +17,8 @@ export const FORK_FEATURES = {
   botOrganization: true,
   /** Per-workspace Drive: chat uploads and agents' files on every machine, `orca files save`. */
   drive: true,
+  /** Token saving (Caveman) on by default for every Claude Code / Codex agent Orca launches. */
+  tokenSaving: true,
   /** Workspace wiki: agents write what they learn, the owner reads and curates it (Wiki page). */
   workspaceWiki: true,
   /** Phase 4: a bot the owner lets build a team creates bots from its own offers. */
