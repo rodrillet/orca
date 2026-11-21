@@ -17,6 +17,8 @@ export const FORK_FEATURES = {
   botOrganization: true,
   /** Settings › Appearance › Customization: color themes, accent, density, sidebar style, opacity. */
   interfaceCustomization: true,
+  /** Department page: mission, leader, members, sections, inherited bot defaults, dashboard and room. */
+  departmentManagement: true,
   /** Per-workspace Drive: chat uploads and agents' files on every machine, `orca files save`. */
   drive: true,
   /** Token saving (Caveman) on by default for every Claude Code / Codex agent Orca launches. */

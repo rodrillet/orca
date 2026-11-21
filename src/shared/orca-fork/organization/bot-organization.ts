@@ -1,6 +1,13 @@
 // orca-fork: Departments > Sections for the Bots sidebar. One versioned document keyed by
 // `hostId/id`, with no Mac-only paths, so a later phase can keep it on a paired server and sync it.
 
+import {
+  normalizeDepartmentOverrides,
+  normalizeDepartmentProfiles,
+  type DepartmentDefaultField,
+  type DepartmentProfile
+} from '../departments/department-profile'
+
 export const BOT_ORGANIZATION_VERSION = 1
 
 export type BotSidebarGroupBy = 'none' | 'machine' | 'organization'
@@ -22,6 +29,10 @@ export type BotOrganization = {
   placements: Record<string, BotOrganizationPlacement>
   /** workspacesByMachine: the workspace sidebar lists one section per machine (Group by Machine). */
   view: { groupBy: BotSidebarGroupBy; collapsed: string[]; workspacesByMachine: boolean }
+  /** Department management: look, mission, leader, defaults, by department id. */
+  profiles: Record<string, DepartmentProfile>
+  /** Defaults each bot (entry key) overrides instead of inheriting from its department. */
+  overrides: Record<string, DepartmentDefaultField[]>
 }
 
 export function emptyBotOrganization(): BotOrganization {
@@ -30,7 +41,9 @@ export function emptyBotOrganization(): BotOrganization {
     revision: 0,
     departments: [],
     placements: {},
-    view: { groupBy: 'none', collapsed: [], workspacesByMachine: false }
+    view: { groupBy: 'none', collapsed: [], workspacesByMachine: false },
+    profiles: {},
+    overrides: {}
   }
 }
 
@@ -90,6 +103,11 @@ export function normalizeBotOrganization(raw: unknown): BotOrganization {
     const section = dept.sections.find((s) => s.id === placement.sectionId)
     doc.placements[key] = { departmentId: dept.id, sectionId: section?.id ?? null }
   }
+  doc.profiles = normalizeDepartmentProfiles(
+    input.profiles,
+    doc.departments.map((d) => d.id)
+  )
+  doc.overrides = normalizeDepartmentOverrides(input.overrides)
   const view = readRecord(input.view)
   doc.view.groupBy = readGroupBy(view.groupBy)
   doc.view.workspacesByMachine = view.workspacesByMachine === true

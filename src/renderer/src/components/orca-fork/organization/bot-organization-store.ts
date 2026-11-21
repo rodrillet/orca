@@ -70,9 +70,20 @@ export function useBotOrganization(): BotOrganization {
   return useSyncExternalStore(subscribe, () => current)
 }
 
+type EditListener = (before: BotOrganization, after: BotOrganization) => void
+const editListeners = new Set<EditListener>()
+
+/** Hears each edit made in this window (never a load), e.g. to apply department defaults once. */
+export function onBotOrganizationEdit(listener: EditListener): () => void {
+  editListeners.add(listener)
+  return () => editListeners.delete(listener)
+}
+
 export function editBotOrganization(edit: (doc: BotOrganization) => BotOrganization): void {
+  const before = current
   const next = edit(current)
   publish(next)
+  editListeners.forEach((listener) => listener(before, next))
   const api = bridge()
   if (!api) {
     try {

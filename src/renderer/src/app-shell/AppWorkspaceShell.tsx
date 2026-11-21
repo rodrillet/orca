@@ -19,6 +19,7 @@ import { TitlebarMainStrip } from './chrome/TitlebarMainStrip'
 import type { AppChromeLayout } from './chrome/use-app-chrome-layout'
 import { ForkWikiPageMount } from '../components/orca-fork/wiki/ForkWikiPageMount' // orca-fork: workspace wiki
 import { ForkAppearanceRuntime } from '../components/orca-fork/appearance/ForkAppearanceRuntime' // orca-fork:
+import { ForkDepartmentPageMount } from '../components/orca-fork/departments/ForkDepartmentPageMount' // orca-fork: departments
 import type { FloatingWorkspacePanelState } from '../components/floating-terminal/workspace/use-floating-workspace-panel'
 import { ForkArtifactsSlot } from '../components/orca-fork/drive/ForkArtifactsSlot' // orca-fork:
 import { ForkPageSwitch } from '../components/orca-fork/page-switch/ForkPageSwitch' // orca-fork:
@@ -312,6 +313,7 @@ export function AppWorkspaceShell(props: {
                 <ForkWikiPageMount /> {/* orca-fork: workspace wiki */}
                 <ForkAppearanceRuntime /> {/* orca-fork: interface customization */}
                 <ForkPageSwitch /> {/* orca-fork: one full page at a time */}
+                <ForkDepartmentPageMount /> {/* orca-fork: departments */}
                 {floatingWorkspace.showToggleButton && !capturingPluginShot ? (
                   <MemoFloatingTerminalToggleButton
                     open={floatingWorkspace.open}

@@ -17,14 +17,18 @@ export function claimForkWorkspaceDepartment(departmentId: string): void {
   }
 }
 
-export function useForkWorkspaceDepartments(doc: BotOrganization): BotOrganization {
+/** Archived departments are left out (their bots list under "No department") unless asked for. */
+export function useForkWorkspaceDepartments(
+  doc: BotOrganization,
+  includeArchived = false
+): BotOrganization {
   const workspaces = useForkWorkspaces()
   return useMemo(() => {
-    if (!FORK_FEATURES.workspaces) {
-      return doc
-    }
-    const departments = doc.departments.filter((dept) =>
-      forkWorkspaceShowsDepartment(workspaces, workspaces.activeWorkspaceId, dept.id)
+    const departments = doc.departments.filter(
+      (dept) =>
+        (includeArchived || doc.profiles[dept.id]?.archived !== true) &&
+        (!FORK_FEATURES.workspaces ||
+          forkWorkspaceShowsDepartment(workspaces, workspaces.activeWorkspaceId, dept.id))
     )
     if (departments.length === doc.departments.length) {
       return doc
@@ -35,7 +39,7 @@ export function useForkWorkspaceDepartments(doc: BotOrganization): BotOrganizati
       Object.entries(doc.placements).filter(([, placement]) => shown.has(placement.departmentId))
     )
     return { ...doc, departments, placements }
-  }, [doc, workspaces])
+  }, [doc, workspaces, includeArchived])
 }
 
 /** Gives every department no workspace holds to the workspace of its bots (or this computer's). */
