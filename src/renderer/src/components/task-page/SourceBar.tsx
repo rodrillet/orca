@@ -14,6 +14,12 @@ import {
   SelectItem
 } from '@/components/ui/select'
 import { openAppHttpLink } from '@/lib/browser/navigation/app-http-link-open'
+// orca-fork: Agents view
+import { AgentsTasksSourceButton } from '@/components/orca-fork/agents-tasks/AgentsTasksSourceButton'
+import {
+  setAgentsTasksViewOpen,
+  useAgentsTasksViewOpen
+} from '@/components/orca-fork/agents-tasks/agents-tasks-view-state'
 export function TaskPageSourceBar({
   model
 }: {
@@ -50,6 +56,7 @@ export function TaskPageSourceBar({
     handleLinearTeamSelectionChange,
     handleLinearScopeOpen
   } = model
+  const agentsOpen = useAgentsTasksViewOpen() // orca-fork: Agents view
   return (
     <div className="flex items-center justify-between gap-2">
       <div
@@ -74,7 +81,7 @@ export function TaskPageSourceBar({
         </Tooltip>
         <div className="mx-1 h-5 w-px bg-border/50" aria-hidden />
         {visibleSourceOptions.map((source) => {
-          const active = taskSource === source.id
+          const active = taskSource === source.id && !agentsOpen // orca-fork: Agents view
           const sourceAvailabilityNotice = taskSourceAvailabilityNoticeByProvider[source.id] ?? null
           const sourceDisabled = source.disabled || sourceAvailabilityNotice?.blocking
           return (
@@ -87,6 +94,7 @@ export function TaskPageSourceBar({
                     if (sourceAvailabilityNotice?.blocking) {
                       return
                     }
+                    setAgentsTasksViewOpen(false) // orca-fork: Agents view
                     taskSourceManuallyChangedRef.current = true
                     openTaskPage(
                       {
@@ -127,6 +135,7 @@ export function TaskPageSourceBar({
             </Tooltip>
           )
         })}
+        <AgentsTasksSourceButton />
         <div
           className="hidden min-w-0 max-w-[min(420px,40vw)] items-center rounded-md border border-border/50 bg-muted/35 px-2 py-1 text-xs text-muted-foreground sm:flex"
           title={taskSourceContextSummary.title}
@@ -134,7 +143,7 @@ export function TaskPageSourceBar({
           <span className="truncate">{taskSourceContextSummary.label}</span>
         </div>
       </div>
-      {taskSource === 'linear' && linearConnected ? (
+      {taskSource === 'linear' && linearConnected && !agentsOpen ? (
         <div className="flex items-center gap-2">
           <LinearScopeSelector
             workspaces={linearWorkspaces}
@@ -185,7 +194,7 @@ export function TaskPageSourceBar({
           </Tooltip>
         </div>
       ) : null}
-      {taskSource === 'jira' && jiraConnected ? (
+      {taskSource === 'jira' && jiraConnected && !agentsOpen ? (
         <div className="flex items-center gap-2">
           {jiraSites.length > 1 ? (
             <Select
