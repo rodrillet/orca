@@ -29545,6 +29545,49 @@
       "unreadChats_other": "{{count}} unread chats",
       "photoChanged": "Photo changed",
       "changePhoto": "Change photo…"
+    },
+    "agentsTasks": {
+      "empty": "No bots on this computer or its paired servers yet.",
+      "idle": "Idle",
+      "item": {
+        "canceled": "Canceled",
+        "done": "Done",
+        "needsYou": "Needs you",
+        "planned": "Planned",
+        "working": "Working"
+      },
+      "items": "Open items",
+      "loading": "Loading…",
+      "more": "+{{value0}} more",
+      "needsYou": "Needs you",
+      "noItems": "No open items",
+      "noWorkers": "No workers",
+      "offline": "Offline",
+      "openChat": "Open chat",
+      "paused": "Paused",
+      "pr": {
+        "approved": "approved",
+        "changes": "changes requested",
+        "ciFailing": "CI failing",
+        "ciGreen": "CI green",
+        "ciRunning": "CI running",
+        "closed": "closed",
+        "merged": "merged",
+        "noCi": "no CI"
+      },
+      "refresh": "Refresh",
+      "source": "Agents",
+      "title": "Agents",
+      "worker": {
+        "done": "Done",
+        "failed": "Failed",
+        "stopped": "Stopped",
+        "unknown": "Out of contact",
+        "waiting": "Waiting",
+        "working": "Working"
+      },
+      "workers": "Workers",
+      "working": "Working"
     }
   }
 }

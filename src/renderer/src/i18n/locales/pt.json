@@ -24884,6 +24884,49 @@
       "unreadChats_many": "{{count}} conversas não lidas",
       "photoChanged": "Foto alterada",
       "changePhoto": "Trocar foto…"
+    },
+    "agentsTasks": {
+      "empty": "Nenhum bot neste computador ou nos servidores pareados ainda.",
+      "idle": "Ocioso",
+      "item": {
+        "canceled": "Cancelado",
+        "done": "Concluído",
+        "needsYou": "Precisa de você",
+        "planned": "Planejado",
+        "working": "Trabalhando"
+      },
+      "items": "Itens abertos",
+      "loading": "Carregando…",
+      "more": "+{{value0}} a mais",
+      "needsYou": "Precisa de você",
+      "noItems": "Nenhum item aberto",
+      "noWorkers": "Nenhum worker",
+      "offline": "Offline",
+      "openChat": "Abrir chat",
+      "paused": "Pausado",
+      "pr": {
+        "approved": "aprovado",
+        "changes": "alterações pedidas",
+        "ciFailing": "CI falhando",
+        "ciGreen": "CI verde",
+        "ciRunning": "CI rodando",
+        "closed": "fechado",
+        "merged": "mergeado",
+        "noCi": "sem CI"
+      },
+      "refresh": "Atualizar",
+      "source": "Agentes",
+      "title": "Agentes",
+      "worker": {
+        "done": "Concluído",
+        "failed": "Falhou",
+        "stopped": "Parado",
+        "unknown": "Sem contato",
+        "waiting": "Esperando",
+        "working": "Trabalhando"
+      },
+      "workers": "Workers",
+      "working": "Trabalhando"
     }
   }
 }

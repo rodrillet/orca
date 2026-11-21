@@ -10,5 +10,7 @@ export const FORK_FEATURES = {
   /** A bot's row counts its unread chats. */
   sidebarUnreadChatCount: true,
   /** "Change photo…" in a bot's row menu. */
-  sidebarChangePhoto: true
+  sidebarChangePhoto: true,
+  /** Tasks page "Agents" view: every bot on every paired machine, its items and its workers' PRs. */
+  agentsInTasks: true
 } as const
