@@ -20,6 +20,11 @@ import type { BotGroup } from '../../../../shared/bots/bot-group'
 import { BOT_GROUP_FACE_SLOT, botGroupFaces } from '../../../../shared/bots/bot-group-face-layout'
 import { BotAvatar } from './BotAvatar'
 import { BotGroupFaces } from './BotGroupFaces'
+// orca-fork: group photo
+import {
+  ForkGroupPicture,
+  ForkGroupPhotoMenuItems
+} from '../orca-fork/group-photos/ForkGroupPicture'
 import { BotGroupMembersDialog } from './BotGroupMembersDialog'
 import { botQuietLine } from './BotPanelHeader'
 import { BotRowLineText, useBotRowLine } from './BotRowActivityLine'
@@ -143,10 +148,13 @@ export function BotGroupPanelHeader({
                 className="relative size-9 shrink-0 rounded-[9px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring data-[state=open]:ring-1 data-[state=open]:ring-ring"
               >
                 {members.length > 0 ? (
-                  <BotGroupFaces
-                    faces={botGroupFaces(members, (bot) => bot.id, PICTURE / BOT_GROUP_FACE_SLOT)}
-                    className="size-9"
-                  />
+                  // orca-fork: group photo
+                  <ForkGroupPicture groupId={group.id} className="size-9">
+                    <BotGroupFaces
+                      faces={botGroupFaces(members, (bot) => bot.id, PICTURE / BOT_GROUP_FACE_SLOT)}
+                      className="size-9"
+                    />
+                  </ForkGroupPicture>
                 ) : (
                   <span className="flex size-9 items-center justify-center rounded-full border border-dashed border-input text-muted-foreground">
                     <Users className="size-4" />
@@ -213,6 +221,8 @@ export function BotGroupPanelHeader({
             <Users />
             {t('bots.groups.manageMembersMenu', 'Manage members…')}
           </DropdownMenuItem>
+          {/* orca-fork: group photo */}
+          <ForkGroupPhotoMenuItems groupId={group.id} />
           <DropdownMenuItem variant="destructive" onSelect={() => void deleteGroup(group)}>
             <Trash2 />
             {t('bots.groups.deleteGroupMenu', 'Delete group…')}

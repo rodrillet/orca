@@ -620,6 +620,7 @@ import {
   OrcaAccountUnsubscribeParams
 } from './orca-account-params'
 import { AgentTeamsGet, AgentTeamsPost, AgentTeamsSet } from './orca-fork-agent-teams-params'
+import { GroupPhotoGet, GroupPhotoSet } from './orca-fork-group-photo-params'
 import { ApprovalAnswerParams } from './orchestration/orchestration-approval-answer-params'
 import {
   FederationDispatchParams,
@@ -1808,6 +1809,8 @@ export const RPC_PARAMS_BY_METHOD = {
   'orcaAccount.status': null,
   'orcaAccount.subscribe': null,
   'orcaAccount.unsubscribe': OrcaAccountUnsubscribeParams,
+  'orcaFork.groupPhoto.get': GroupPhotoGet,
+  'orcaFork.groupPhoto.set': GroupPhotoSet,
   'orcaFork.teams.get': AgentTeamsGet,
   'orcaFork.teams.post': AgentTeamsPost,
   'orcaFork.teams.set': AgentTeamsSet,

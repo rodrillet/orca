@@ -21,6 +21,11 @@ import { BotSidebarRow } from './BotSidebarRow'
 import { botErrorMessage } from './bot-presentation'
 import { botGroupFaces } from '../../../../shared/bots/bot-group-face-layout'
 import { BotGroupFaces } from './BotGroupFaces'
+// orca-fork: group photo
+import {
+  ForkGroupPicture,
+  ForkGroupPhotoMenuItems
+} from '../orca-fork/group-photos/ForkGroupPicture'
 import { ForkBotMoveToMenu } from '../orca-fork/organization/ForkBotMoveToMenu' // orca-fork:
 import { ForkMoveToWorkspaceMenu } from '../orca-fork/workspaces/ForkMoveToWorkspaceMenu' // orca-fork:
 import { botSidebarEntryKey } from './bot-sidebar-entry-keys' // orca-fork:
@@ -61,11 +66,14 @@ export function BotGroupRow({
   return (
     <BotSidebarRow
       avatar={
-        <BotGroupFaces
-          faces={botGroupFaces(members, (bot) => bot.id)}
-          className="size-9"
-          slot={36}
-        />
+        // orca-fork: group photo
+        <ForkGroupPicture groupId={group.id} className="size-9">
+          <BotGroupFaces
+            faces={botGroupFaces(members, (bot) => bot.id)}
+            className="size-9"
+            slot={36}
+          />
+        </ForkGroupPicture>
       }
       name={group.name}
       workspaceId={workspaceId}
@@ -112,6 +120,8 @@ export function BotGroupRow({
             hostId={group.hostId}
             item={{ botKey: botSidebarEntryKey(group) }}
           />
+          {/* orca-fork: group photo */}
+          <ForkGroupPhotoMenuItems groupId={group.id} menu="context" />
         </>
       }
       menuFooter={

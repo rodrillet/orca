@@ -29667,6 +29667,11 @@
         "terminals": "Terminals",
         "label": "Board view"
       }
+    },
+    "groupPhoto": {
+      "change": "Change group photo…",
+      "remove": "Remove group photo",
+      "changed": "Group photo changed"
     }
   }
 }

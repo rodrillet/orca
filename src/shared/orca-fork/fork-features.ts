@@ -24,5 +24,7 @@ export const FORK_FEATURES = {
   /** agentes.chat-style Workspaces at the top of the sidebar; data is keyed by workspace id. */
   workspaces: true,
   /** The Agent Dashboard on by default, opening on a Kanban of every bot's items and workers. */
-  agentsBoard: true
+  agentsBoard: true,
+  /** A bot group's own photo in the sidebar and its header, instead of its members' faces. */
+  groupPhotos: true
 } as const
