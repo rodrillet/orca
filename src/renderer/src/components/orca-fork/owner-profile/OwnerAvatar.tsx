@@ -3,7 +3,7 @@
 import React from 'react'
 import { useTranslate } from '@/i18n/use-translate'
 import { cn } from '@/lib/class-names'
-import { ownerProfileStore, type OwnerPresence } from './owner-profile-store'
+import { useOwnerProfile, type OwnerPresence } from './owner-profile-store'
 
 const DOT_CLASS: Record<OwnerPresence, string> = {
   available: 'bg-status-success',
@@ -13,7 +13,7 @@ const DOT_CLASS: Record<OwnerPresence, string> = {
 
 export function useOwnerDisplayName(): string {
   const t = useTranslate()
-  const { name } = ownerProfileStore.use()
+  const { name } = useOwnerProfile()
   return name.trim() || t('orcaFork.ownerProfile.you', 'You')
 }
 
@@ -37,7 +37,7 @@ export function OwnerAvatar({
   /** A picture not saved yet (the profile dialog's draft). */
   photo?: string | null
 }): React.JSX.Element {
-  const profile = ownerProfileStore.use()
+  const profile = useOwnerProfile()
   const name = useOwnerDisplayName()
   const label = useOwnerPresenceLabel(profile.presence)
   const shown = photo === undefined ? profile.photo : photo
