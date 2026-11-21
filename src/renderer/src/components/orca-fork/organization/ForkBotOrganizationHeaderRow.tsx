@@ -31,6 +31,7 @@ import { newOrganizationId, requestHeaderRename, takeHeaderRename } from './bot-
 import { ForkDepartmentHeaderTitle } from '../departments/ForkDepartmentHeaderTitle' // orca-fork: departments
 import { openDepartmentPage } from '../departments/department-page-state'
 import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
+import { ForkOrganizationHeaderMenu } from '../channels/ForkOrganizationHeaderMenu' // orca-fork: right-click menu
 
 export function addBotDepartment(name: string, renameInSidebar = true): string {
   const id = newOrganizationId()
@@ -80,140 +81,149 @@ export function ForkBotOrganizationHeaderRow({
   }
 
   return (
-    <div
-      data-fork-org-header={header.id}
-      className={cn(
-        'group/fork-org relative flex h-7 items-center gap-1 rounded-md pr-1 text-[11px] font-semibold text-muted-foreground',
-        header.level === 1 ? 'pl-5' : 'pl-1',
-        dropping && 'bg-accent text-accent-foreground'
-      )}
-      onDragOver={(event) => {
-        if (droppable && acceptsBotOrganizationDrag(event)) {
-          setDropping(true)
-        }
-      }}
-      onDragLeave={() => setDropping(false)}
-      onDrop={(event) => {
-        setDropping(false)
-        if (droppable) {
-          dropBotOrganizationEntry(event, target)
-        }
-      }}
+    <ForkOrganizationHeaderMenu
+      header={header}
+      onRename={() => setEditing(true)}
+      onAddSection={addSection}
     >
-      {target && FORK_FEATURES.departmentManagement ? (
-        // Departments: the chevron folds, the name opens the Department page.
-        <ForkDepartmentHeaderTitle header={header} target={target} editing={editing} />
-      ) : (
-        <button
-          type="button"
-          className="flex min-w-0 flex-1 items-center gap-1 rounded-sm text-left hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          aria-expanded={!header.collapsed}
-          onClick={() => editBotOrganization(botOrganizationEdits.toggleCollapsed(header.id))}
-        >
-          <ChevronRight
-            className={cn('size-3 shrink-0 transition-transform', !header.collapsed && 'rotate-90')}
-          />
-          {editing ? null : <span className="truncate">{header.title}</span>}
-          {editing ? null : (
-            <span className="shrink-0 font-medium tabular-nums opacity-70">{header.count}</span>
-          )}
-        </button>
-      )}
-      {editing ? (
-        <input
-          autoFocus
-          defaultValue={header.title}
-          aria-label={t('orcaFork.botOrganization.rename', 'Rename')}
-          className="absolute left-6 right-8 h-6 rounded-sm border border-input bg-background px-1.5 text-[12px] font-medium text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          onFocus={(event) => {
-            if (editStartedAt.current === 0) {
-              editStartedAt.current = Date.now()
-            }
-            event.currentTarget.select()
-          }}
-          onBlur={(event) => {
-            const input = event.currentTarget
-            // A closing menu hands focus back to its trigger right after the field opens.
-            if (Date.now() - editStartedAt.current < 400) {
-              setTimeout(() => input.focus(), 0)
-              return
-            }
-            commitRename(input.value)
-          }}
-          onKeyDown={(event) => {
-            if (isImeOwnedKeyboardEvent(event)) {
-              return
-            }
-            if (event.key === 'Enter') {
-              commitRename(event.currentTarget.value)
-            } else if (event.key === 'Escape') {
-              editStartedAt.current = 0
-              setEditing(false)
-            }
-          }}
-        />
-      ) : null}
-      {header.unassigned ? (
-        <span className="flex shrink-0 opacity-0 group-hover/fork-org:opacity-100 focus-within:opacity-100 has-[[data-state=open]]:opacity-100">
-          <Button
+      <div
+        data-fork-org-header={header.id}
+        className={cn(
+          'group/fork-org relative flex h-7 items-center gap-1 rounded-md pr-1 text-[11px] font-semibold text-muted-foreground',
+          header.level === 1 ? 'pl-5' : 'pl-1',
+          dropping && 'bg-accent text-accent-foreground'
+        )}
+        onDragOver={(event) => {
+          if (droppable && acceptsBotOrganizationDrag(event)) {
+            setDropping(true)
+          }
+        }}
+        onDragLeave={() => setDropping(false)}
+        onDrop={(event) => {
+          setDropping(false)
+          if (droppable) {
+            dropBotOrganizationEntry(event, target)
+          }
+        }}
+      >
+        {target && FORK_FEATURES.departmentManagement ? (
+          // Departments: the chevron folds, the name opens the Department page.
+          <ForkDepartmentHeaderTitle header={header} target={target} editing={editing} />
+        ) : (
+          <button
             type="button"
-            variant="ghost"
-            size="icon-xs"
-            aria-label={t('orcaFork.botOrganization.newDepartment', 'New department')}
-            onClick={() =>
-              addBotDepartment(t('orcaFork.botOrganization.newDepartmentName', 'New department'))
-            }
+            className="flex min-w-0 flex-1 items-center gap-1 rounded-sm text-left hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            aria-expanded={!header.collapsed}
+            onClick={() => editBotOrganization(botOrganizationEdits.toggleCollapsed(header.id))}
           >
-            <Plus className="size-3" />
-          </Button>
-        </span>
-      ) : null}
-      {target ? (
-        <span className="flex shrink-0 opacity-0 group-hover/fork-org:opacity-100 focus-within:opacity-100 has-[[data-state=open]]:opacity-100">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                aria-label={t('orcaFork.botOrganization.actions', '{{name}} actions', {
-                  name: header.title
-                })}
-              >
-                <MoreHorizontal className="size-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="end" sideOffset={4}>
-              {FORK_FEATURES.departmentManagement ? (
-                <DropdownMenuItem onSelect={() => openDepartmentPage(target.departmentId)}>
-                  <Network className="size-3.5" />
-                  {t('orcaFork.departments.open', 'Open department')}
+            <ChevronRight
+              className={cn(
+                'size-3 shrink-0 transition-transform',
+                !header.collapsed && 'rotate-90'
+              )}
+            />
+            {editing ? null : <span className="truncate">{header.title}</span>}
+            {editing ? null : (
+              <span className="shrink-0 font-medium tabular-nums opacity-70">{header.count}</span>
+            )}
+          </button>
+        )}
+        {editing ? (
+          <input
+            autoFocus
+            defaultValue={header.title}
+            aria-label={t('orcaFork.botOrganization.rename', 'Rename')}
+            className="absolute left-6 right-8 h-6 rounded-sm border border-input bg-background px-1.5 text-[12px] font-medium text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            onFocus={(event) => {
+              if (editStartedAt.current === 0) {
+                editStartedAt.current = Date.now()
+              }
+              event.currentTarget.select()
+            }}
+            onBlur={(event) => {
+              const input = event.currentTarget
+              // A closing menu hands focus back to its trigger right after the field opens.
+              if (Date.now() - editStartedAt.current < 400) {
+                setTimeout(() => input.focus(), 0)
+                return
+              }
+              commitRename(input.value)
+            }}
+            onKeyDown={(event) => {
+              if (isImeOwnedKeyboardEvent(event)) {
+                return
+              }
+              if (event.key === 'Enter') {
+                commitRename(event.currentTarget.value)
+              } else if (event.key === 'Escape') {
+                editStartedAt.current = 0
+                setEditing(false)
+              }
+            }}
+          />
+        ) : null}
+        {header.unassigned ? (
+          <span className="flex shrink-0 opacity-0 group-hover/fork-org:opacity-100 focus-within:opacity-100 has-[[data-state=open]]:opacity-100">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              aria-label={t('orcaFork.botOrganization.newDepartment', 'New department')}
+              onClick={() =>
+                addBotDepartment(t('orcaFork.botOrganization.newDepartmentName', 'New department'))
+              }
+            >
+              <Plus className="size-3" />
+            </Button>
+          </span>
+        ) : null}
+        {target ? (
+          <span className="flex shrink-0 opacity-0 group-hover/fork-org:opacity-100 focus-within:opacity-100 has-[[data-state=open]]:opacity-100">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label={t('orcaFork.botOrganization.actions', '{{name}} actions', {
+                    name: header.title
+                  })}
+                >
+                  <MoreHorizontal className="size-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="bottom" align="end" sideOffset={4}>
+                {FORK_FEATURES.departmentManagement ? (
+                  <DropdownMenuItem onSelect={() => openDepartmentPage(target.departmentId)}>
+                    <Network className="size-3.5" />
+                    {t('orcaFork.departments.open', 'Open department')}
+                  </DropdownMenuItem>
+                ) : null}
+                {header.level === 0 ? (
+                  <DropdownMenuItem onSelect={addSection}>
+                    <FolderPlus className="size-3.5" />
+                    {t('orcaFork.botOrganization.newSection', 'New section')}
+                  </DropdownMenuItem>
+                ) : null}
+                <DropdownMenuItem onSelect={() => setEditing(true)}>
+                  <Pencil className="size-3.5" />
+                  {t('orcaFork.botOrganization.rename', 'Rename')}
                 </DropdownMenuItem>
-              ) : null}
-              {header.level === 0 ? (
-                <DropdownMenuItem onSelect={addSection}>
-                  <FolderPlus className="size-3.5" />
-                  {t('orcaFork.botOrganization.newSection', 'New section')}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onSelect={() => editBotOrganization(botOrganizationEdits.remove(target))}
+                >
+                  <Trash2 className="size-3.5" />
+                  {header.level === 0
+                    ? t('orcaFork.botOrganization.deleteDepartment', 'Delete department')
+                    : t('orcaFork.botOrganization.deleteSection', 'Delete section')}
                 </DropdownMenuItem>
-              ) : null}
-              <DropdownMenuItem onSelect={() => setEditing(true)}>
-                <Pencil className="size-3.5" />
-                {t('orcaFork.botOrganization.rename', 'Rename')}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                variant="destructive"
-                onSelect={() => editBotOrganization(botOrganizationEdits.remove(target))}
-              >
-                <Trash2 className="size-3.5" />
-                {header.level === 0
-                  ? t('orcaFork.botOrganization.deleteDepartment', 'Delete department')
-                  : t('orcaFork.botOrganization.deleteSection', 'Delete section')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </span>
-      ) : null}
-    </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </span>
+        ) : null}
+      </div>
+    </ForkOrganizationHeaderMenu>
   )
 }
