@@ -32,8 +32,7 @@ export function ForkGroupGlyph({ group }: { group: BotGroup }): React.JSX.Elemen
   return (
     <BotGroupFaces
       faces={botGroupTabFaces(members, (bot) => bot.id)}
-      className={members.length > 1 ? 'h-4 w-6' : 'size-4'}
-      slot={16}
+      className={members.length > 1 ? 'h-3 w-5' : 'size-3'}
     />
   )
 }
