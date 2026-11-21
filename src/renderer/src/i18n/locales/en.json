@@ -29846,6 +29846,33 @@
       "unmute": "Unmute channel",
       "bots": "Bots"
     },
+    "chatPaths": {
+      "open": "Open in Orca",
+      "showOnMachine": "Show in {{machine}} files",
+      "showInFiles": "Show in Orca files",
+      "reveal": "Reveal in {{name}}",
+      "terminal": "Open a terminal here",
+      "copied": "Path copied",
+      "copy": "Copy path"
+    },
+    "chatSounds": {
+      "label": "Chat sounds",
+      "description": "A soft click while you type in a chat, a blip when you send and a chime when a bot or channel has a new message. Muted channels stay quiet.",
+      "volume": "Chat sound volume"
+    },
+    "agentsMap": {
+      "open": "Agents map",
+      "title": "Agents map",
+      "description": "How your bots work together: the rooms they share, who hands work to whom and who mentions whom. Lines that just carried a message glow.",
+      "all": "All",
+      "rooms": "Rooms",
+      "handoffs": "Hand-offs",
+      "mentions": "Mentions",
+      "counts": "{{bots}} bots · {{rooms}} rooms · {{live}} live",
+      "empty": "No bots in this workspace yet.",
+      "edgeTip": "{{kind}} · {{count}} messages",
+      "you": "You"
+    },
     "bots": {
       "unreadChats_one": "{{count}} unread chat",
       "unreadChats_other": "{{count}} unread chats",

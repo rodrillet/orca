@@ -1,4 +1,4 @@
-import { useCallback, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useState, type RefObject } from 'react'
 import {
   closeLinkActionRequest,
   type LinkActionRequest
@@ -11,6 +11,7 @@ import { resolveNativeChatHttpLinkRouting } from './native-chat-link-target-acti
 import { handleNativeChatWebLink } from './native-chat-web-link-actions'
 import { nativeChatPlainLinkClickBehavior } from './native-chat-link-click-behavior'
 import { useNativeChatFileLinkClick } from './use-native-chat-file-link-click'
+import { tagForkLinkClickScope } from '../../../orca-fork/chat-paths/fork-link-click-scope' // orca-fork:
 
 export type NativeChatLinkActions = {
   onLinkClick: CommentMarkdownLinkClickHandler | undefined
@@ -89,5 +90,6 @@ export function useNativeChatLinkClick(
     [context, openFileLink, request, rootRef]
   )
 
+  useEffect(() => tagForkLinkClickScope(onLinkClick, context), [onLinkClick, context]) // orca-fork: path badges
   return context ? onLinkClick : undefined
 }
