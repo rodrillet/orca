@@ -29970,6 +29970,16 @@
       "stopFailed": "Could not stop it: {{error}}",
       "otherProcess": "{{name}} · pid {{pid}}"
     },
+    "botResources": {
+      "title": "Memory and CPU",
+      "memory": "Memory",
+      "cpu": "CPU",
+      "processes": "{{count}} agents",
+      "loading": "Reading memory…",
+      "none": "No agent running · 0 MB",
+      "basic": "Per-bot memory needs the fork's orca-server on this machine.",
+      "unreachable": "Can't reach this bot's machine."
+    },
     "groupMentions": {
       "option": "{{name}} · {{count}} bots",
       "pillLabel": "Mentioned group: {{name}}"

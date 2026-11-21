@@ -22,6 +22,7 @@ import { useBotWorkList } from './use-bot-work-list'
 import { AgentPrBadge } from '../agents-board/AgentPrBadge'
 import { useBotPresence } from '../agents-board/use-bot-presence'
 import { PresenceBotAvatar } from '../agents-board/PresenceBotAvatar'
+import { ForkBotResourcesLine } from '../bot-resources/ForkBotResources'
 
 const SHOWN_ITEMS = 5
 const SHOWN_WORKERS = 5
@@ -126,6 +127,7 @@ export function AgentTaskCard({
           <div className="truncate text-xs text-muted-foreground">
             {statusText} · {hostLabel}
           </div>
+          <ForkBotResourcesLine bot={bot} className="block truncate" />
         </div>
         <Button
           variant="ghost"

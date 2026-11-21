@@ -41,6 +41,7 @@ import { ForkBotUnreadChatCount } from '../orca-fork/sidebar/ForkBotUnreadChatCo
 import { ForkChangePhotoMenuItem } from '../orca-fork/sidebar/ForkChangePhotoMenuItem'
 import { ForkBotMoveToMenu } from '../orca-fork/organization/ForkBotMoveToMenu' // orca-fork:
 import { ForkMoveToWorkspaceMenu } from '../orca-fork/workspaces/ForkMoveToWorkspaceMenu' // orca-fork:
+import { withForkBotResources } from '../orca-fork/bot-resources/ForkBotResources' // orca-fork:
 import { BotHoverNeedsYou, revealBotHome } from './BotHoverNeedsYou'
 import { usageLimitStopTip } from './BotUsageLimitMark'
 import { BotUpNextCount } from './BotUpNextCount'
@@ -186,9 +187,11 @@ export function BotRow({
           hostLabel={hostLabel}
           offline={offline}
           // Needs you names its asks below, so the bare count line would only repeat it.
-          latest={
+          // orca-fork: the bot's agents' memory and CPU follow its latest line
+          latest={withForkBotResources(
+            bot,
             line?.kind === 'needYouElsewhere' ? null : <BotHoverLatestLine line={line} now={now} />
-          }
+          )}
           needsYou={
             offline || bot.paused ? null : <BotHoverNeedsYou bot={bot} onReview={openHomePanel} />
           }

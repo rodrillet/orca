@@ -17,6 +17,7 @@ import { ResultTab } from './AgentsBoardDetailResult'
 import type { AgentsBoardCard } from './agents-board-model'
 import { formatBoardClock, formatBoardDuration } from './agents-board-time'
 import { PresenceBotAvatar } from './PresenceBotAvatar'
+import { ForkBotResourcesLine } from '../bot-resources/ForkBotResources'
 import type { BotPresence } from './use-bot-presence'
 
 function Fact({
@@ -123,6 +124,7 @@ export function AgentsBoardDetail({
             {bot.name}
             {meta ? ` · ${meta}` : ''}
           </p>
+          <ForkBotResourcesLine bot={bot} className="block truncate text-[11px]" />
         </div>
         <button
           type="button"
