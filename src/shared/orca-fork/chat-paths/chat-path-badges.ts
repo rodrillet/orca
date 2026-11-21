@@ -1,7 +1,12 @@
 // orca-fork: which chat text names a file or folder path, and what its badge shows.
 
-/** An absolute (`/a/b`, `~/a`, `C:\a`) path with no spaces, as agents write them in backticks. */
-const ABSOLUTE_PATH = /^(?:~|[A-Za-z]:)?[\\/](?:[^\s\\/`'"<>|]+[\\/]?)+$/u
+/**
+ * An absolute (`/a/b`, `~/a`, `C:\a`) path with no spaces, as agents write them in backticks.
+ * Each segment must end at a separator except the last, so matching stays linear: the earlier
+ * `(?:segment+ separator?)+` backtracked exponentially on long path-like text that fails at the end
+ * and froze the renderer.
+ */
+const ABSOLUTE_PATH = /^(?:~|[A-Za-z]:)?[\\/](?:[^\s\\/`'"<>|]+[\\/])*[^\s\\/`'"<>|]*$/u
 /** `file:line` and `file:line:col` suffixes editors understand. */
 const LOCATION_SUFFIX = /:(\d+)(?::(\d+))?$/u
 
