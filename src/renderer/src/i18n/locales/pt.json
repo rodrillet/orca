@@ -25311,6 +25311,16 @@
       "otherProcess": "{{name}} · pid {{pid}}",
       "children_many": "+{{count}} processos filhos"
     },
+    "botResources": {
+      "title": "Memória e CPU",
+      "memory": "Memória",
+      "cpu": "CPU",
+      "processes": "{{count}} agentes",
+      "loading": "Lendo memória…",
+      "none": "Nenhum agente rodando · 0 MB",
+      "basic": "Memória por bot precisa do orca-server do fork nesta máquina.",
+      "unreachable": "Não foi possível alcançar a máquina deste bot."
+    },
     "groupMentions": {
       "option": "{{name}} · {{count}} bots",
       "pillLabel": "Grupo mencionado: {{name}}"
