@@ -29893,7 +29893,7 @@
         "stopped": "Proxy stopped",
         "unhealthy": "Proxy not answering properly",
         "notInstalled": "Caveman not installed",
-        "failed": "The Caveman proxy did not do that. See ~/.caveman/orca-proxy.log on that machine.",
+        "failed": "The Caveman proxy did not do that. See ~/.caveman/proxy.log on that machine.",
         "restart": "Restart",
         "stop": "Stop",
         "start": "Start"

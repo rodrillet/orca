@@ -1,12 +1,11 @@
 // orca-fork: this machine's Caveman proxy. Orca starts it when token saving is on and it is installed
 // but down, and reads its health before routing an agent through it; a down proxy means direct.
-import { spawn } from 'node:child_process'
-import { chmodSync, closeSync, mkdirSync, openSync, statSync } from 'node:fs'
+import { spawnDetachedWithoutInheritance } from '@orca/process-host/isolated-detached-spawn'
+import { chmod, mkdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
 import type { TokenSavingProxyMode } from '../../../shared/orca-fork/token-saving/token-saving'
 import type { TokenSavingProxyState } from '../../../shared/orca-fork/token-saving/token-saving-rpc'
-import { CAVEMAN_PROXY_ADDRESS, cavemanBinary, cavemanHome } from './caveman-install'
+import { CAVEMAN_PROXY_ADDRESS, cavemanHome, findCavemanBinary } from './caveman-install'
 
 const HEALTH_TIMEOUT_MS = 700
 const HEALTH_CACHE_MS = 10_000
@@ -34,7 +33,7 @@ function isHealthyCaveman(body: unknown): boolean {
 }
 
 async function probe(): Promise<TokenSavingProxyState> {
-  if (!cavemanBinary('caveman-proxy')) {
+  if (!(await findCavemanBinary('caveman-proxy'))) {
     return 'not_installed'
   }
   try {
@@ -65,30 +64,6 @@ export function lastKnownCavemanProxyUrl(): string | null {
   return health?.state === 'running' ? CAVEMAN_PROXY_URL : null
 }
 
-const WATCHDOG_MS = 60_000
-let watchdog: ReturnType<typeof setInterval> | null = null
-
-/** While token saving is on, a stopped proxy is started again within a minute. */
-export function watchCavemanProxy(mode: () => TokenSavingProxyMode | null): void {
-  if (watchdog) {
-    return
-  }
-  watchdog = setInterval(() => {
-    const wanted = mode()
-    if (wanted) {
-      void cavemanProxyForLaunch(wanted).catch(() => undefined)
-    }
-  }, WATCHDOG_MS)
-  watchdog.unref?.()
-}
-
-export function managedCavemanProxy(): { pid: number; mode: TokenSavingProxyMode } | null {
-  if (managed && !alive(managed.pid)) {
-    managed = null
-  }
-  return managed
-}
-
 function alive(pid: number): boolean {
   try {
     process.kill(pid, 0)
@@ -96,6 +71,13 @@ function alive(pid: number): boolean {
   } catch {
     return false
   }
+}
+
+export function managedCavemanProxy(): { pid: number; mode: TokenSavingProxyMode } | null {
+  if (managed && !alive(managed.pid)) {
+    managed = null
+  }
+  return managed
 }
 
 async function waitFor(target: TokenSavingProxyState, timeoutMs: number): Promise<boolean> {
@@ -111,42 +93,34 @@ async function waitFor(target: TokenSavingProxyState, timeoutMs: number): Promis
 
 /** The proxy keeps its recovery store only in a private home; a group-writable one drops it to
  *  record-only, so Orca's own launch makes the home private first (POSIX only). */
-function privateHome(home: string): void {
-  mkdirSync(home, { recursive: true, mode: 0o700 })
+async function privateHome(home: string): Promise<void> {
+  await mkdir(home, { recursive: true, mode: 0o700 })
   if (process.platform === 'win32') {
     return
   }
   try {
-    const stats = statSync(home)
+    const stats = await stat(home)
     if ((stats.mode & 0o022) !== 0 && stats.uid === process.getuid?.()) {
-      chmodSync(home, 0o700)
+      await chmod(home, 0o700)
     }
   } catch (error) {
     console.warn('[token-saving] could not make the caveman home private', error)
   }
 }
 
-function launch(binary: string, mode: TokenSavingProxyMode): number | null {
-  const home = cavemanHome()
-  privateHome(home)
-  const log = openSync(join(home, 'orca-proxy.log'), 'a')
-  try {
-    // Detached so it outlives Orca, as `caveman start` does; it runs from home so it holds no project.
-    const child = spawn(binary, ['serve'], {
-      cwd: homedir(),
-      detached: true,
-      windowsHide: true,
-      stdio: ['ignore', log, log],
-      env: { ...process.env, CAVEMAN_MODE: mode }
-    })
-    child.on('error', (error) =>
-      console.warn('[token-saving] caveman proxy failed to start', error)
-    )
-    child.unref()
-    return child.pid ?? null
-  } finally {
-    closeSync(log)
-  }
+async function launch(binary: string, mode: TokenSavingProxyMode): Promise<number | null> {
+  await privateHome(cavemanHome())
+  // Detached so it outlives Orca, as `caveman start` does; it runs from home so it holds no
+  // project. It writes its own ~/.caveman/proxy.log.
+  const child = spawnDetachedWithoutInheritance({
+    program: binary,
+    args: ['serve'],
+    cwd: homedir(),
+    env: { ...process.env, CAVEMAN_MODE: mode }
+  })
+  child.on('error', (error) => console.warn('[token-saving] caveman proxy failed to start', error))
+  child.unref()
+  return child.pid ?? null
 }
 
 /** Starts the proxy when installed and down; resolves once it answers or the wait ran out. */
@@ -159,12 +133,12 @@ export async function startCavemanProxy(mode: TokenSavingProxyMode): Promise<voi
     if (state !== 'stopped') {
       return
     }
-    const binary = cavemanBinary('caveman-proxy')
+    const binary = await findCavemanBinary('caveman-proxy')
     if (!binary) {
       return
     }
     lastStartAttempt = Date.now()
-    const pid = launch(binary, mode)
+    const pid = await launch(binary, mode)
     if (pid !== null) {
       managed = { pid, mode }
     }
@@ -194,6 +168,7 @@ export async function stopCavemanProxy(): Promise<boolean> {
 /**
  * The proxy's address for a launch now, or null to go direct. A down proxy is started in the
  * background (at most once a minute) so a later launch can use it; this launch never waits on it.
+ * Launches and terminals call this, so a proxy that died comes back with the next agent.
  */
 export async function cavemanProxyForLaunch(mode: TokenSavingProxyMode): Promise<string | null> {
   const state = await cavemanProxyState()

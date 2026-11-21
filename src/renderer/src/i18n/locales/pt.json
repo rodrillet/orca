@@ -25249,7 +25249,7 @@
       "on": "Ligado",
       "otherAgents": "Workers e outros chats",
       "proxy": {
-        "failed": "O proxy do Caveman não respondeu. Veja ~/.caveman/orca-proxy.log nessa máquina.",
+        "failed": "O proxy do Caveman não respondeu. Veja ~/.caveman/proxy.log nessa máquina.",
         "notInstalled": "Caveman não instalado",
         "restart": "Reiniciar",
         "running": "Proxy rodando",

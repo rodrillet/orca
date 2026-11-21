@@ -215,7 +215,7 @@ export function TokenSavingMachineSection({
   const [busy, setBusy] = useState(false)
   const hostId = getRuntimeTargetHostId(target)
   const global = resolveTokenSaving({ global: settings.global })
-  const machineWorkspaces = workspaces.workspaces.filter((ws) => ws.hostId === hostId)
+  const workspacesHere = workspaces.workspaces.filter((ws) => ws.hostId === hostId)
 
   const proxyAction = async (action: 'start' | 'stop' | 'restart'): Promise<void> => {
     setBusy(true)
@@ -226,7 +226,7 @@ export function TokenSavingMachineSection({
       toast.error(
         t(
           'orcaFork.tokenSaving.proxy.failed',
-          'The Caveman proxy did not do that. See ~/.caveman/orca-proxy.log on that machine.'
+          'The Caveman proxy did not do that. See ~/.caveman/proxy.log on that machine.'
         )
       )
     }
@@ -243,7 +243,7 @@ export function TokenSavingMachineSection({
           label={t('orcaFork.tokenSaving.globalLabel', 'Every agent, by default')}
         />
       </Row>
-      {machineWorkspaces.map((ws) => (
+      {workspacesHere.map((ws) => (
         <Row
           key={ws.id}
           label={t('orcaFork.tokenSaving.workspaceLabel', 'Workspace {{name}}', { name: ws.name })}

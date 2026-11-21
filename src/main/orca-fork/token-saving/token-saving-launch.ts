@@ -5,10 +5,10 @@ import type { AgentSessionRecord } from '../../../shared/agent-session/lifecycle
 import type { BotToolServer } from '../../../shared/bot-tools'
 import { FORK_FEATURES } from '../../../shared/orca-fork/fork-features'
 import { hostPolicyEnables } from '../../../shared/orca-fork/token-saving/token-saving'
-import { cavemanBinary } from './caveman-install'
-import { cavemanProxyForLaunch, watchCavemanProxy } from './caveman-proxy'
+import { findCavemanBinary } from './caveman-install'
+import { cavemanProxyForLaunch } from './caveman-proxy'
 import { CAVEMAN_VOICE_RULES } from './caveman-voice-rules'
-import { tokenSavingHostPolicy } from './token-saving-host-policy'
+import { loadTokenSavingHostPolicy } from './token-saving-host-policy'
 
 const SAVING_AGENTS: ReadonlySet<string> = new Set(['claude', 'codex'])
 
@@ -53,14 +53,12 @@ export type TokenSavingLaunch = {
   env: (agentEnv: Record<string, string>) => Record<string, string>
 }
 
-function enabledFor(record: AgentSessionRecord): { on: boolean; botId: string | null } {
-  let botId: string | null = null
+function botOf(record: AgentSessionRecord): string | null {
   try {
-    botId = botOfRecord(record)
+    return botOfRecord(record)
   } catch {
-    botId = null
+    return null
   }
-  return { on: hostPolicyEnables(tokenSavingHostPolicy(), botId), botId }
 }
 
 function withLoopbackNoProxy(env: Record<string, string>): Record<string, string> {
@@ -97,14 +95,6 @@ export function claudeProxyEnv(
   }
 }
 
-/** Keeps this host's proxy up while any launch here saves tokens. */
-export function watchTokenSavingProxy(): void {
-  watchCavemanProxy(() => {
-    const policy = tokenSavingHostPolicy()
-    return policy.enabled || Object.values(policy.bots).some(Boolean) ? policy.proxyMode : null
-  })
-}
-
 /** Null when token saving is off for this launch (or for this agent). */
 export async function tokenSavingForLaunch(
   agent: string,
@@ -115,16 +105,15 @@ export async function tokenSavingForLaunch(
     return null
   }
   try {
-    const { on, botId } = enabledFor(record)
-    if (!on) {
+    const policy = await loadTokenSavingHostPolicy()
+    const botId = botOf(record)
+    if (!hostPolicyEnables(policy, botId)) {
       return null
     }
-    watchTokenSavingProxy()
-    const mcp = cavemanBinary('caveman-mcp')
+    const mcp = await findCavemanBinary('caveman-mcp')
     // Codex threads are bound to their model provider, so moving one to the proxy could strand
     // its history; Codex gets the voice and the MCP server only.
-    const proxyUrl =
-      agent === 'claude' ? await cavemanProxyForLaunch(tokenSavingHostPolicy().proxyMode) : null
+    const proxyUrl = agent === 'claude' ? await cavemanProxyForLaunch(policy.proxyMode) : null
     return {
       instructions: CAVEMAN_VOICE_RULES,
       mcpServer: mcp ? { name: 'caveman', command: mcp, args: [] } : null,

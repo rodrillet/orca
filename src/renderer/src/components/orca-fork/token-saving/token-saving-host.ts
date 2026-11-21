@@ -96,7 +96,7 @@ export async function runTokenSavingProxy(
   }
 }
 
-/** Polls one machine's status while `enabled`. */
+/** Polls one machine's status while `enabled`; pass a stable (memoized) target. */
 export function useTokenSavingHost(
   target: RuntimeClientTarget,
   enabled: boolean,
@@ -104,7 +104,6 @@ export function useTokenSavingHost(
 ): { result: TokenSavingHostResult | null; refresh: () => void } {
   const [result, setResult] = useState<TokenSavingHostResult | null>(null)
   const [tick, setTick] = useState(0)
-  const key = JSON.stringify(target)
   useEffect(() => {
     if (!enabled || !FORK_FEATURES.tokenSaving) {
       return
@@ -123,9 +122,7 @@ export function useTokenSavingHost(
       cancelled = true
       stop()
     }
-    // The target is compared by value.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, enabled, pollMs, tick])
+  }, [target, enabled, pollMs, tick])
   return { result, refresh: () => setTick((n) => n + 1) }
 }
 
