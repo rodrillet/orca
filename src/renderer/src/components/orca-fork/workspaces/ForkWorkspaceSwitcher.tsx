@@ -95,7 +95,7 @@ function ForkWorkspaceSwitcherRow(): React.JSX.Element {
           aria-label={t('orcaFork.workspaceSettings.openOf', '{{name}} workspace settings', {
             name: active.name
           })}
-          onClick={() => openWorkspaceSettings('general')}
+          onClick={(event) => openWorkspaceSettings('general', event.currentTarget)}
         >
           {identity}
         </button>

@@ -27,6 +27,7 @@ import { ForkGroupInitials } from '../workspace-settings/workspace-group-picture
 import { useWorkspaceBots } from '../workspace-settings/use-workspace-bots'
 import { openWorkspaceSettings } from '../workspace-settings/workspace-settings-open'
 import { FORK_SIDEBAR_RAIL_WIDTH, setForkSidebarMode } from './sidebar-mode-store'
+import { useForkRailProjects } from './ForkRailProjects'
 import { FORK_SIDEBAR_MODE_SHORTCUT_LABEL } from './use-fork-sidebar-mode-shortcut'
 
 const TILE =
@@ -42,7 +43,7 @@ function RailTile({
 }: {
   label: string
   active?: boolean
-  onClick: () => void
+  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
   children: React.ReactNode
   className?: string
 }): React.JSX.Element {
@@ -119,6 +120,7 @@ export function ForkSidebarRail(): React.JSX.Element {
     })
   }, [])
   const needsYou = blockedBots.size
+  const projects = useForkRailProjects()
   const expandLabel = `${t('orcaFork.sidebarRail.expand', 'Expand sidebar')} (${FORK_SIDEBAR_MODE_SHORTCUT_LABEL})`
 
   return (
@@ -132,7 +134,7 @@ export function ForkSidebarRail(): React.JSX.Element {
         label={t('orcaFork.workspaceSettings.openOf', '{{name}} workspace settings', {
           name: workspace.name
         })}
-        onClick={() => openWorkspaceSettings('general')}
+        onClick={(event) => openWorkspaceSettings('general', event.currentTarget)}
         className="hover:bg-transparent"
       >
         <ForkWorkspaceMark workspace={workspace} size={36} className="rounded-lg" />
@@ -173,6 +175,18 @@ export function ForkSidebarRail(): React.JSX.Element {
             <Library className="size-[18px]" strokeWidth={1.75} />
           </RailTile>
         ) : null}
+        {projects.length > 0 ? <RailDivider /> : null}
+        {projects.map((project) => (
+          <RailTile
+            key={project.key}
+            label={project.label}
+            active={project.active}
+            onClick={project.onClick}
+            className="hover:bg-transparent"
+          >
+            {project.content}
+          </RailTile>
+        ))}
         {groups.length > 0 ? <RailDivider /> : null}
         {groups.map((group) => (
           <RailTile
