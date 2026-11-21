@@ -29672,6 +29672,33 @@
       "change": "Change group photo…",
       "remove": "Remove group photo",
       "changed": "Group photo changed"
+    },
+    "resourceMonitor": {
+      "title": "Machines",
+      "tooltip": "Memory, CPU, disk and agent processes of every machine",
+      "thisComputer": "This computer",
+      "refresh": "Refresh",
+      "loading": "Loading…",
+      "unreachable": "This machine is not answering right now.",
+      "memory": "Memory",
+      "memoryDetail": "{{used}} of {{total}} · {{available}} available",
+      "cpu": "CPU",
+      "cpuDetail": "{{percent}} · load {{load}} · {{cores}} cores",
+      "disk": "Disk",
+      "diskDetail": "{{free}} free of {{total}}",
+      "basicServer": "This server runs the stock orca-server: per-agent rows, disk and Stop need the fork's server.",
+      "orcaSection": "Orca",
+      "orcaItself": "Orca (app and helpers)",
+      "agentsSection": "Agents ({{count}})",
+      "noAgents": "No agent running on this machine.",
+      "othersSection": "Other heavy processes",
+      "children_one": "+{{count}} child process",
+      "children_other": "+{{count}} child processes",
+      "stopAgent": "Stop {{name}} (pid {{pid}})",
+      "confirmStop": "Stop?",
+      "stopped": "Stopped {{name}}",
+      "stopRefused": "That process is no longer an agent.",
+      "stopFailed": "Could not stop it: {{error}}"
     }
   }
 }

@@ -43,6 +43,8 @@ import { getAccountOwnerKey } from './accounts/owner-account-rows'
 import { StatusBarVisibilityMenu } from './composition/StatusBarVisibilityMenu'
 import { isPairedWebClientWindow } from '@/app-shell/chrome/desktop-window-chrome'
 import { GitBlameStatusSegment } from './GitBlameStatusSegment'
+// orca-fork: resource monitor
+import { ResourceMonitorStatusSegment } from '../orca-fork/resource-monitor/ResourceMonitorStatusSegment'
 
 const PetStatusSegment = lazyWithRetry(() =>
   import('./PetStatusSegment').then((module) => ({ default: module.PetStatusSegment }))
@@ -340,6 +342,8 @@ export function StatusBarSurface({
             {showResourceUsage ? (
               <ResourceUsageStatusSegment compact={compact} iconOnly={segmentsIconOnly} />
             ) : null}
+            {/* orca-fork: resource monitor */}
+            <ResourceMonitorStatusSegment iconOnly={segmentsIconOnly} />
             {showPorts ? (
               <PortsStatusSegment compact={compact} iconOnly={segmentsIconOnly} />
             ) : null}

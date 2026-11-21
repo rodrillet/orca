@@ -25005,6 +25005,33 @@
       "change": "Alterar foto do grupo…",
       "remove": "Remover foto do grupo",
       "changed": "Foto do grupo alterada"
+    },
+    "resourceMonitor": {
+      "title": "Máquinas",
+      "tooltip": "Memória, CPU, disco e processos de agentes de cada máquina",
+      "thisComputer": "Este computador",
+      "refresh": "Atualizar",
+      "loading": "Carregando…",
+      "unreachable": "Esta máquina não está respondendo agora.",
+      "memory": "Memória",
+      "memoryDetail": "{{used}} de {{total}} · {{available}} disponível",
+      "cpu": "CPU",
+      "cpuDetail": "{{percent}} · carga {{load}} · {{cores}} núcleos",
+      "disk": "Disco",
+      "diskDetail": "{{free}} livres de {{total}}",
+      "basicServer": "Este servidor roda o orca-server original: linhas por agente, disco e Parar exigem o servidor do fork.",
+      "orcaSection": "Orca",
+      "orcaItself": "Orca (app e auxiliares)",
+      "agentsSection": "Agentes ({{count}})",
+      "noAgents": "Nenhum agente rodando nesta máquina.",
+      "othersSection": "Outros processos pesados",
+      "children_one": "+{{count}} processo filho",
+      "children_other": "+{{count}} processos filhos",
+      "stopAgent": "Parar {{name}} (pid {{pid}})",
+      "confirmStop": "Parar?",
+      "stopped": "{{name}} parado",
+      "stopRefused": "Esse processo não é mais um agente.",
+      "stopFailed": "Não foi possível parar: {{error}}"
     }
   }
 }
