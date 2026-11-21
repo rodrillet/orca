@@ -12,6 +12,7 @@ import { useAppStore } from '@/store/index'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useSidebarResize } from '@/hooks/useSidebarResize'
 import SidebarHeader from './chrome/SidebarHeader'
+import { ForkWorkspaceSwitcher } from '@/components/orca-fork/workspaces/ForkWorkspaceSwitcher' // orca-fork:
 import SidebarNav from './chrome/SidebarNav'
 import { setSidebarLiveWidth } from './chrome/sidebar-live-width'
 import SetupScriptPromptCard from './setup-script-prompts/SetupScriptPromptCard'
@@ -307,6 +308,7 @@ function Sidebar({
                   }
                 }}
               >
+                <ForkWorkspaceSwitcher /> {/* orca-fork: Workspaces */}
                 <SidebarContentViewport>
                   <SidebarNav />
                   {projectsFirst ? [projectsSection, botsSection] : [botsSection, projectsSection]}

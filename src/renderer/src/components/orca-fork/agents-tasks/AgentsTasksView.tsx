@@ -4,6 +4,7 @@ import { KanbanSquare, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useBotHostLabel } from '@/components/bots/use-bot-host-label'
 import { isHome, useBotHomeWorkspaces, useBots } from '@/lib/bot-catalog'
+import { useForkWorkspaceOwners } from '../workspaces/use-fork-workspace-scope'
 import { useTranslate } from '@/i18n/use-translate'
 import type { Bot } from '../../../../../shared/bot-types'
 import {
@@ -50,7 +51,7 @@ function MachineSection({
 
 export function AgentsTasksView(): React.JSX.Element {
   const t = useTranslate()
-  const bots = useBots()
+  const bots = useForkWorkspaceOwners(useBots()) // the active workspace's bots
   const homes = useBotHomeWorkspaces(bots, NO_GROUPS)
   const sections = useMemo(() => {
     const groups = new Map<ExecutionHostId, Bot[]>()

@@ -19,6 +19,10 @@ import {
 } from '../../../../../shared/orca-fork/organization/bot-organization'
 import { editBotOrganization, useBotOrganization } from './bot-organization-store'
 import { newOrganizationId } from './bot-organization-rename'
+import {
+  claimForkWorkspaceDepartment,
+  useForkWorkspaceDepartments
+} from '../workspaces/fork-workspace-departments'
 
 const UNPLACED = ''
 
@@ -43,7 +47,7 @@ function showDepartments(doc: BotOrganization): BotOrganization {
 
 export function ForkBotMoveToMenu({ entryKey }: { entryKey: string }): React.JSX.Element | null {
   const t = useTranslate()
-  const doc = useBotOrganization()
+  const doc = useForkWorkspaceDepartments(useBotOrganization())
   if (!FORK_FEATURES.botMoveToMenu) {
     return null
   }
@@ -61,6 +65,7 @@ export function ForkBotMoveToMenu({ entryKey }: { entryKey: string }): React.JSX
         )
       )
     )
+    claimForkWorkspaceDepartment(departmentId)
   }
   return (
     <ContextMenuSub>

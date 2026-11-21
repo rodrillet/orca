@@ -1,4 +1,6 @@
 import { useTranslation } from 'react-i18next'
+import { ForkMoveToWorkspaceMenu } from '@/components/orca-fork/workspaces/ForkMoveToWorkspaceMenu' // orca-fork:
+import { getRepoExecutionHostId } from '../../../../../../shared/execution-host/execution-host' // orca-fork:
 import React from 'react'
 import { useRepoSshGate } from '@/lib/workspace/catalog/use-repo-ssh-gate'
 import {
@@ -190,6 +192,12 @@ export const RepoHeaderProjectActionsMenu = React.memo(function RepoHeaderProjec
         ) : null}
         <WslMoveProjectMenuItem repo={repo} />
         <WslMovedRepoUseHereMenuItem repo={repo} />
+        {/* orca-fork: Workspaces */}
+        <ForkMoveToWorkspaceMenu
+          menu="dropdown"
+          hostId={getRepoExecutionHostId(repo)}
+          item={{ repoId: repo.id }}
+        />
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={() =>

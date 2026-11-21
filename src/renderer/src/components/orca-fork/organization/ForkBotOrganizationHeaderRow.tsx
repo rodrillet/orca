@@ -17,6 +17,7 @@ import {
   type BotOrganizationHeader
 } from '../../../../../shared/orca-fork/organization/bot-organization'
 import { editBotOrganization } from './bot-organization-store'
+import { claimForkWorkspaceDepartment } from '../workspaces/fork-workspace-departments'
 import { acceptsBotOrganizationDrag, dropBotOrganizationEntry } from './bot-organization-drag'
 import { newOrganizationId, requestHeaderRename, takeHeaderRename } from './bot-organization-rename'
 
@@ -24,6 +25,7 @@ export function addBotDepartment(name: string): void {
   const id = newOrganizationId()
   requestHeaderRename(`fork-org:${id}`)
   editBotOrganization(botOrganizationEdits.addDepartment(id, name))
+  claimForkWorkspaceDepartment(id)
 }
 
 export function ForkBotOrganizationHeaderRow({

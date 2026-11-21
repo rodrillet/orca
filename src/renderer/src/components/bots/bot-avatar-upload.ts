@@ -3,16 +3,20 @@ import { BOT_AVATAR_SIZE, MIN_BOT_AVATAR_SOURCE_SIDE } from '../../../../shared/
 
 export const BOT_AVATAR_TOO_SMALL = 'bot_avatar_too_small'
 
-export async function squareAvatarPng(file: Blob): Promise<string> {
+// orca-fork: `size`/`minSide` let workspace photos reuse the crop at a smaller size.
+export async function squareAvatarPng(
+  file: Blob,
+  { size = BOT_AVATAR_SIZE, minSide = MIN_BOT_AVATAR_SOURCE_SIDE } = {}
+): Promise<string> {
   const bitmap = await createImageBitmap(file)
   try {
     const side = Math.min(bitmap.width, bitmap.height)
-    if (side < MIN_BOT_AVATAR_SOURCE_SIDE) {
+    if (side < minSide) {
       throw new Error(BOT_AVATAR_TOO_SMALL)
     }
     const canvas = document.createElement('canvas')
-    canvas.width = BOT_AVATAR_SIZE
-    canvas.height = BOT_AVATAR_SIZE
+    canvas.width = size
+    canvas.height = size
     const context = canvas.getContext('2d')
     if (!context) {
       throw new Error('bot_avatar_invalid')
@@ -26,8 +30,8 @@ export async function squareAvatarPng(file: Blob): Promise<string> {
       side,
       0,
       0,
-      BOT_AVATAR_SIZE,
-      BOT_AVATAR_SIZE
+      size,
+      size
     )
     const png = await new Promise<Blob>((resolve, reject) =>
       canvas.toBlob(

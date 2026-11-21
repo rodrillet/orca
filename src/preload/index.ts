@@ -56,6 +56,7 @@ import { computerUsePermissionsApi } from './api/desktop-permissions/computer-us
 import { shellApi } from './api/terminal/shell-bridge'
 import { botChangesApi } from './api/bot-changes-bridge'
 import { botOrganizationApi } from './api/orca-fork/bot-organization-bridge' // orca-fork:
+import { forkWorkspacesApi } from './api/orca-fork/fork-workspaces-bridge' // orca-fork:
 import { googleSetupApi } from './api/google-setup-bridge'
 import { slackHandOffApi } from './api/slack-hand-off-bridge'
 import { skillsApi } from './api/skills/skills-bridge'
@@ -171,6 +172,7 @@ const api = {
   shell: shellApi,
   botChanges: botChangesApi,
   orcaForkBotOrganization: botOrganizationApi, // orca-fork:
+  orcaForkWorkspaces: forkWorkspacesApi, // orca-fork:
   googleSetup: googleSetupApi,
   slackHandOff: slackHandOffApi,
   skills: skillsApi,
