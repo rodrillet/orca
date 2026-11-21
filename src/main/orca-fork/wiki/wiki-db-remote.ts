@@ -41,5 +41,7 @@ export const forkWikiDb: WikiRemote = {
   restoreVersion: remote('restoreVersion'),
   trash: remote('trash'),
   restore: remote('restore'),
-  purge: remote('purge')
+  purge: remote('purge'),
+  setPlacement: remote('setPlacement'),
+  placement: remote('placement')
 }

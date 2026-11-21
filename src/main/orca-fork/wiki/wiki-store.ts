@@ -11,6 +11,7 @@ import type {
 import { normalizeWikiTags } from '../../../shared/orca-fork/wiki/wiki-links'
 import { actorOf, num, tagsOf, text, WikiError } from './wiki-store-rows'
 import { WikiStoreWrites } from './wiki-store-writes'
+import { normalizeWikiPlacement, type WikiPlacement } from './wiki-db-contract'
 
 export { WikiError }
 
@@ -135,5 +136,24 @@ export class WikiStore extends WikiStoreWrites {
       this.sql('delete from wiki_pages where id = ?').run(id)
     })
     return { id, title: text(row.title) }
+  }
+
+  /** Which non-home workspace each bot and project of this machine is in, as the owner's Orca sent it. */
+  setPlacement(placement: WikiPlacement): WikiPlacement {
+    const clean = normalizeWikiPlacement(placement)
+    this.sql(
+      `insert into wiki_settings (key, value) values ('placement', ?)
+       on conflict (key) do update set value = excluded.value`
+    ).run(JSON.stringify(clean))
+    return clean
+  }
+
+  placement(): WikiPlacement {
+    const row = this.sql(`select value from wiki_settings where key = 'placement'`).get()
+    try {
+      return normalizeWikiPlacement(JSON.parse(text(row?.value)))
+    } catch {
+      return { bots: {}, repos: {} }
+    }
   }
 }

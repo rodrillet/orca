@@ -642,6 +642,7 @@ import {
   ForkWikiMention,
   ForkWikiPageRef,
   ForkWikiRestoreVersion,
+  ForkWikiSetPlacement,
   ForkWikiShow,
   ForkWikiTag,
   ForkWikiUpdate
@@ -1858,6 +1859,7 @@ export const RPC_PARAMS_BY_METHOD = {
   'orcaFork.wiki.purge': ForkWikiPageRef,
   'orcaFork.wiki.restore': ForkWikiPageRef,
   'orcaFork.wiki.restoreVersion': ForkWikiRestoreVersion,
+  'orcaFork.wiki.setPlacement': ForkWikiSetPlacement,
   'orcaFork.wiki.show': ForkWikiShow,
   'orcaFork.wiki.tag': ForkWikiTag,
   'orcaFork.wiki.trash': ForkWikiPageRef,

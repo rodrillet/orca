@@ -13,7 +13,9 @@ const Scope = {
   workspaceId: OptionalString,
   callerSessionId: OptionalString,
   /** A worker or terminal agent with no bot: how it signs its edits. */
-  agentName: OptionalString
+  agentName: OptionalString,
+  /** The caller's ORCA_WORKTREE_ID / ORCA_WORKSPACE_ID: which project or bot home it runs in. */
+  callerWorkspaceIds: z.array(z.string()).max(4).optional()
 }
 const Page = requiredString('Name the page by its title or slug.')
 const Tags = z.array(z.string()).optional()
@@ -84,4 +86,10 @@ export const ForkWikiRestoreVersion = z.object({
   ...Scope,
   page: Page,
   version: z.number().int().positive()
+})
+
+/** The owner's Orca: which non-home workspace each of this machine's bots and projects belongs to. */
+export const ForkWikiSetPlacement = z.object({
+  bots: z.record(z.string(), z.string()),
+  repos: z.record(z.string(), z.string())
 })

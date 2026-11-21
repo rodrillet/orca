@@ -130,4 +130,5 @@ create table if not exists wiki_mentions (
   primary key (page_id, kind, source_id)
 );
 create index if not exists wiki_mentions_source on wiki_mentions (kind, source_id);
+create table if not exists wiki_settings (key text primary key, value text not null);
 `
