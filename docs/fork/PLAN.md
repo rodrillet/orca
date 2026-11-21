@@ -118,31 +118,10 @@ Gaps to close:
 - Client-driven in the desktop first (works with a stock server while the Mac is open). Running it with
   the Mac closed needs the same logic inside `orca-server` → fork server build (capability-gated).
 
-### Phase 5 — Shared agent computer per machine (agentes.chat "computer")
+### Phase 5 — Shared agent computer (dropped)
 
-A real desktop on a machine (e.g. the VPS) that the owner opens inside Orca and that every agent on
-that machine shares. Optional per environment, off until the owner turns it on for that machine.
-
-agentes.chat's approach (ADR 0058/0062 in `~/src/agentes-chat`), reused here: one `Xtigervnc`
-process (X server + VNC server in one) with an XFCE session, listening **only on a 0600 Unix socket**
-(`-rfbunixpath`, no TCP port), VncAuth passwords that never leave the machine, raw RFB relayed as
-bytes to noVNC in the client, and RFB's pull model as flow control. Measured there: ~150–190 MB idle,
-desktop drawn in 3–5 s, 4 KB/s idle per viewer.
-
-| Piece                                                                                                                                                                                                                                         | Where in Orca                                                                                         |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Desktop service: start/stop/status of one shared `:N` display per environment, apt check for `tigervnc-standalone-server xfce4…`, survives server restarts                                                                                    | `src/main/orca-fork/agent-computer/` in the fork's `orca-server` (capability `orca-fork.computer.v1`) |
-| Stream: RFB bytes over the paired server's existing authenticated runtime connection (a new stream RPC beside terminals), so no port is opened on the VPS                                                                                     | server stream handler + desktop relay                                                                 |
-| **Computer pane**: a new pane/tab type showing noVNC (watch / take control, clipboard, full screen), opened from the machine's group in the sidebar or the tab bar's + menu                                                                   | `src/renderer/src/components/orca-fork/computer-pane/` (noVNC as a dependency)                        |
-| Agent tools: agents on that machine get `DISPLAY=:N`, so Orca's existing Linux computer-use provider (`orca computer …`, AT-SPI in `native/computer-use-linux`) and their browser run on the shared desktop; screenshot/click/type for pixels | env injection at agent launch on that host + the existing `orca computer` CLI                         |
-| Control handoff: one controller at a time (owner or an agent); others watch; the agent is told when the owner takes over and hands back                                                                                                       | server-side lock, shown in the pane                                                                   |
-
-Works only with the fork's `orca-server` on that machine; with a stock server the pane says the
-machine doesn't offer a computer.
-
-**MVP shipped** ([agent-computer.md](agent-computer.md)): the desktop as a systemd user service with
-noVNC on 127.0.0.1, opened through Orca's Ports panel and browser pane, and an MCP server for agents.
-The dedicated pane and control handoff above come next.
+Dropped by the owner (2026-11-21): a desktop per machine costs too much RAM/CPU on the VPS. Nothing
+of it ships: no desktop service, scripts or agent tools.
 
 ## Decisions for the owner
 
