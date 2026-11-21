@@ -11,6 +11,11 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { SetupGuideSidebarEntry } from '../../setup-guide/SetupGuideSidebarEntry'
 import { SidebarTaskNavButton } from './SidebarTaskNavButton'
+import { ForkDriveNavButton } from '../../orca-fork/drive/ForkDriveNavButton' // orca-fork:
+import {
+  openArtifactsInsteadOfDrive,
+  useForkDriveOpen
+} from '../../orca-fork/drive/drive-page-state' // orca-fork:
 import { HideSidebarMenu } from './sidebar-nav-controls'
 import { useTranslate } from '@/i18n/use-translate'
 import { lazyWithRetry } from '@/app-shell/startup/lazy-with-retry'
@@ -59,7 +64,6 @@ const SidebarNav = React.memo(function SidebarNav() {
   const worktreePaletteShortcutCombos = useShortcutKeyComboDetails('worktree.palette')
   const openAutomationsPage = useAppStore((s) => s.openAutomationsPage)
   const openMobilePage = useAppStore((s) => s.openMobilePage)
-  const openArtifactsPage = useAppStore((s) => s.openArtifactsPage)
   const openSkillsPage = useAppStore((s) => s.openSkillsPage)
   const openModal = useAppStore((s) => s.openModal)
   const updateSettings = useAppStore((s) => s.updateSettings)
@@ -71,7 +75,8 @@ const SidebarNav = React.memo(function SidebarNav() {
   const showSkillsButton = useAppStore((s) => shouldShowSkillsButton(s.settings))
   const automationsActive = activeView === 'automations'
   const mobileActive = activeView === 'mobile'
-  const artifactsActive = activeView === 'artifacts'
+  const forkDriveOpen = useForkDriveOpen() // orca-fork: the Drive shares the Artifacts slot
+  const artifactsActive = activeView === 'artifacts' && !forkDriveOpen
   const skillsActive = activeView === 'skills'
   const mobileOnboardingBadge = useMobileSidebarOnboardingBadge(showMobileButton)
   const hideAutomationsButton = React.useCallback(() => {
@@ -127,12 +132,13 @@ const SidebarNav = React.memo(function SidebarNav() {
       </button>
       <SetupGuideSidebarEntry />
       <SidebarTaskNavButton />
+      <ForkDriveNavButton /> {/* orca-fork: Drive */}
       {showArtifactsButton ? (
         <ContextMenu>
           <ContextMenuTrigger asChild>
             <button
               type="button"
-              onClick={openArtifactsPage}
+              onClick={openArtifactsInsteadOfDrive} // orca-fork: the Drive shares the Artifacts slot
               aria-current={artifactsActive ? 'page' : undefined}
               className={cn(
                 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium tracking-tight transition-colors',

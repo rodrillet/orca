@@ -1,4 +1,5 @@
 import { STATUS_METHODS } from './host-management/status'
+import { ORCA_FORK_DRIVE_METHODS } from './orca-fork/drive-methods' // orca-fork:
 import { DESKTOP_WINDOW_METHODS } from './host-management/desktop-window'
 import { SIDEBAR_INPUT_METHODS } from './sidebar-inputs/sidebar-inputs'
 import { ORCAD_TERMINAL_CENSUS_METHODS } from './orcad/orcad-terminal-census'
@@ -191,6 +192,7 @@ const BOT_RPC_METHODS = [
 ] as const
 
 const SERVICE_RPC_METHODS = [
+  ...ORCA_FORK_DRIVE_METHODS, // orca-fork: Drive
   ...TERMINAL_METHODS,
   ...TERMINAL_ORPHAN_METHODS,
   ...BROWSER_CORE_METHODS,

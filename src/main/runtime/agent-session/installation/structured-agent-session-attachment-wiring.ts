@@ -15,6 +15,7 @@ import type { JournalSqlDatabase } from '../../../native-chat/agent-session-jour
 import { structuredAgentSessionAttachmentSweepFacts } from './structured-agent-session-attachment-sweep'
 import type { StructuredAgentSessionLogger } from '../../../native-chat/agent-session-wire/host/structured-agent-session-logger'
 import type { AgentSessionRecordStore } from '../records/agent-session-record-store'
+import { captureChatAttachmentsInDrive } from '../../../orca-fork/drive/drive-chat-capture' // orca-fork:
 
 const FIRST_SWEEP_DELAY_MS = 60 * 1000
 const SWEEP_INTERVAL_MS = 6 * 60 * 60 * 1000
@@ -48,6 +49,7 @@ export function installAgentSessionAttachments(deps: {
     await deps.journalDatabase.effects([
       { kind: 'claim', claim: { sessionId, body, required: true, now: Date.now() } }
     ])
+    void captureChatAttachmentsInDrive(root, sessionId, body) // orca-fork: keep chat uploads in the Drive
   })
   sweeper = startAgentSessionAttachmentSweeps(
     attachments,

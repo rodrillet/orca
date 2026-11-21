@@ -40,6 +40,16 @@ import {
 } from '../browser/client-hosting/desktop-browser-bridge-protocol'
 import { MobileWebBundleChunkParamsSchema } from '../mobile-web-bundle/bundle-rpc-contract'
 import { MobileWebBundleLocaleCatalogParamsSchema } from '../mobile-web-bundle/locale-catalog-contract'
+import {
+  ForkDriveDeleteParams,
+  ForkDriveFolderCreateParams,
+  ForkDriveListParams,
+  ForkDriveReadParams,
+  ForkDriveUpdateParams,
+  ForkDriveUploadAppendParams,
+  ForkDriveUploadIdParams,
+  ForkDriveUploadStartParams
+} from '../orca-fork/drive/drive-rpc-params'
 import { OrcadMigrationBlobChunkRequestSchema } from '../orcad-migration/orcad-migration-blob-transfer'
 import { OrcadMigrationSnapshotChunkRequestSchema } from '../orcad-migration/orcad-migration-scrollback'
 import {
@@ -1813,6 +1823,15 @@ export const RPC_PARAMS_BY_METHOD = {
   'orcaAccount.status': null,
   'orcaAccount.subscribe': null,
   'orcaAccount.unsubscribe': OrcaAccountUnsubscribeParams,
+  'orcaFork.drive.delete': ForkDriveDeleteParams,
+  'orcaFork.drive.folderCreate': ForkDriveFolderCreateParams,
+  'orcaFork.drive.list': ForkDriveListParams,
+  'orcaFork.drive.read': ForkDriveReadParams,
+  'orcaFork.drive.update': ForkDriveUpdateParams,
+  'orcaFork.drive.uploadAbort': ForkDriveUploadIdParams,
+  'orcaFork.drive.uploadAppend': ForkDriveUploadAppendParams,
+  'orcaFork.drive.uploadCommit': ForkDriveUploadIdParams,
+  'orcaFork.drive.uploadStart': ForkDriveUploadStartParams,
   'orcaFork.groupPhoto.get': GroupPhotoGet,
   'orcaFork.groupPhoto.set': GroupPhotoSet,
   'orcaFork.resources.machine': MachineResourcesParams,

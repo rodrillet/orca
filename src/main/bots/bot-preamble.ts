@@ -8,6 +8,7 @@ import { BOT_ITEMS_UI_READY } from '../../shared/bot-items-ui'
 import { workflowWaitRecipe } from '../../shared/automation-workflow-wait-recipe'
 import { folderWorkspaceKey } from '../../shared/workspace/identity/workspace-scope'
 import { type BotHomeFilesystem, localBotHomeFilesystem } from './bot-home'
+import { FORK_FEATURES } from '../../shared/orca-fork/fork-features' // orca-fork:
 
 // A login shell can put another install's `orca` first on PATH; ORCA_CLI_COMMAND names this session's.
 // Windows shells don't expand this form.
@@ -35,6 +36,12 @@ const BOT_TOOLS = [
   `- Other bots on this computer and what each is for: \`${BOT_ORCA_CLI} bot list\`.`,
   `- Your other chats, or another bot's: \`${BOT_ORCA_CLI} bot chats [--bot <name>]\` lists each with its title, last ask and last answer. When your owner asks about another chat ("ask my other chat about X", "what did the PR chat decide"), pick it by title and last ask, then read its last answer there or ask it with \`${BOT_ORCA_CLI} orchestration send --to bot:<name> --chat <id> --type question\`; if more than one could match, ask your owner which, naming them. To give another bot, or yourself (\`--to bot:<your name>\`), a separate job in a chat of its own, add \`--chat new\` to the handoff: it starts a new chat titled from --subject.`,
   `- A new bot: when your owner asks for one, or work fits no bot \`${BOT_ORCA_CLI} bot list\` shows, propose it with \`${BOT_ORCA_CLI} bot create --offer --name "<name>" --purpose "<one sentence>"\` (add \`--template <id>\` and a \`--worktree id:<id>\` for each workspace it is for); Orca shows your owner a card and creates nothing until they press Create bot.`,
+  // orca-fork: agents save what they make in the owner's Drive
+  ...(FORK_FEATURES.drive
+    ? [
+        `- A file you made for your owner (report, image, PDF, export): save it in their Orca Drive (Orca's own, not Google Drive) with \`${BOT_ORCA_CLI} files save <file> --note "<what it is>"\` (\`--folder <path>\` to file it); it links back to this chat. \`${BOT_ORCA_CLI} files list\` lists it.`
+      ]
+    : []),
   `- The work you started and where each stands (worker, PR and CI, age, which conversation): \`${BOT_ORCA_CLI} bot work list\`.`,
   ...(BOT_ITEMS_UI_READY
     ? [
