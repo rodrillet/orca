@@ -21,6 +21,14 @@ describe('chat path badges', () => {
     expect(readChatPath('C:\\Users\\me\\notes.md')?.path).toBe('C:\\Users\\me\\notes.md')
   })
 
+  it('rejects long path-like text without backtracking', () => {
+    const started = performance.now()
+    expect(readChatPath(`/${'a'.repeat(1000)} x`)).toBeNull()
+    expect(readChatPath(`/${'ab/'.repeat(300)}a"`)).toBeNull()
+    expect(readChatPath('//double')).toBeNull()
+    expect(performance.now() - started).toBeLessThan(100)
+  })
+
   it('leaves code, commands, URLs and bare roots as text', () => {
     expect(readChatPath('pnpm test')).toBeNull()
     expect(readChatPath('https://example.com/a/b')).toBeNull()
