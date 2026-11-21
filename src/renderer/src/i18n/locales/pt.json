@@ -24934,7 +24934,7 @@
       "moveHere": "Mover para cá",
       "trash": "Lixeira",
       "trashSubtitle": "Restaure um arquivo ou exclua-o de vez.",
-      "subtitle": "Tudo o que você e seus agentes enviaram ou criaram, em todos os computadores.",
+      "subtitle": "Tudo o que você e seus agentes enviaram ou criaram neste workspace.",
       "upload": "Enviar",
       "uploadTo": "Para {{name}}",
       "trail": "Pasta",
