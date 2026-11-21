@@ -29703,6 +29703,12 @@
     },
     "groupMentions": {
       "option": "{{name}} · {{count}} bots"
+    },
+    "presence": {
+      "working": "Working",
+      "idle": "Idle",
+      "blocked": "Stopped or needs you",
+      "off": "Off"
     }
   }
 }

@@ -25037,6 +25037,12 @@
     },
     "groupMentions": {
       "option": "{{name}} · {{count}} bots"
+    },
+    "presence": {
+      "working": "Trabalhando",
+      "idle": "Ocioso",
+      "blocked": "Parado ou precisa de você",
+      "off": "Desligado"
     }
   }
 }

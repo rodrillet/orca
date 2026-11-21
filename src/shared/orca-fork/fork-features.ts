@@ -30,5 +30,7 @@ export const FORK_FEATURES = {
   /** Status-bar "Machines": memory, CPU, disk and agent processes of this computer and each paired server. */
   resourceMonitor: true,
   /** `#group` in any chat: `#` lists the bot groups, and a sent `#name` opens its group. */
-  groupMentions: true
+  groupMentions: true,
+  /** A presence dot on every bot picture: green working, yellow idle, red stopped/blocked, grey off. */
+  botPresence: true
 } as const
