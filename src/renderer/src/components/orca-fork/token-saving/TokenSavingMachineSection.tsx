@@ -20,7 +20,7 @@ import type {
 import { getRuntimeTargetHostId } from '@/runtime/rpc/targets/runtime-client-target'
 import { useForkWorkspaces } from '../workspaces/fork-workspaces-store'
 import { useBotOrganization } from '../organization/bot-organization-store'
-import { formatTokenCount, TokenSavingChoiceToggle } from './TokenSavingChoiceToggle'
+import { formatTokenCount, SELECTED_ITEM, TokenSavingChoiceToggle } from './TokenSavingChoiceToggle'
 import { runTokenSavingProxy, useTokenSavingHost } from './token-saving-host'
 import { tokenSavingEdits, useTokenSavingSettings } from './token-saving-store'
 
@@ -269,10 +269,10 @@ export function TokenSavingMachineSection({
             }
           }}
         >
-          <ToggleGroupItem value="compress" className="h-6 text-xs">
+          <ToggleGroupItem value="compress" className={SELECTED_ITEM}>
             {t('orcaFork.tokenSaving.modeCompress', 'Compress')}
           </ToggleGroupItem>
-          <ToggleGroupItem value="record" className="h-6 text-xs">
+          <ToggleGroupItem value="record" className={SELECTED_ITEM}>
             {t('orcaFork.tokenSaving.modeRecord', 'Measure only')}
           </ToggleGroupItem>
         </ToggleGroup>

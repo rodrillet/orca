@@ -174,7 +174,9 @@ export function useTokenSavingPolicySync(): void {
   }, [settings, workspaces, bots, environments])
   const sent = useRef(new Map<string, string>())
   // Pushing before the saved choices load would send the defaults over them.
-  const ready = tokenSavingStore.useReady() && forkWorkspacesStore.useReady()
+  const settingsReady = tokenSavingStore.useReady()
+  const workspacesReady = forkWorkspacesStore.useReady()
+  const ready = settingsReady && workspacesReady
   useEffect(() => {
     if (!FORK_FEATURES.tokenSaving || !ready) {
       return

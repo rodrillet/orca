@@ -8,6 +8,10 @@ import type {
   TokenSavingSource
 } from '../../../../../shared/orca-fork/token-saving/token-saving'
 
+/** The picked option reads at a glance in both themes, as the segmented controls do. */
+export const SELECTED_ITEM =
+  'h-6 text-xs data-[state=on]:bg-card data-[state=on]:font-medium data-[state=on]:text-foreground data-[state=on]:inset-ring-1 data-[state=on]:inset-ring-foreground/25'
+
 export function tokenSavingSourceLabel(t: Translate, source: TokenSavingSource): string {
   switch (source) {
     case 'bot':
@@ -63,14 +67,14 @@ export function TokenSavingChoiceToggle({
       }}
     >
       {allowInherit ? (
-        <ToggleGroupItem value="inherit" className="h-6 text-xs">
+        <ToggleGroupItem value="inherit" className={SELECTED_ITEM}>
           {inheritLabel}
         </ToggleGroupItem>
       ) : null}
-      <ToggleGroupItem value="on" className="h-6 text-xs">
+      <ToggleGroupItem value="on" className={SELECTED_ITEM}>
         {t('orcaFork.tokenSaving.on', 'On')}
       </ToggleGroupItem>
-      <ToggleGroupItem value="off" className="h-6 text-xs">
+      <ToggleGroupItem value="off" className={SELECTED_ITEM}>
         {t('orcaFork.tokenSaving.off', 'Off')}
       </ToggleGroupItem>
     </ToggleGroup>

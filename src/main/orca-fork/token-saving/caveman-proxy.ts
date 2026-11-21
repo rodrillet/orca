@@ -1,7 +1,7 @@
 // orca-fork: this machine's Caveman proxy. Orca starts it when token saving is on and it is installed
 // but down, and reads its health before routing an agent through it; a down proxy means direct.
 import { spawn } from 'node:child_process'
-import { mkdirSync, openSync, closeSync } from 'node:fs'
+import { chmodSync, closeSync, mkdirSync, openSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import type { TokenSavingProxyMode } from '../../../shared/orca-fork/token-saving/token-saving'
@@ -76,9 +76,26 @@ async function waitFor(target: TokenSavingProxyState, timeoutMs: number): Promis
   return false
 }
 
+/** The proxy keeps its recovery store only in a private home; a group-writable one drops it to
+ *  record-only, so Orca's own launch makes the home private first (POSIX only). */
+function privateHome(home: string): void {
+  mkdirSync(home, { recursive: true, mode: 0o700 })
+  if (process.platform === 'win32') {
+    return
+  }
+  try {
+    const stats = statSync(home)
+    if ((stats.mode & 0o022) !== 0 && stats.uid === process.getuid?.()) {
+      chmodSync(home, 0o700)
+    }
+  } catch (error) {
+    console.warn('[token-saving] could not make the caveman home private', error)
+  }
+}
+
 function launch(binary: string, mode: TokenSavingProxyMode): number | null {
   const home = cavemanHome()
-  mkdirSync(home, { recursive: true })
+  privateHome(home)
   const log = openSync(join(home, 'orca-proxy.log'), 'a')
   try {
     // Detached so it outlives Orca, as `caveman start` does; it runs from home so it holds no project.
