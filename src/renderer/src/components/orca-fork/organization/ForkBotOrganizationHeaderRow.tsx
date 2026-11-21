@@ -1,6 +1,14 @@
 // orca-fork: a department, section or machine header in the Bots list.
 import React, { useRef, useState } from 'react'
-import { ChevronRight, FolderPlus, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
+import {
+  ChevronRight,
+  FolderPlus,
+  MoreHorizontal,
+  Network,
+  Pencil,
+  Plus,
+  Trash2
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -20,12 +28,18 @@ import { editBotOrganization } from './bot-organization-store'
 import { claimForkWorkspaceDepartment } from '../workspaces/fork-workspace-departments'
 import { acceptsBotOrganizationDrag, dropBotOrganizationEntry } from './bot-organization-drag'
 import { newOrganizationId, requestHeaderRename, takeHeaderRename } from './bot-organization-rename'
+import { ForkDepartmentHeaderTitle } from '../departments/ForkDepartmentHeaderTitle' // orca-fork: departments
+import { openDepartmentPage } from '../departments/department-page-state'
+import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 
-export function addBotDepartment(name: string): void {
+export function addBotDepartment(name: string, renameInSidebar = true): string {
   const id = newOrganizationId()
-  requestHeaderRename(`fork-org:${id}`)
+  if (renameInSidebar) {
+    requestHeaderRename(`fork-org:${id}`)
+  }
   editBotOrganization(botOrganizationEdits.addDepartment(id, name))
   claimForkWorkspaceDepartment(id)
+  return id
 }
 
 export function ForkBotOrganizationHeaderRow({
@@ -86,20 +100,25 @@ export function ForkBotOrganizationHeaderRow({
         }
       }}
     >
-      <button
-        type="button"
-        className="flex min-w-0 flex-1 items-center gap-1 rounded-sm text-left hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        aria-expanded={!header.collapsed}
-        onClick={() => editBotOrganization(botOrganizationEdits.toggleCollapsed(header.id))}
-      >
-        <ChevronRight
-          className={cn('size-3 shrink-0 transition-transform', !header.collapsed && 'rotate-90')}
-        />
-        {editing ? null : <span className="truncate">{header.title}</span>}
-        {editing ? null : (
-          <span className="shrink-0 font-medium tabular-nums opacity-70">{header.count}</span>
-        )}
-      </button>
+      {target && FORK_FEATURES.departmentManagement ? (
+        // Departments: the chevron folds, the name opens the Department page.
+        <ForkDepartmentHeaderTitle header={header} target={target} editing={editing} />
+      ) : (
+        <button
+          type="button"
+          className="flex min-w-0 flex-1 items-center gap-1 rounded-sm text-left hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          aria-expanded={!header.collapsed}
+          onClick={() => editBotOrganization(botOrganizationEdits.toggleCollapsed(header.id))}
+        >
+          <ChevronRight
+            className={cn('size-3 shrink-0 transition-transform', !header.collapsed && 'rotate-90')}
+          />
+          {editing ? null : <span className="truncate">{header.title}</span>}
+          {editing ? null : (
+            <span className="shrink-0 font-medium tabular-nums opacity-70">{header.count}</span>
+          )}
+        </button>
+      )}
       {editing ? (
         <input
           autoFocus
@@ -165,6 +184,12 @@ export function ForkBotOrganizationHeaderRow({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="bottom" align="end" sideOffset={4}>
+              {FORK_FEATURES.departmentManagement ? (
+                <DropdownMenuItem onSelect={() => openDepartmentPage(target.departmentId)}>
+                  <Network className="size-3.5" />
+                  {t('orcaFork.departments.open', 'Open department')}
+                </DropdownMenuItem>
+              ) : null}
               {header.level === 0 ? (
                 <DropdownMenuItem onSelect={addSection}>
                   <FolderPlus className="size-3.5" />

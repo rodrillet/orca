@@ -93,6 +93,28 @@ This mirrors Orca's existing two-level "project group > project" sidebar.
 - Workspaces: a **Machine** option in the projects' Group by, so one window shows every paired
   environment's workspaces grouped by computer (agentes.chat "computers").
 
+### Department management (builds on Phase 2)
+
+Clicking a department's name in the Bots list (or Bot options → Manage departments) opens the
+**Department page** over the main area, like the Wiki: an **org chart** of every department (cards with
+mark, mission, leader and bots; drag bots between cards) and one page per department.
+
+- **Overview**: name, color and icon, mission, leader bot, members (photo, presence, machine, section;
+  bulk select → Move to / Remove), sections (create, rename, delete, drag to reorder, drop bots on them);
+  Add bot, New bot here. Departments reorder by drag in the page's list; archived ones fold away there and
+  leave the sidebar (their bots list under No department until restored).
+- **Bot defaults**, inherited unless a bot opts out (Who inherits): standing instructions (kept as a
+  marked `## Department: <name>` block at the end of each bot's SOUL.md, so the bot reads them on its next
+  turn), agent + model/effort (`bots.update`), token saving (read by Caveman through
+  `forkDepartmentTokenSaving(botEntryKey)`). Defaults are applied once per change (a move, a new default,
+  an override cleared), never re-imposed on a bot changed by hand.
+- **Dashboard**: one Agents card per bot (now line, open items, workers and PRs), filterable by section.
+- **Department chat**: a bot group made on first open, kept to the department's bots on the machine most
+  of them run on, placed in the department.
+- Data: `profiles` (by department id) and `overrides` (by bot key) inside the same versioned
+  `organization.json`, per workspace through the departments each workspace claims. Stock `orca-server`
+  works: everything uses existing RPCs and home-file writes.
+
 ### Phase 3 — Agents in Tasks (feature 4)
 
 A new **Agents** source in the Tasks page: one card per bot across all machines with what it is doing

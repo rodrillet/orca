@@ -1,6 +1,6 @@
 // orca-fork: Bot options' "Group by: None · Machine · Organization" and "New department".
 import React from 'react'
-import { FolderPlus } from 'lucide-react'
+import { FolderPlus, Network } from 'lucide-react'
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu'
 import { OptionChoiceSubmenu } from '@/components/sidebar/worktree-list/controls/OptionChoiceSubmenu'
 import { useTranslate } from '@/i18n/use-translate'
@@ -11,6 +11,7 @@ import {
 } from '../../../../../shared/orca-fork/organization/bot-organization'
 import { editBotOrganization, useBotOrganization } from './bot-organization-store'
 import { addBotDepartment } from './ForkBotOrganizationHeaderRow'
+import { openDepartmentPage } from '../departments/department-page-state'
 
 export function ForkBotGroupByMenuItems(): React.JSX.Element | null {
   const t = useTranslate()
@@ -53,6 +54,12 @@ export function ForkBotGroupByMenuItems(): React.JSX.Element | null {
         >
           <FolderPlus className="size-3.5" />
           {t('orcaFork.botOrganization.newDepartment', 'New department')}
+        </DropdownMenuItem>
+      ) : null}
+      {FORK_FEATURES.departmentManagement ? (
+        <DropdownMenuItem onSelect={() => openDepartmentPage(null)}>
+          <Network className="size-3.5" />
+          {t('orcaFork.departments.manage', 'Manage departments')}
         </DropdownMenuItem>
       ) : null}
     </>

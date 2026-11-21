@@ -95,7 +95,10 @@ export function ForkWikiPage(): React.JSX.Element {
   }
 
   return (
-    <div className="absolute inset-0 z-[5] flex min-h-0 bg-background" data-testid="orca-fork-wiki">
+    <div
+      className="absolute inset-0 z-[15] flex min-h-0 bg-background"
+      data-testid="orca-fork-wiki"
+    >
       <WikiNav
         target={target}
         routable={active.routable}
