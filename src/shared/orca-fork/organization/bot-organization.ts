@@ -43,29 +43,36 @@ function readId(value: unknown): string | null {
   return typeof value === 'string' && value.length > 0 && value.length <= 128 ? value : null
 }
 
+function readRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value) ? { ...value } : {}
+}
+
+function readList(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value) ? value.map(readRecord) : []
+}
+
+function readGroupBy(value: unknown): BotSidebarGroupBy {
+  return GROUP_BY.find((groupBy) => groupBy === value) ?? 'none'
+}
+
 /** Reads a stored or received document, dropping anything malformed instead of failing. */
 export function normalizeBotOrganization(raw: unknown): BotOrganization {
   const doc = emptyBotOrganization()
-  if (!raw || typeof raw !== 'object') {
-    return doc
-  }
-  const input = raw as Record<string, unknown>
+  const input = readRecord(raw)
   doc.revision =
     typeof input.revision === 'number' && Number.isFinite(input.revision) ? input.revision : 0
   const seen = new Set<string>()
-  for (const item of Array.isArray(input.departments) ? input.departments : []) {
-    const dept = item as Record<string, unknown>
-    const id = readId(dept?.id)
-    const name = readName(dept?.name)
+  for (const dept of readList(input.departments)) {
+    const id = readId(dept.id)
+    const name = readName(dept.name)
     if (!id || !name || seen.has(id)) {
       continue
     }
     seen.add(id)
     const sections: BotOrganizationSection[] = []
-    for (const s of Array.isArray(dept.sections) ? dept.sections : []) {
-      const section = s as Record<string, unknown>
-      const sid = readId(section?.id)
-      const sname = readName(section?.name)
+    for (const section of readList(dept.sections)) {
+      const sid = readId(section.id)
+      const sname = readName(section.name)
       if (sid && sname && !seen.has(sid)) {
         seen.add(sid)
         sections.push({ id: sid, name: sname })
@@ -73,27 +80,17 @@ export function normalizeBotOrganization(raw: unknown): BotOrganization {
     }
     doc.departments.push({ id, name, sections })
   }
-  const placements =
-    input.placements && typeof input.placements === 'object'
-      ? (input.placements as Record<string, unknown>)
-      : {}
-  for (const [key, value] of Object.entries(placements)) {
-    const placement = value as Record<string, unknown>
-    const dept = doc.departments.find((d) => d.id === placement?.departmentId)
+  for (const [key, value] of Object.entries(readRecord(input.placements))) {
+    const placement = readRecord(value)
+    const dept = doc.departments.find((d) => d.id === placement.departmentId)
     if (!dept) {
       continue
     }
-    const sectionId =
-      typeof placement.sectionId === 'string' &&
-      dept.sections.some((s) => s.id === placement.sectionId)
-        ? placement.sectionId
-        : null
-    doc.placements[key] = { departmentId: dept.id, sectionId }
+    const section = dept.sections.find((s) => s.id === placement.sectionId)
+    doc.placements[key] = { departmentId: dept.id, sectionId: section?.id ?? null }
   }
-  const view = (input.view ?? {}) as Record<string, unknown>
-  if (GROUP_BY.includes(view.groupBy as BotSidebarGroupBy)) {
-    doc.view.groupBy = view.groupBy as BotSidebarGroupBy
-  }
+  const view = readRecord(input.view)
+  doc.view.groupBy = readGroupBy(view.groupBy)
   doc.view.collapsed = Array.isArray(view.collapsed)
     ? view.collapsed.filter((key): key is string => typeof key === 'string')
     : []
@@ -306,5 +303,5 @@ export function groupBotSidebarEntries<E extends { id: string }>(
 }
 
 export function isBotOrganizationHeader(row: unknown): row is BotOrganizationHeader {
-  return (row as { kind?: unknown } | null)?.kind === 'fork-org-header'
+  return typeof row === 'object' && row !== null && 'kind' in row && row.kind === 'fork-org-header'
 }

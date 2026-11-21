@@ -105,7 +105,9 @@ export function ForkBotOrganizationHeaderRow({
           aria-label={t('orcaFork.botOrganization.rename', 'Rename')}
           className="absolute left-6 right-8 h-6 rounded-sm border border-input bg-background px-1.5 text-[12px] font-medium text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring"
           onFocus={(event) => {
-            editStartedAt.current ||= Date.now()
+            if (editStartedAt.current === 0) {
+              editStartedAt.current = Date.now()
+            }
             event.currentTarget.select()
           }}
           onBlur={(event) => {
@@ -131,57 +133,59 @@ export function ForkBotOrganizationHeaderRow({
         />
       ) : null}
       {header.unassigned ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          className="shrink-0 opacity-0 group-hover/fork-org:opacity-100 focus-visible:opacity-100"
-          aria-label={t('orcaFork.botOrganization.newDepartment', 'New department')}
-          onClick={() =>
-            addBotDepartment(t('orcaFork.botOrganization.newDepartmentName', 'New department'))
-          }
-        >
-          <Plus className="size-3" />
-        </Button>
+        <span className="flex shrink-0 opacity-0 group-hover/fork-org:opacity-100 focus-within:opacity-100 has-[[data-state=open]]:opacity-100">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            aria-label={t('orcaFork.botOrganization.newDepartment', 'New department')}
+            onClick={() =>
+              addBotDepartment(t('orcaFork.botOrganization.newDepartmentName', 'New department'))
+            }
+          >
+            <Plus className="size-3" />
+          </Button>
+        </span>
       ) : null}
       {target ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              className="shrink-0 opacity-0 group-hover/fork-org:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
-              aria-label={t('orcaFork.botOrganization.actions', '{{name}} actions', {
-                name: header.title
-              })}
-            >
-              <MoreHorizontal className="size-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="bottom" align="end" sideOffset={4}>
-            {header.level === 0 ? (
-              <DropdownMenuItem onSelect={addSection}>
-                <FolderPlus className="size-3.5" />
-                {t('orcaFork.botOrganization.newSection', 'New section')}
+        <span className="flex shrink-0 opacity-0 group-hover/fork-org:opacity-100 focus-within:opacity-100 has-[[data-state=open]]:opacity-100">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                aria-label={t('orcaFork.botOrganization.actions', '{{name}} actions', {
+                  name: header.title
+                })}
+              >
+                <MoreHorizontal className="size-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="bottom" align="end" sideOffset={4}>
+              {header.level === 0 ? (
+                <DropdownMenuItem onSelect={addSection}>
+                  <FolderPlus className="size-3.5" />
+                  {t('orcaFork.botOrganization.newSection', 'New section')}
+                </DropdownMenuItem>
+              ) : null}
+              <DropdownMenuItem onSelect={() => setEditing(true)}>
+                <Pencil className="size-3.5" />
+                {t('orcaFork.botOrganization.rename', 'Rename')}
               </DropdownMenuItem>
-            ) : null}
-            <DropdownMenuItem onSelect={() => setEditing(true)}>
-              <Pencil className="size-3.5" />
-              {t('orcaFork.botOrganization.rename', 'Rename')}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onSelect={() => editBotOrganization(botOrganizationEdits.remove(target))}
-            >
-              <Trash2 className="size-3.5" />
-              {header.level === 0
-                ? t('orcaFork.botOrganization.deleteDepartment', 'Delete department')
-                : t('orcaFork.botOrganization.deleteSection', 'Delete section')}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onSelect={() => editBotOrganization(botOrganizationEdits.remove(target))}
+              >
+                <Trash2 className="size-3.5" />
+                {header.level === 0
+                  ? t('orcaFork.botOrganization.deleteDepartment', 'Delete department')
+                  : t('orcaFork.botOrganization.deleteSection', 'Delete section')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </span>
       ) : null}
     </div>
   )

@@ -40,8 +40,8 @@ export function useForkBotSidebarRows<E extends HostedEntry>(
     if (groupBy === 'none') {
       return entries
     }
-    const labels = new Map(
-      joinedLabels.split(LABEL_SEPARATOR).map((label, index) => [hostIds[index] as string, label])
+    const labels = new Map<string, string>(
+      joinedLabels.split(LABEL_SEPARATOR).map((label, index) => [String(hostIds[index]), label])
     )
     return groupBotSidebarEntries(entries, doc, {
       hostOf,
