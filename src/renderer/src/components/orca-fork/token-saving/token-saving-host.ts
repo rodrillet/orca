@@ -16,6 +16,7 @@ import {
   type TokenSavingStatus
 } from '../../../../../shared/orca-fork/token-saving/token-saving-rpc'
 import { botSidebarEntryKey } from '@/components/bots/bot-sidebar-entry-keys'
+import { useBotOrganization } from '../organization/bot-organization-store'
 import { forkWorkspacesStore, useForkWorkspaces } from '../workspaces/fork-workspaces-store'
 import {
   resolveBotTokenSaving,
@@ -138,6 +139,7 @@ type HostPolicy = {
 export function useTokenSavingPolicySync(): void {
   const settings = useTokenSavingSettings()
   const workspaces = useForkWorkspaces()
+  const organization = useBotOrganization()
   const bots = useBots()
   const environments = useAppStore((s) => s.runtimeEnvironments)
   const policies = useMemo((): HostPolicy[] => {
@@ -153,7 +155,7 @@ export function useTokenSavingPolicySync(): void {
       const botChoices: Record<string, boolean> = {}
       for (const bot of bots) {
         if (bot.hostId === hostId) {
-          botChoices[bot.id] = resolveBotTokenSaving(settings, workspaces, {
+          botChoices[bot.id] = resolveBotTokenSaving(settings, workspaces, organization, {
             hostId,
             botKey: botSidebarEntryKey(bot)
           }).enabled
@@ -168,7 +170,7 @@ export function useTokenSavingPolicySync(): void {
         }
       }
     })
-  }, [settings, workspaces, bots, environments])
+  }, [settings, workspaces, organization, bots, environments])
   const sent = useRef(new Map<string, string>())
   // Pushing before the saved choices load would send the defaults over them.
   const settingsReady = tokenSavingStore.useReady()

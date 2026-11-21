@@ -10,6 +10,7 @@ import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import type { ResolvedTokenSaving } from '../../../../../shared/orca-fork/token-saving/token-saving'
 import type { TokenSavingAgentStats } from '../../../../../shared/orca-fork/token-saving/token-saving-rpc'
 import { SettingsInsetRow } from '../../bots/settings-view/BotSettingsRows'
+import { useBotOrganization } from '../organization/bot-organization-store'
 import { useForkWorkspaces } from '../workspaces/fork-workspaces-store'
 import {
   formatTokenCount,
@@ -37,14 +38,18 @@ export function useBotTokenSaving(
 } {
   const settings = useTokenSavingSettings()
   const workspaces = useForkWorkspaces()
+  const organization = useBotOrganization()
   const botKey = botSidebarEntryKey(bot)
   const target = useMemo(
     () => ipcOrRuntimeTargetForHostId(bot.hostId) ?? { kind: 'local' as const },
     [bot.hostId]
   )
   const { result } = useTokenSavingHost(target, withStats, 60_000)
-  const resolved = resolveBotTokenSaving(settings, workspaces, { hostId: bot.hostId, botKey })
-  const inherited = resolveBotTokenSaving({ ...settings, bots: {} }, workspaces, {
+  const resolved = resolveBotTokenSaving(settings, workspaces, organization, {
+    hostId: bot.hostId,
+    botKey
+  })
+  const inherited = resolveBotTokenSaving({ ...settings, bots: {} }, workspaces, organization, {
     hostId: bot.hostId,
     botKey
   })

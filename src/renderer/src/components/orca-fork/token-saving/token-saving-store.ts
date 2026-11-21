@@ -14,6 +14,8 @@ import {
   type ForkWorkspacesDocument
 } from '../../../../../shared/orca-fork/workspaces/fork-workspace'
 import type { ExecutionHostId } from '../../../../../shared/execution-host/execution-host'
+import type { BotOrganization } from '../../../../../shared/orca-fork/organization/bot-organization'
+import { forkDepartmentTokenSaving } from '../departments/department-token-saving'
 import { createForkDocumentStore } from '../fork-document-store'
 
 export const tokenSavingStore = createForkDocumentStore<TokenSavingSettings>({
@@ -55,20 +57,16 @@ export const tokenSavingEdits = {
     tokenSavingStore.edit((doc) => ({ ...doc, proxyMode }))
 }
 
-/** A department's own choice; departments keep it in their document (wired with that feature). */
-export function departmentTokenSaving(_botKey: string): TokenSavingChoice {
-  return undefined
-}
-
 export function resolveBotTokenSaving(
   settings: TokenSavingSettings,
   workspaces: ForkWorkspacesDocument,
+  organization: BotOrganization,
   bot: { hostId: ExecutionHostId; botKey: string }
 ): ResolvedTokenSaving {
   const workspace = forkWorkspaceOfItem(workspaces, bot.hostId, { botKey: bot.botKey })
   return resolveTokenSaving({
     bot: settings.bots[bot.botKey],
-    department: departmentTokenSaving(bot.botKey),
+    department: forkDepartmentTokenSaving(bot.botKey, organization),
     workspace: workspace ? settings.workspaces[workspace.id] : undefined,
     global: settings.global
   })
