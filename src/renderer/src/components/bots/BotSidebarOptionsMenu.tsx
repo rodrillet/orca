@@ -12,6 +12,7 @@ import {
   countActiveBotSidebarFilters,
   type BotSidebarSortBy
 } from '../../../../shared/bots/bot-sidebar-view'
+import { ForkBotGroupByMenuItems } from '@/components/orca-fork/organization/ForkBotGroupByMenuItems' // orca-fork:
 
 const SORT_LABELS: Record<BotSidebarSortBy, () => string> = {
   manual: () => translate('bots.options.sortManual', 'Manual'),
@@ -61,6 +62,7 @@ export function BotSidebarOptionsMenu(): React.JSX.Element {
         value={view.sortBy}
         onChange={(sortBy) => setView({ sortBy })}
       />
+      <ForkBotGroupByMenuItems />
       <DropdownMenuSeparator />
       <div className="flex items-center justify-between px-2 py-1">
         <span className="text-[11px] font-semibold text-muted-foreground">

@@ -57,6 +57,10 @@ import { useBotsSidebarReveal } from './bots-sidebar-reveal'
 import { BotsRevealProvider } from './bots-sidebar-reveal-context'
 import { SidebarBotsEmptyState } from './SidebarBotsEmptyState'
 import { BotSidebarVirtualRows } from './BotSidebarVirtualRows'
+import {
+  useForkBotSidebarRows,
+  withForkBotOrganizationRows
+} from '@/components/orca-fork/organization/fork-bot-sidebar-rows' // orca-fork:
 
 // The + menu's rows only: 28px tall (a 20px line in the item's own 4px padding), roomier than other menus.
 const BOT_MENU_ROW = 'flex min-h-5 items-center gap-2'
@@ -105,7 +109,9 @@ export function SidebarBotsSection({
   const search = useBotSidebarSearch({ listRef, savedEntries, onOpenBot })
   const searchOpen = search.open
   // Only the saved order can be dragged, as for workspaces.
-  const draggable = useAppStore((s) => s.botSidebarView.sortBy === 'manual') && !searchOpen
+  const forkRows = useForkBotSidebarRows(entries) // orca-fork: grouped rows drag between groups instead
+  const draggable =
+    useAppStore((s) => s.botSidebarView.sortBy === 'manual') && !searchOpen && forkRows === entries
   const rows = useMemo(
     () => entries.flatMap((entry) => (entry.kind === 'bot' ? [entry] : [])),
     [entries]
@@ -346,11 +352,11 @@ export function SidebarBotsSection({
             ) : collapsed ? null : (
               <>
                 <BotSidebarVirtualRows
-                  entries={entries}
+                  entries={forkRows}
                   listRef={listRef}
                   draggingId={drag.state.draggingGroupId}
                   revealId={reveal.request?.target.entryKey}
-                  renderEntry={(entry, index) => {
+                  renderEntry={withForkBotOrganizationRows((entry, index) => {
                     const entryDrag: BotSidebarEntryDrag | undefined = draggable
                       ? {
                           index,
@@ -382,7 +388,7 @@ export function SidebarBotsSection({
                         drag={entryDrag}
                       />
                     )
-                  }}
+                  })}
                 />
                 {drag.state.draggingGroupId !== null && drag.state.dropIndicatorY !== null ? (
                   <WorktreeSidebarDropIndicator y={drag.state.dropIndicatorY} />

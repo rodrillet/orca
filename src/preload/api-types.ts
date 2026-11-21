@@ -86,6 +86,7 @@ import type {
 } from './api/workspaces/workspace-port-api'
 import type { LinkPreviewApi } from './api/link-preview/link-preview-api'
 import type { WorkspaceSessionApi } from './api/workspaces/workspace-session-api'
+import type { BotOrganizationApi } from './api/orca-fork/bot-organization-bridge' // orca-fork:
 import type {
   FolderWorkspacesApi,
   SparsePresetsApi,
@@ -146,6 +147,8 @@ export type PreloadApi = {
   computerUsePermissions: ComputerUsePermissionsApi
   shell: ShellApi
   botChanges: BotChangesApi
+  // orca-fork: Bots sidebar departments/sections
+  orcaForkBotOrganization: BotOrganizationApi
   googleSetup: GoogleSetupApi
   slackHandOff: SlackHandOffApi
   skills: SkillsApi

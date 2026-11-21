@@ -12,5 +12,7 @@ export const FORK_FEATURES = {
   /** "Change photo…" in a bot's row menu. */
   sidebarChangePhoto: true,
   /** Tasks page "Agents" view: every bot on every paired machine, its items and its workers' PRs. */
-  agentsInTasks: true
+  agentsInTasks: true,
+  /** Departments > Sections and Group by machine in the Bots sidebar (Phase 2). */
+  botOrganization: true
 } as const
