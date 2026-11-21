@@ -12,6 +12,7 @@ import type { BotSidebarEntry } from '../../../../../shared/bots/bot-sidebar-ent
 import type { ExecutionHostId } from '../../../../../shared/execution-host/execution-host'
 import { useBotOrganization } from './bot-organization-store'
 import { useForkWorkspaceDepartments } from '../workspaces/fork-workspace-departments'
+import type { ForkChatRow } from '../channels/use-fork-channel-rows'
 
 type Hosted = { hostId: ExecutionHostId }
 type HostedEntry = BotSidebarEntry<Hosted, Hosted, unknown>
@@ -22,7 +23,18 @@ function hostOf(entry: HostedEntry): ExecutionHostId {
 
 const LABEL_SEPARATOR = '\u0000'
 
+/** `leading` (the channel rows) goes above the bots, whatever they are grouped by. */
 export function useForkBotSidebarRows<E extends HostedEntry>(
+  entries: readonly E[],
+  leading: readonly ForkChatRow[] = NO_ROWS
+): readonly (E | BotOrganizationHeader | ForkChatRow)[] {
+  const rows = useGroupedBotSidebarRows(entries)
+  return useMemo(() => (leading.length > 0 ? [...leading, ...rows] : rows), [leading, rows])
+}
+
+const NO_ROWS: readonly ForkChatRow[] = []
+
+function useGroupedBotSidebarRows<E extends HostedEntry>(
   entries: readonly E[]
 ): readonly (E | BotOrganizationHeader)[] {
   const t = useTranslate()

@@ -20,6 +20,7 @@ import {
 } from '@/components/orca-fork/sidebar-rail/sidebar-mode-store' // orca-fork:
 import { useForkSidebarModeShortcut } from '@/components/orca-fork/sidebar-rail/use-fork-sidebar-mode-shortcut' // orca-fork:
 import { ForkWorkspaceOverlays } from '@/components/orca-fork/workspace-settings/ForkWorkspaceOverlays' // orca-fork:
+import { ForkChannelsHost } from '@/components/orca-fork/channels/ForkChannelsHost' // orca-fork:
 import SidebarNav from './chrome/SidebarNav'
 import { setSidebarLiveWidth } from './chrome/sidebar-live-width'
 import SetupScriptPromptCard from './setup-script-prompts/SetupScriptPromptCard'
@@ -319,6 +320,7 @@ function Sidebar({
                 }}
               >
                 <ForkWorkspaceSwitcher /> {/* orca-fork: Workspaces */}
+                <ForkChannelsHost onOpen={closeWorkspaceBoard} /> {/* orca-fork: channels */}
                 <SidebarContentViewport>
                   <SidebarNav />
                   {projectsFirst ? [projectsSection, botsSection] : [botsSection, projectsSection]}
