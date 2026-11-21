@@ -213,6 +213,21 @@ Every file the owner sends in a chat and every file agents make lands in a per-w
   machine and shows what was put in it, its bots' files, and (for a machine's home workspace) everything
   else on that machine. Uploads carry the workspace id; captures are placed by their bot.
 
+### Chat structure (agentes.chat's channels, categories and menus)
+
+- **Channels**: a channel is a bot group the owner marks as one (or makes with **New channel**: name,
+  bots, category). It is a stock `bots.groups.*` room on the bots' machine, so it works with a stock
+  `orca-server`; the fork only keeps which groups are channels. Channels leave the Bots list for a
+  **Channels** block at its top, with the loose channels first and then each **category**.
+- **Categories** organize channels only (departments organize bots). Collapsible, renamed in place,
+  dragged to reorder; channels drag between categories (or right click › Move to category). Muted
+  channels rest dimmed. Stored in `userData/orca-fork/chat-structure.json` (categories keyed by
+  `ForkWorkspaceId`, channels by `hostId/groupId`), own IPC, not synced to the phone (v1).
+- **Menus**: right click on the list's empty space, the Channels header, a category, a channel, a
+  group or a bot offers New channel / category / group / department / bot, plus the row's own
+  rename, move, mute, mark read, photo and delete entries.
+- Code: `src/shared/orca-fork/channels/`, `src/renderer/src/components/orca-fork/channels/`.
+
 ## Decisions for the owner
 
 1. Base v1.4.266 and track upstream **release tags** (not upstream `main`).
