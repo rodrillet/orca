@@ -73,9 +73,15 @@ async function fetchRegistryPin(
 ): Promise<ManagedRuntimePin | null> {
   const key = acpRegistryTarget()
   const listing = key ? await acpRegistryAgent(managed.registryId, signal) : null
+  const unavailable = (): null => {
+    if (key && knownAcpRegistryAgent(managed.registryId) === undefined) {
+      throw new Error(`${managed.label} release registry could not be refreshed.`)
+    }
+    return null
+  }
   const target = key ? listing?.distribution.binary?.[key] : undefined
   if (!listing || !target) {
-    return null
+    return unavailable()
   }
   const { label } = managed
   const { version } = listing
@@ -90,7 +96,7 @@ async function fetchRegistryPin(
     !format
   ) {
     console.warn(`[acp-registry] ${label} ${version} for ${key} is not one Orca can run`)
-    return null
+    return unavailable()
   }
   const [sha256, bytes] = await Promise.all([
     archiveSha256(target, signal),
@@ -98,7 +104,7 @@ async function fetchRegistryPin(
   ])
   if (!sha256) {
     console.warn(`[acp-registry] ${label} ${version} for ${key} publishes no checksum`)
-    return null
+    return unavailable()
   }
   return {
     version,
@@ -118,13 +124,23 @@ function answersVersion(answered: string, version: string): boolean {
 
 export function acpRegistryManagedRuntime(managed: AcpRegistryManagedAgent): ManagedAgentCli {
   const { alias } = managed
+  const release = followLatestRelease((signal) => fetchRegistryPin(managed, signal))
   const executable = (folder: string): string =>
     join(folder, ...managed.command(process.platform).split('/'))
   return {
     runtime: {
       label: managed.label,
       root: (dataDirectory) => join(dataDirectory, 'agent-runtimes', managed.agent),
-      ...followLatestRelease((signal) => fetchRegistryPin(managed, signal)),
+      ...release,
+      available: () => {
+        const key = acpRegistryTarget()
+        const known = knownAcpRegistryAgent(managed.registryId)
+        return (
+          release.available() &&
+          key !== null &&
+          (known === undefined || known?.distribution.binary?.[key] !== undefined)
+        )
+      },
       validate: (folder, pin, signal) =>
         requireRuntimeAnswersVersion(
           executable(folder),
@@ -142,14 +158,8 @@ export function acpRegistryManagedRuntime(managed: AcpRegistryManagedAgent): Man
         }
       })
     },
-    // Before the registry is read, a host with a known target offers the install; the install looks it up.
-    available: () => {
-      const key = acpRegistryTarget()
-      const known = knownAcpRegistryAgent(managed.registryId)
-      return (
-        key !== null && (known === undefined || known?.distribution.binary?.[key] !== undefined)
-      )
-    },
+    // The runtime catalog caches this capability; release status carries changing availability.
+    available: () => acpRegistryTarget() !== null,
     executable
   }
 }

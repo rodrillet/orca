@@ -55,7 +55,14 @@ function acpChatProgram(spec: AcpLaunchSpec): StructuredAgentChatProgram {
     },
     ...(managedRuntime ? { installable: () => managedRuntime.pin() !== null } : {}),
     // Hosts without the user's own install can install Orca's copy.
-    ...(isManagedAgentCli(agent) ? { installable: () => managedAgentCli(agent).available() } : {}),
+    ...(isManagedAgentCli(agent)
+      ? {
+          installable: () => {
+            const managed = managedAgentCli(agent)
+            return managed.available() && (managed.runtime.available?.() ?? true)
+          }
+        }
+      : {}),
     ...(spec.hostBackend
       ? {
           hostAlternative: (shellEnv, settings) =>

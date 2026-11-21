@@ -71,3 +71,48 @@ it('only checks the agent being re-enabled across repeated unrelated settings wr
     await rm(host.dataDirectory, { recursive: true, force: true })
   }
 })
+
+it.each([false, true])(
+  'bounds completed use triggers after startup succeeded=%s',
+  async (succeeded) => {
+    vi.resetModules()
+    vi.useFakeTimers()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const { startManagedRuntimeAutoUpdates: start } =
+        await import('./managed-runtime-auto-updates')
+      const { managedAgentCommand, rememberManagedAgentRelease } =
+        await import('../../../../managed-agent-cli/managed-agent-cli-registry')
+      const update = vi.fn(async (_signal?: AbortSignal) => {})
+      if (!succeeded) {
+        update.mockRejectedValueOnce(new Error('offline'))
+      }
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: scheduler calls only updateIfBehind on its registered installation.
+      const installations = new Map([
+        ['cli:kimi', { updateIfBehind: update }]
+      ]) as unknown as Parameters<typeof start>[1]
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: this scheduler run only reads settings; the change subscription is optional.
+      const store = { getSettings: () => ({ disabledTuiAgents: [] }) } as unknown as Parameters<
+        typeof start
+      >[0]
+      start(store, installations)
+      await vi.advanceTimersByTimeAsync(120_000)
+      rememberManagedAgentRelease('kimi', join(tmpdir(), 'orca-scheduler-kimi'))
+      for (const count of [10, 100]) {
+        for (let index = 0; index < count; index += 1) {
+          managedAgentCommand('kimi')
+          await vi.advanceTimersByTimeAsync(0)
+        }
+        expect(update).toHaveBeenCalledTimes(succeeded ? 1 : 2)
+      }
+      vi.setSystemTime(Date.now() + 600_001)
+      managedAgentCommand('kimi')
+      await vi.advanceTimersByTimeAsync(0)
+      expect(update).toHaveBeenCalledTimes(succeeded ? 2 : 3)
+    } finally {
+      vi.clearAllTimers()
+      vi.useRealTimers()
+      warn.mockRestore()
+    }
+  }
+)

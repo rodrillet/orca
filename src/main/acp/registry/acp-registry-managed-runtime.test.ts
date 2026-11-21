@@ -79,4 +79,37 @@ describe('acpRegistryManagedRuntime', () => {
     listRegistry('2.3.2', '../bin/agent')
     expect(await pinFor(['2.0.0'])).toBeNull()
   })
+
+  it('offers Install again when a cached missing registry build expires', async () => {
+    vi.resetModules()
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1_000)
+    try {
+      responses.set(
+        'GET https://cdn.agentclientprotocol.com/registry/v1/latest/registry.json',
+        () => new Response(JSON.stringify({ agents: [] }))
+      )
+      const { acpRegistryManagedRuntime } = await import('./acp-registry-managed-runtime')
+      const { acpRegistryAgent } = await import('./acp-registry-catalog')
+      const managed = acpRegistryManagedRuntime({
+        label: 'Agent',
+        agent: 'agent',
+        registryId: 'agent',
+        command: () => 'bin/agent',
+        minimumVersions: ['2.0.0']
+      })
+      await acpRegistryAgent('another-agent')
+      expect(managed.available()).toBe(true)
+      expect(managed.runtime.available?.()).toBe(false)
+      now.mockReturnValue(3_601_001)
+      expect(managed.runtime.available?.()).toBe(true)
+      responses.delete('GET https://cdn.agentclientprotocol.com/registry/v1/latest/registry.json')
+      await expect(managed.runtime.refreshPin?.()).rejects.toThrow()
+      expect(managed.runtime.available?.()).toBe(true)
+      listRegistry('2.3.2', './bin/agent')
+      await managed.runtime.refreshPin?.()
+      expect(managed.runtime.pin()?.version).toBe('2.3.2')
+    } finally {
+      now.mockRestore()
+    }
+  })
 })

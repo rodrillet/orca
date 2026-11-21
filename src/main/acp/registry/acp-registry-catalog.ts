@@ -49,6 +49,7 @@ export async function acpRegistryAgent(
   signal?: AbortSignal
 ): Promise<AcpRegistryAgent | null> {
   await registry.refresh(signal).catch((error: unknown) => {
+    signal?.throwIfAborted()
     if (!registry.latest()) {
       throw error
     }
@@ -57,8 +58,11 @@ export async function acpRegistryAgent(
   return registry.latest()?.get(id) ?? null
 }
 
-/** The last known listing of `id` without a lookup; undefined before the registry was read. */
+/** The fresh cached listing of `id`; undefined before a read or once the answer expires. */
 export function knownAcpRegistryAgent(id: string): AcpRegistryAgent | null | undefined {
+  if (!registry.fresh()) {
+    return undefined
+  }
   const known = registry.latest()
   return known === undefined ? undefined : (known.get(id) ?? null)
 }

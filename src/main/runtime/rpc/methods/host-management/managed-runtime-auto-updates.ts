@@ -2,7 +2,11 @@ import type { RuntimeStore } from '../../../construction/runtime-store-contract'
 import type { ManagedRuntimeInstallation } from '../../../../node-runtime/managed-runtime-installation'
 import { isTuiAgent } from '../../../../../shared/agent-launch/catalog/tui-agent-config'
 import { isTuiAgentEnabled } from '../../../../../shared/agent-launch/catalog/tui-agent-selection'
-import { onManagedAgentUse } from '../../../../managed-agent-cli/managed-agent-cli-registry'
+import {
+  isManagedAgentCli,
+  onManagedAgentUse
+} from '../../../../managed-agent-cli/managed-agent-cli-registry'
+import { managedCopyMayRun } from './managed-copy-detection'
 
 const AUTO_UPDATE_FIRST_CHECK_MS = 2 * 60_000
 const AUTO_UPDATE_USE_THROTTLE_MS = 10 * 60_000
@@ -18,15 +22,25 @@ export function startManagedRuntimeAutoUpdates(
     return
   }
   autoUpdatesStarted = true
-  let disabled = store.getSettings().disabledTuiAgents
+  let settings = store.getSettings()
   const checks = new Map<string, AbortController>()
-  function checkForUpdate(key: string): void {
+  const startupFailures = new Set<string>()
+  function enabled(key: string, value: typeof settings): boolean {
     const agent = key.slice(key.indexOf(':') + 1)
+    return (
+      (!isTuiAgent(agent) || isTuiAgentEnabled(agent, value.disabledTuiAgents)) &&
+      (!key.startsWith('cli:') ||
+        !isManagedAgentCli(agent) ||
+        managedCopyMayRun(agent, { requireStore: () => ({ getSettings: () => value }) }))
+    )
+  }
+  function checkForUpdate(key: string, trigger: 'startup' | 'use' | 'enable'): void {
     const now = Date.now()
     if (
-      (isTuiAgent(agent) && !isTuiAgentEnabled(agent, disabled)) ||
+      !enabled(key, settings) ||
       checks.has(key) ||
-      now - (lastUseCheck.get(key) ?? -Infinity) < AUTO_UPDATE_USE_THROTTLE_MS
+      (!(trigger === 'use' && startupFailures.has(key)) &&
+        now - (lastUseCheck.get(key) ?? -Infinity) < AUTO_UPDATE_USE_THROTTLE_MS)
     ) {
       return
     }
@@ -36,41 +50,42 @@ export function startManagedRuntimeAutoUpdates(
     }
     const controller = new AbortController()
     checks.set(key, controller)
+    startupFailures.delete(key)
     lastUseCheck.set(key, now)
     void installation
       .updateIfBehind(controller.signal)
       .catch((error: unknown) => {
         if (!controller.signal.aborted) {
+          if (trigger === 'startup') {
+            startupFailures.add(key)
+          }
           console.warn(`[managed-runtime] ${key} update check failed:`, error)
         }
       })
       .finally(() => checks.delete(key))
   }
-  store.onSettingsChanged?.((updates, settings) => {
-    if (!('disabledTuiAgents' in updates)) {
+  store.onSettingsChanged?.((updates, next) => {
+    if (!('disabledTuiAgents' in updates) && !('antigravityManagedAgyEnabled' in updates)) {
       return
     }
-    const previous = disabled
-    disabled = settings.disabledTuiAgents
+    const previous = settings
+    settings = next
     for (const key of installations.keys()) {
-      const agent = key.slice(key.indexOf(':') + 1)
-      if (isTuiAgent(agent)) {
-        if (!isTuiAgentEnabled(agent, disabled)) {
-          checks.get(key)?.abort()
-        } else if (!isTuiAgentEnabled(agent, previous)) {
-          checkForUpdate(key)
-        }
+      if (!enabled(key, settings)) {
+        checks.get(key)?.abort()
+      } else if (!enabled(key, previous)) {
+        checkForUpdate(key, 'enable')
       }
     }
   })
   // Wait out startup so the first check never competes with launching the app.
   setTimeout(() => {
     for (const key of installations.keys()) {
-      checkForUpdate(key)
+      checkForUpdate(key, 'startup')
     }
   }, AUTO_UPDATE_FIRST_CHECK_MS).unref()
   // Use is the signal a copy matters; the release lookup itself is cached for an hour.
   onManagedAgentUse((agent) => {
-    checkForUpdate(`cli:${agent}`)
+    checkForUpdate(`cli:${agent}`, 'use')
   })
 }

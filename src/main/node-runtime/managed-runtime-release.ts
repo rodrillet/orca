@@ -46,7 +46,7 @@ export type ManagedRuntime = {
 /** A managed runtime that is an agent CLI, and where its command sits in a release. */
 export type ManagedAgentCli = {
   runtime: ManagedRuntime
-  /** Whether this host has a build to download. */
+  /** Whether this host supports installation before release metadata is read. */
   available: () => boolean
   executable: (folder: string) => string
   /** The one stock command it stands in for, when the agent's launches name other programs too. */

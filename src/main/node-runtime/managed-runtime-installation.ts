@@ -1,7 +1,14 @@
+import {
+  readManagedRuntimeInstallFacts,
+  type InstalledFacts
+} from './managed-runtime-install-facts'
+import {
+  createManagedRuntimeRun,
+  type ManagedRuntimeRun as Run
+} from './managed-runtime-install-run'
 // Serialize release changes per runtime; rename commits installation, so later cancellation cannot undo it.
 // Removal runs only inside the host ownership fence, never beside installation.
 
-import { randomUUID } from 'node:crypto'
 import { rm } from 'node:fs/promises'
 import type {
   ManagedRuntimeInstallState,
@@ -37,8 +44,6 @@ export type ManagedRuntimeInstallationDeps = {
   revisions?: RevisionClock
 }
 
-type Run = { id: string; controller: AbortController; committed: boolean }
-
 let releasesRevision = 0
 /** Rises whenever an install or removal settles, so answers that read Orca's copies retire. */
 export function managedRuntimeReleasesRevision(): number {
@@ -50,11 +55,6 @@ export function onManagedRuntimeReleasesChanged(listener: () => void): () => voi
   releaseChangeListeners.add(listener)
   return () => releaseChangeListeners.delete(listener)
 }
-type InstalledFacts = Omit<
-  ManagedRuntimeInstallState,
-  'agent' | 'program' | 'revision' | 'operation'
->
-
 const unavailableText = (label: string): string =>
   `${label} is not available on ${process.platform} ${process.arch}.`
 
@@ -83,7 +83,7 @@ export class ManagedRuntimeInstallation {
     const phase = `${operation?.id}:${operation?.phase}`
     let facts = this.facts
     if (fresh || facts?.phase !== phase) {
-      const read = this.readInstalledFacts()
+      const read = readManagedRuntimeInstallFacts(this.runtime, this.root, this.deps)
       facts = { phase, read }
       this.facts = facts
       read.catch(() => {
@@ -103,33 +103,6 @@ export class ManagedRuntimeInstallation {
     return this.state.subscribe(onChange)
   }
 
-  private async readInstalledFacts(): Promise<InstalledFacts> {
-    const pin = this.runtime.pin()
-    const { release, broken, unreadable } = resolveInstalledRuntimeRelease(this.root, pin)
-    const installedCurrent = release !== null && (pin === null || release.current)
-    // Unknown siblings cannot hide a validated copy before the latest release is known.
-    if (unreadable && !installedCurrent) {
-      throw new Error(`Couldn't read the installed ${this.runtime.label} files on this host.`)
-    }
-    this.deps.onRelease?.(release?.folder ?? null)
-    const source = (await this.deps.findExternal()) ? 'external' : release ? 'managed' : null
-    return {
-      available:
-        (this.deps.available?.() ?? true) &&
-        (this.runtime.available?.() ?? (pin !== null || this.runtime.refreshPin !== undefined)),
-      version: pin?.version ?? null,
-      ...(pin && { downloadBytes: pin.archiveBytes }),
-      installedVersion: release?.version ?? null,
-      installedCurrent,
-      ...(pin && !release?.current && broken.includes(pin.version) && { damaged: true }),
-      canRemove: release !== null || broken.length > 0,
-      source,
-      // A copy Orca isn't keeping current offers its own Update.
-      ...(this.runtime.refreshPin &&
-        this.deps.updatesEnabled?.() !== false && { updatesAutomatically: true as const })
-    }
-  }
-
   /** Bring Orca's own copy to the latest release; never installs one nobody asked for or touches a user's own. */
   async updateIfBehind(signal?: AbortSignal): Promise<void> {
     signal?.throwIfAborted()
@@ -141,11 +114,18 @@ export class ManagedRuntimeInstallation {
     if (!published || signal?.aborted || this.deps.updatesEnabled?.() === false) {
       return
     }
-    await this.runtime.refreshPin(signal).catch((error: unknown) => {
-      console.warn(`[managed-runtime] ${this.agent} latest release unknown:`, error)
-    })
+    const previousPin = this.runtime.pin()
+    const installed = await this.status()
+    if (
+      installed.source !== 'managed' ||
+      signal?.aborted ||
+      this.deps.updatesEnabled?.() === false
+    ) {
+      return
+    }
+    await this.runtime.refreshPin(signal)
     signal?.throwIfAborted()
-    const state = await this.status()
+    const state = this.runtime.pin() === previousPin ? installed : await this.status()
     if (
       state.source !== 'managed' ||
       !state.available ||
@@ -165,11 +145,16 @@ export class ManagedRuntimeInstallation {
       return
     }
     this.lastAutoUpdate = { version: state.version, at: Date.now() }
-    this.install()
+    const { settled } = this.startInstall(signal)
+    await settled
   }
 
   /** Join installs; canceled work must finish cleanup before another begins. */
   install(): ManagedRuntimeOperation {
+    return this.startInstall().operation
+  }
+
+  private startInstall(parent?: AbortSignal) {
     const { label } = this.runtime
     const pin = this.runtime.pin()
     // A runtime that follows its latest release looks it up when the install runs.
@@ -182,9 +167,12 @@ export class ManagedRuntimeInstallation {
       throw new Error(`${label} is being removed. Try again after it finishes.`)
     }
     if (current && current.id === running?.id && !running.controller.signal.aborted) {
-      return current
+      if (!parent) {
+        running.detachAutomaticCancellation?.()
+      }
+      return { operation: current, run: running, settled: this.mutation }
     }
-    const run: Run = { id: randomUUID(), controller: new AbortController(), committed: false }
+    const run = createManagedRuntimeRun(parent)
     const operation: ManagedRuntimeOperation = {
       id: run.id,
       kind: 'install',
@@ -193,9 +181,10 @@ export class ManagedRuntimeInstallation {
       totalBytes: pin?.archiveBytes ?? null
     }
     this.running = run
+    const settled = this.mutation.then(() => this.runInstall(run))
+    this.mutation = settled
     this.state.set(operation)
-    this.mutation = this.mutation.then(() => this.runInstall(run))
-    return operation
+    return { operation, run, settled }
   }
 
   remove(): ManagedRuntimeOperation {
@@ -206,7 +195,7 @@ export class ManagedRuntimeInstallation {
     if (this.running) {
       throw new Error(`${this.runtime.label} is installing. Try again after it finishes.`)
     }
-    const run: Run = { id: randomUUID(), controller: new AbortController(), committed: false }
+    const run = createManagedRuntimeRun()
     const operation: ManagedRuntimeOperation = {
       id: run.id,
       kind: 'remove',
@@ -300,6 +289,7 @@ export class ManagedRuntimeInstallation {
         })
       }
     } finally {
+      run.detachAutomaticCancellation?.()
       this.running = this.running === run ? null : this.running
     }
   }
