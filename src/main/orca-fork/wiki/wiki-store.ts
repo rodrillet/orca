@@ -4,6 +4,7 @@ import SyncDatabase from '../../sqlite/sync-database'
 import type {
   ForkWikiWorkspaceId,
   WikiActor,
+  WikiActivityResult,
   WikiBacklinkKind,
   WikiPage,
   WikiVersion
@@ -11,7 +12,12 @@ import type {
 import { normalizeWikiTags } from '../../../shared/orca-fork/wiki/wiki-links'
 import { actorOf, num, tagsOf, text, WikiError } from './wiki-store-rows'
 import { WikiStoreWrites } from './wiki-store-writes'
-import { normalizeWikiPlacement, type WikiPlacement } from './wiki-db-contract'
+import {
+  normalizeWikiPlacement,
+  type WikiActivityOptions,
+  type WikiPlacement
+} from './wiki-db-contract'
+import { readWikiActivity } from './wiki-store-activity'
 
 export { WikiError }
 
@@ -38,6 +44,20 @@ export class WikiStore extends WikiStoreWrites {
     const drop = new Set(normalizeWikiTags(remove))
     const tags = [...tagsOf(row.tags), ...normalizeWikiTags(add)].filter((tag) => !drop.has(tag))
     return this.update(workspaceId, actor, text(row.id), { tags, note: 'Tags' })
+  }
+
+  pin(workspaceId: ForkWikiWorkspaceId, ref: string, pinned: boolean): WikiPage {
+    const row = this.require(workspaceId, ref)
+    this.sql('update wiki_pages set pinned = ? where id = ?').run(pinned ? 1 : 0, text(row.id))
+    return this.show(workspaceId, text(row.id))
+  }
+
+  activity(
+    workspaceId: ForkWikiWorkspaceId,
+    options: WikiActivityOptions = {},
+    now = Date.now()
+  ): WikiActivityResult {
+    return readWikiActivity((query) => this.sql(query), workspaceId, options, now)
   }
 
   mention(

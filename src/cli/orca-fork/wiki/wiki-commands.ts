@@ -12,6 +12,7 @@ import { RuntimeClientError } from '../../runtime/connection/types'
 import { callerChat } from '../../automations/automation-caller-chat'
 import { getCallerWorkspaceIds } from '../../workspace-selection/caller-host-worktree-selection'
 import type {
+  WikiActivityResult,
   WikiActor,
   WikiHistoryResult,
   WikiListResult,
@@ -26,8 +27,11 @@ function scope(flags: Flags): Record<string, string | string[]> {
     getOptionalStringFlag(flags, 'workspace') ?? process.env.ORCA_FORK_WORKSPACE_ID?.trim()
   const agentName = getOptionalStringFlag(flags, 'as')
   const callerWorkspaceIds = getCallerWorkspaceIds()
+  const callerTerminalHandle = process.env.ORCA_TERMINAL_HANDLE?.trim()
   return {
     ...callerChat(),
+    // Lets the host log which orchestration task a worker read a page for.
+    ...(callerTerminalHandle ? { callerTerminalHandle } : {}),
     // Without --workspace, the host picks the caller's own workspace from where it runs.
     ...(callerWorkspaceIds.length ? { callerWorkspaceIds } : {}),
     ...(workspaceId ? { workspaceId } : {}),
@@ -70,6 +74,21 @@ function formatPage(page: WikiPage): string {
   ]
     .filter(Boolean)
     .join('\n\n')
+}
+
+function formatActivity(result: WikiActivityResult): string {
+  if (result.consultations.length === 0) {
+    return 'No one has read these pages yet.'
+  }
+  return result.consultations
+    .map((entry) => {
+      const from = [
+        entry.chatTitle ? `chat "${entry.chatTitle}"` : '',
+        entry.taskTitle ? `task "${entry.taskTitle}"` : ''
+      ].filter(Boolean)
+      return `- ${when(entry.at)} ${who(entry.by)} read [[${entry.title}]]${from.length ? ` from ${from.join(', ')}` : ''}`
+    })
+    .join('\n')
 }
 
 function formatWrite(page: WikiPage): string {
@@ -124,6 +143,17 @@ export const FORK_WIKI_HANDLERS: Record<string, CommandHandler> = {
     printResult(result, json, formatList)
   },
   'wiki show': show,
+  'wiki consultations': async ({ client, json, flags }) => {
+    const pageRef = getOptionalStringFlag(flags, 'page')
+    const reader = getOptionalStringFlag(flags, 'reader')
+    const result = await client.call<WikiActivityResult>('orcaFork.wiki.activity', {
+      ...scope(flags),
+      ...(pageRef ? { page: pageRef } : {}),
+      ...(reader ? { actorKey: reader } : {}),
+      limit: getOptionalPositiveIntegerFlag(flags, 'limit') ?? 30
+    })
+    printResult(result, json, formatActivity)
+  },
   'wiki create': async ({ client, json, flags, cwd }) => {
     const body = await readTextOrFileFlag(flags, cwd, 'body', true)
     const folder = getOptionalStringFlag(flags, 'folder')

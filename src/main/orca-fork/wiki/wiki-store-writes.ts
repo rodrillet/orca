@@ -5,7 +5,8 @@ import {
   wikiActorKey,
   type ForkWikiWorkspaceId,
   type WikiActor,
-  type WikiPage
+  type WikiPage,
+  type WikiReadContext
 } from '../../../shared/orca-fork/wiki/wiki-types'
 import {
   appendToWikiBody,
@@ -27,11 +28,26 @@ import { WikiStoreReads } from './wiki-store-reads'
 import type { WikiCreateInput, WikiUpdateInput } from './wiki-db-contract'
 
 export class WikiStoreWrites extends WikiStoreReads {
-  recordView(pageId: string, actor: WikiActor, chatId: string | null, now = Date.now()): void {
+  recordView(
+    pageId: string,
+    actor: WikiActor,
+    context: Partial<WikiReadContext> | null,
+    now = Date.now()
+  ): void {
     this.tx(() => {
       this.sql(
-        'insert into wiki_views (page_id, at, actor_key, by, chat_id) values (?, ?, ?, ?, ?)'
-      ).run(pageId, now, wikiActorKey(actor), JSON.stringify(actor), chatId)
+        `insert into wiki_views (page_id, at, actor_key, by, chat_id, chat_title, task_id, task_title)
+         values (?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run(
+        pageId,
+        now,
+        wikiActorKey(actor),
+        JSON.stringify(actor),
+        context?.chatId ?? null,
+        context?.chatTitle?.slice(0, WIKI_LIMITS.title) ?? null,
+        context?.taskId ?? null,
+        context?.taskTitle?.slice(0, WIKI_LIMITS.title) ?? null
+      )
       this.sql(
         'update wiki_pages set view_count = view_count + 1, last_viewed_at = ? where id = ?'
       ).run(now, pageId)

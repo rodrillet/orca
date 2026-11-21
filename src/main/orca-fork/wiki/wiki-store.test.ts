@@ -49,17 +49,55 @@ describe('WikiStore', () => {
     ])
   })
 
-  it('counts views per reader', () => {
+  it('logs each consultation with its chat and task, per reader and per page', () => {
     const wiki = openStore()
     const page = wiki.create('w', bot, { title: 'Runbook' })
-    wiki.recordView(page.id, owner, null, 10)
-    wiki.recordView(page.id, bot, 's1', 20)
-    wiki.recordView(page.id, bot, 's1', 30)
-    const shown = wiki.show('w', 'runbook')
-    expect(shown.viewCount).toBe(3)
-    expect(shown.viewers).toEqual([
-      { actor: bot, count: 2, lastAt: 30 },
-      { actor: owner, count: 1, lastAt: 10 }
+    const other = wiki.create('w', bot, { title: 'Glossary' })
+    const now = 1_800_000_000_000
+    wiki.recordView(page.id, owner, null, now - 3000)
+    wiki.recordView(
+      page.id,
+      bot,
+      { chatId: 's1', chatTitle: 'Fix CI', taskId: 't1', taskTitle: 'Ship it' },
+      now - 2000
+    )
+    wiki.recordView(other.id, bot, { chatId: 's1', chatTitle: 'Fix CI' }, now - 1000)
+    expect(wiki.show('w', 'runbook').viewers).toEqual([
+      { actor: bot, count: 1, lastAt: now - 2000 },
+      { actor: owner, count: 1, lastAt: now - 3000 }
+    ])
+    const log = wiki.activity('w', { actorKey: 'bot:b1' }, now)
+    expect(log.consultations.map((c) => [c.title, c.chatTitle, c.taskTitle])).toEqual([
+      ['Glossary', 'Fix CI', null],
+      ['Runbook', 'Fix CI', 'Ship it']
+    ])
+    expect(wiki.activity('w', { page: 'runbook' }, now).consultations).toHaveLength(2)
+    expect(log.readers.map((r) => [r.key, r.count, r.pages])).toEqual([
+      ['bot:b1', 2, 2],
+      ['owner', 1, 1]
+    ])
+    expect(log.popular.map((p) => [p.title, p.count])).toEqual([
+      ['Glossary', 1],
+      ['Runbook', 1]
+    ])
+  })
+
+  it('opens a wiki made before pins and read context, keeping its pages and reads', () => {
+    const db = new SyncDatabase(':memory:')
+    db.exec(`create table wiki_pages (id text primary key, workspace_id text not null, slug text not null,
+      title text not null, folder text not null default '', body text not null default '',
+      tags text not null default '[]', version integer not null default 1, created_at integer not null,
+      created_by text not null, updated_at integer not null, updated_by text not null,
+      view_count integer not null default 0, last_viewed_at integer, deleted_at integer, deleted_by text);
+      create table wiki_views (page_id text not null, at integer not null, actor_key text not null,
+      by text not null, chat_id text);
+      insert into wiki_pages (id, workspace_id, slug, title, created_at, created_by, updated_at, updated_by)
+      values ('p1', 'w', 'old', 'Old', 1, '{"kind":"owner"}', 1, '{"kind":"owner"}');
+      insert into wiki_views values ('p1', 5, 'owner', '{"kind":"owner"}', null);`)
+    const wiki = new WikiStore(db)
+    expect(wiki.pin('w', 'old', true).pinned).toBe(true)
+    expect(wiki.show('w', 'old').recentViews).toEqual([
+      { at: 5, by: owner, chatId: null, chatTitle: null, taskId: null, taskTitle: null }
     ])
   })
 

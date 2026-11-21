@@ -1,4 +1,4 @@
-// orca-fork: the Wiki page's left column parts: which computer keeps the wiki, rows, folders.
+// orca-fork: the Wiki page's left column parts: which computer keeps the wiki, and its rows.
 import React from 'react'
 import { Server } from 'lucide-react'
 import { useAppStore } from '@/store'
@@ -9,7 +9,6 @@ import {
   LOCAL_EXECUTION_HOST_ID,
   type ExecutionHostId
 } from '../../../../../shared/execution-host/execution-host'
-import type { WikiPageSummary } from '../../../../../shared/orca-fork/wiki/wiki-types'
 
 /** Which machine keeps this workspace's wiki. */
 export function WikiMachineLabel({
@@ -73,17 +72,4 @@ export function NavRow({
       ) : null}
     </button>
   )
-}
-
-export function groupByFolder(pages: readonly WikiPageSummary[]): [string, WikiPageSummary[]][] {
-  const folders = new Map<string, WikiPageSummary[]>()
-  for (const page of pages) {
-    folders.set(page.folder, [...(folders.get(page.folder) ?? []), page])
-  }
-  return [...folders.entries()]
-    .map(([folder, list]): [string, WikiPageSummary[]] => [
-      folder,
-      list.sort((a, b) => a.title.localeCompare(b.title))
-    ])
-    .sort(([a], [b]) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b)))
 }

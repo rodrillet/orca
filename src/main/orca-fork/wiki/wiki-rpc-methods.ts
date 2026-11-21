@@ -1,11 +1,13 @@
 // orca-fork: `orcaFork.wiki.*`, the workspace wiki on this host. Agents (the orca CLI) read and write
 // it as their bot, or by name; the owner's Orca and paired desktops read, edit, restore and purge.
 import {
+  ForkWikiActivity,
   ForkWikiCreate,
   ForkWikiLink,
   ForkWikiList,
   ForkWikiMention,
   ForkWikiPageRef,
+  ForkWikiPin,
   ForkWikiRestoreVersion,
   ForkWikiSetPlacement,
   ForkWikiShow,
@@ -14,22 +16,24 @@ import {
 } from '../../../shared/rpc-contract/orca-fork-wiki-params'
 import type { WikiHistoryResult } from '../../../shared/orca-fork/wiki/wiki-types'
 import { FORK_FEATURES } from '../../../shared/orca-fork/fork-features'
-import { readAgentSessionRecordStore } from '../../runtime/orchestration/addressing/session-lineage/structured-session-lineage'
 import { isAgentRpcCaller } from '../../runtime/rpc/callers/rpc-caller-identity'
 import { defineMethod } from '../../runtime/rpc/core'
 import { forkWikiDb } from './wiki-db-remote'
 import { WikiError } from './wiki-error'
-import { actor, callerChat, rememberPlacement, workspace } from './wiki-caller'
+import {
+  actor,
+  callerChat,
+  chatTitle,
+  readContext,
+  rememberPlacement,
+  workspace
+} from './wiki-caller'
 
 function store(): typeof forkWikiDb {
   if (!FORK_FEATURES.workspaceWiki) {
     throw new WikiError('The wiki is turned off in this build.')
   }
   return forkWikiDb
-}
-
-function chatTitle(sessionId: string): string {
-  return readAgentSessionRecordStore()?.getRecord(sessionId)?.conversationName ?? 'Chat'
 }
 
 const LIST = defineMethod({
@@ -57,11 +61,32 @@ const SHOW = defineMethod({
       !isAgentRpcCaller(context.caller)
     )
     if (params.view && page.deletedAt === null) {
-      await wiki.recordView(page.id, actor(params, context), callerChat(params, context))
+      await wiki.recordView(page.id, actor(params, context), readContext(params, context))
       return wiki.show(await workspace(params, context), page.id)
     }
     return page
   }
+})
+
+const ACTIVITY = defineMethod({
+  name: 'orcaFork.wiki.activity',
+  permission: 'workspace',
+  params: ForkWikiActivity,
+  handler: async (params, context) =>
+    store().activity(await workspace(params, context), {
+      ...(params.actorKey ? { actorKey: params.actorKey } : {}),
+      ...(params.page ? { page: params.page } : {}),
+      ...(params.before ? { before: params.before } : {}),
+      ...(params.limit ? { limit: params.limit } : {})
+    })
+})
+
+const PIN = defineMethod({
+  name: 'orcaFork.wiki.pin',
+  permission: 'workspace',
+  params: ForkWikiPin,
+  handler: async (params, context) =>
+    store().pin(await workspace(params, context), params.page, params.pinned)
 })
 
 const CREATE = defineMethod({
@@ -152,7 +177,7 @@ const MENTION = defineMethod({
     return store().mention(
       await workspace(params, context),
       params.page,
-      { kind: 'chat', id: chatId, title: params.sourceTitle ?? chatTitle(chatId) },
+      { kind: 'chat', id: chatId, title: params.sourceTitle ?? chatTitle(chatId) ?? 'Chat' },
       who
     )
   }
@@ -223,6 +248,8 @@ const SET_PLACEMENT = defineMethod({
 export const FORK_WIKI_METHODS = [
   LIST,
   SHOW,
+  ACTIVITY,
+  PIN,
   CREATE,
   UPDATE,
   TAG,

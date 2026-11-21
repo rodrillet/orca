@@ -8,7 +8,6 @@ import {
   type WikiListResult,
   type WikiPage,
   type WikiPageSummary,
-  type WikiView,
   type WikiViewer
 } from '../../../shared/orca-fork/wiki/wiki-types'
 import { parseWikiLinks, wikiSlug } from '../../../shared/orca-fork/wiki/wiki-links'
@@ -17,11 +16,13 @@ import {
   excerptOf,
   num,
   optionalNum,
+  MIGRATIONS,
   SCHEMA,
   tagsOf,
   text,
   WikiError,
-  type Row
+  type Row,
+  viewOf
 } from './wiki-store-rows'
 
 export class WikiStoreReads {
@@ -29,6 +30,13 @@ export class WikiStoreReads {
 
   constructor(protected readonly db: SyncDatabase) {
     db.exec(SCHEMA)
+    // Wikis made before a column existed get it added; their pages and reads stay as they were.
+    for (const { table, column, definition } of MIGRATIONS) {
+      const columns = db.prepare(`pragma table_info(${table})`).all()
+      if (!columns.some((row) => row.name === column)) {
+        db.exec(`alter table ${table} add column ${column} ${definition}`)
+      }
+    }
   }
 
   protected sql(query: string): SqliteStatement {
@@ -68,6 +76,7 @@ export class WikiStoreReads {
       updatedBy: actorOf(row.updated_by),
       viewCount: num(row.view_count),
       lastViewedAt: optionalNum(row.last_viewed_at),
+      pinned: num(row.pinned) === 1,
       deletedAt: optionalNum(row.deleted_at),
       deletedBy: row.deleted_by ? actorOf(row.deleted_by) : null
     }
@@ -187,15 +196,9 @@ export class WikiStoreReads {
       links,
       backlinks: this.backlinks(summary),
       viewers: this.viewers(summary.id),
-      recentViews: this.sql(
-        'select at, by, chat_id from wiki_views where page_id = ? order by at desc limit ?'
-      )
+      recentViews: this.sql('select * from wiki_views where page_id = ? order by at desc limit ?')
         .all(summary.id, WIKI_LIMITS.recentViews)
-        .map((view): WikiView => ({
-          at: num(view.at),
-          by: actorOf(view.by),
-          chatId: text(view.chat_id) || null
-        }))
+        .map(viewOf)
     }
   }
 

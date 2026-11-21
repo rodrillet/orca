@@ -33,6 +33,8 @@ export type WikiPageSummary = {
   updatedBy: WikiActor
   viewCount: number
   lastViewedAt: number | null
+  /** Shown first on the home and in the left column ("Pinned"). */
+  pinned: boolean
   /** Set while the page is in the trash. */
   deletedAt: number | null
   deletedBy: WikiActor | null
@@ -53,7 +55,55 @@ export type WikiBacklink = {
 export type WikiOutgoingLink = { target: string; slug: string; exists: boolean }
 
 export type WikiViewer = { actor: WikiActor; count: number; lastAt: number }
-export type WikiView = { at: number; by: WikiActor; chatId: string | null }
+
+/** Where a read came from: the agent's chat and the orchestration task it was working on. */
+export type WikiReadContext = {
+  chatId: string | null
+  chatTitle: string | null
+  taskId: string | null
+  taskTitle: string | null
+}
+
+export type WikiView = WikiReadContext & { at: number; by: WikiActor }
+
+/** One consultation in the workspace log: who read which page, when, from which chat or task. */
+export type WikiConsultation = WikiView & {
+  pageId: string
+  slug: string
+  title: string
+  folder: string
+  /** The page is in the trash now. */
+  trashed: boolean
+}
+
+/** Someone who read the wiki, and how much. */
+export type WikiReaderSummary = {
+  actor: WikiActor
+  key: string
+  count: number
+  pages: number
+  lastAt: number
+}
+
+export type WikiPopularPage = {
+  pageId: string
+  slug: string
+  title: string
+  folder: string
+  count: number
+  readers: { actor: WikiActor; count: number }[]
+}
+
+export type WikiActivityResult = {
+  workspaceId: ForkWikiWorkspaceId
+  /** Newest first; only `actorKey`'s when it was asked for. */
+  consultations: WikiConsultation[]
+  /** Everyone who read in the window, most reads first. */
+  readers: WikiReaderSummary[]
+  /** Pages agents (not the owner) read most in the window. */
+  popular: WikiPopularPage[]
+  windowDays: number
+}
 
 export type WikiPage = WikiPageSummary & {
   body: string
@@ -110,5 +160,9 @@ export const WIKI_LIMITS = {
   search: 300,
   versionsKept: 200,
   viewsKept: 500,
-  recentViews: 30
+  recentViews: 30,
+  activity: 300,
+  popular: 8,
+  activityDays: 30,
+  popularDays: 7
 } as const
