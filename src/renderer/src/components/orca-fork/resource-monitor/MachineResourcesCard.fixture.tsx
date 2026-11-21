@@ -11,7 +11,7 @@ const MB = 1024 ** 2
 const bot: Bot = {
   id: 'devzin',
   name: 'Devzin',
-  hostId: 'runtime:vps1',
+  hostId: 'local',
   folder: 'devzin',
   folderWorkspaceId: 'fw-devzin',
   agent: 'claude',
@@ -84,9 +84,9 @@ const data: MachineResources = {
 
 function machine(result: MachineEntry['result']): MachineEntry {
   return {
-    key: 'vps1',
-    name: 'VPS 1',
-    target: { kind: 'environment', environmentId: 'vps1' },
+    key: 'local',
+    name: null,
+    target: { kind: 'local' },
     result
   }
 }
