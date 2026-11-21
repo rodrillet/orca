@@ -4,6 +4,10 @@ import { SYNC_FIT_PANES_EVENT } from '@/constants/terminal'
 import { canShowRightSidebarForView } from '@/components/right-sidebar/visibility/right-sidebar-visibility'
 import { resolveLeftSidebarStyleVariables } from '@/app-shell/appearance/left-sidebar-appearance'
 import { resolveLeftTitlebarChromeLayout } from '@/app-shell/chrome/titlebar-left-chrome'
+import {
+  FORK_SIDEBAR_RAIL_WIDTH,
+  useForkSidebarRail
+} from '@/components/orca-fork/sidebar-rail/sidebar-mode-store' // orca-fork:
 import { selectWorktreeCreationSurfaceShown } from '@/lib/workspace/creation/worktree-creation-surface'
 import { useAppStore } from '../../store/index'
 import { FLOATING_TERMINAL_WORKTREE_ID } from '../../../../shared/workspace/identity/floating-workspace-id'
@@ -19,6 +23,9 @@ export type AppChromeLayout = ReturnType<typeof useAppChromeLayout>
 export function useAppChromeLayout() {
   const activeView = useAppStore((s) => s.activeView)
   const sidebarOpen = useAppStore((s) => s.sidebarOpen)
+  // orca-fork: the icon rail is too narrow for the titlebar controls, so they float as when closed.
+  const forkRail = useForkSidebarRail() && sidebarOpen
+  const chromeSidebarOpen = sidebarOpen && !forkRail
   const rightSidebarOpen = useAppStore((s) => s.rightSidebarOpen)
   const rightSidebarTab = useAppStore((s) => s.rightSidebarTab)
   const rightSidebarExplorerView = useAppStore((s) => s.rightSidebarExplorerView)
@@ -68,13 +75,13 @@ export function useAppChromeLayout() {
     activeView !== 'settings' && activeView !== 'activity' && activeView !== 'space'
   // Tasks/Landing keep sidebar-width chrome when open; creation suppresses stacked chrome.
   const stackedSidebarOpen =
-    !workspaceChromeActive && !creationLayoutActive && showSidebar && sidebarOpen
+    !workspaceChromeActive && !creationLayoutActive && showSidebar && chromeSidebarOpen // orca-fork:
   // Creation retains sidebar chrome; workspaceChromeActive gates the workspace tabs.
   const leftTitlebarChromeLayout = resolveLeftTitlebarChromeLayout({
     workspaceChromeActive,
     stackedSidebarOpen,
     creationLayoutActive,
-    sidebarOpen
+    sidebarOpen: chromeSidebarOpen // orca-fork:
   })
 
   // Fit terminals before paint in the width-change frame to avoid transient wrong sizes.
@@ -112,7 +119,10 @@ export function useAppChromeLayout() {
     activeView,
     activePendingCreationId,
     activeTabCanExpand,
-    collapsedSidebarHeaderWidth,
+    // orca-fork: over the rail the floating header only covers the panes past the rail's width.
+    collapsedSidebarHeaderWidth: forkRail
+      ? Math.max(0, collapsedSidebarHeaderWidth - FORK_SIDEBAR_RAIL_WIDTH)
+      : collapsedSidebarHeaderWidth,
     creationLayoutActive,
     hasActiveWorktree,
     isFullScreen,

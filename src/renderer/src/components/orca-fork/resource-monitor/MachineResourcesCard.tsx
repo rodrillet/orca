@@ -68,7 +68,7 @@ function Meter({
   )
 }
 
-function MachineMeters({ data }: { data: MachineResources }): React.JSX.Element {
+export function MachineMeters({ data }: { data: MachineResources }): React.JSX.Element {
   const t = useTranslate()
   const memoryPct = percent(data.memory.used, data.memory.total)
   const cpuPct =

@@ -1,7 +1,7 @@
 // orca-fork: New workspace / Workspace settings: name, photo and the machine it runs on.
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { ImagePlus, Trash2 } from 'lucide-react'
+import { ImagePlus, Link2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -13,7 +13,11 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { HostCombobox } from '@/components/host-picker/HostCombobox'
+import { HostCombobox, type HostComboboxOption } from '@/components/host-picker/HostCombobox'
+import {
+  AddRemoteHostDialog,
+  type AddRemoteHostMode
+} from '@/components/sidebar/host-admission/ssh/AddRemoteHostDialog'
 import { useTranslate } from '@/i18n/use-translate'
 import { BOT_AVATAR_TOO_SMALL, squareAvatarPng } from '@/components/bots/bot-avatar-upload'
 import {
@@ -22,6 +26,7 @@ import {
 } from '../../../../../shared/execution-host/execution-host'
 import {
   newForkWorkspaceId,
+  seededForkWorkspaceId,
   type ForkWorkspace
 } from '../../../../../shared/orca-fork/workspaces/fork-workspace'
 import {
@@ -31,6 +36,7 @@ import {
 import { ForkWorkspaceMark } from './ForkWorkspaceMark'
 import { forkWorkspacesStore, useForkWorkspaces } from './fork-workspaces-store'
 import { useForkWorkspaceMachines } from './use-fork-workspace-machines'
+import { useSquarePictureIntake } from '../workspace-settings/square-picture-intake'
 
 const PHOTO_SIZE = 256
 const PHOTO_MIN_SIDE = 32
@@ -74,6 +80,24 @@ function ForkWorkspaceDialogBody({
   const [photo, setPhoto] = useState<string | null>(editing?.photo ?? null)
   const [hostId, setHostId] = useState<ExecutionHostId>(editing?.hostId ?? LOCAL_EXECUTION_HOST_ID)
   const fileInput = useRef<HTMLInputElement>(null)
+  const [pairMode, setPairMode] = useState<AddRemoteHostMode | null>(null)
+  const pastePhoto = useSquarePictureIntake(setPhoto).onPaste
+  const [openedAt] = useState(() => Date.now())
+  // A server paired from this dialog is picked as soon as it shows up.
+  const knownHosts = useRef<Set<ExecutionHostId> | null>(null)
+  const pairing = pairMode !== null
+  useEffect(() => {
+    if (pairing) {
+      knownHosts.current = new Set(machines.map((m) => m.hostId))
+      return
+    }
+    const known = knownHosts.current
+    const paired = known ? machines.find((m) => !known.has(m.hostId)) : undefined
+    if (paired) {
+      knownHosts.current = null
+      setHostId(paired.hostId)
+    }
+  }, [pairing, machines])
   const trimmed = name.trim()
   const machineLabel = (id: ExecutionHostId): string =>
     machines.find((m) => m.hostId === id)?.label ?? id
@@ -98,12 +122,21 @@ function ForkWorkspaceDialogBody({
     if (!trimmed) {
       return
     }
-    if (editing) {
+    // A machine that got its own workspace while this dialog was open (just paired) takes this one's place.
+    const seeded = doc.workspaces.find(
+      (ws) => ws.id === seededForkWorkspaceId(hostId) && ws.createdAt >= openedAt
+    )
+    const machineHasWorkspace = doc.workspaces.some((ws) => ws.hostId === hostId)
+    if (!editing && seeded) {
+      forkWorkspacesStore.edit(forkWorkspaceEdits.update(seeded.id, { name: trimmed, photo }))
+      forkWorkspacesStore.edit(forkWorkspaceEdits.setActive(seeded.id))
+    } else if (editing) {
       forkWorkspacesStore.edit(forkWorkspaceEdits.update(editing.id, { name: trimmed, photo }))
     } else {
       forkWorkspacesStore.edit(
         forkWorkspaceEdits.add({
-          id: newForkWorkspaceId(),
+          // A machine's first workspace keeps the id its seeding would give it, so none is added twice.
+          id: machineHasWorkspace ? newForkWorkspaceId() : seededForkWorkspaceId(hostId),
           name: trimmed,
           photo,
           hostId,
@@ -119,7 +152,7 @@ function ForkWorkspaceDialogBody({
   const removable = editing ? canRemoveForkWorkspace(doc, editing.id) : false
 
   return (
-    <DialogContent className="sm:max-w-[440px]">
+    <DialogContent className="sm:max-w-[440px]" onPaste={pastePhoto}>
       <DialogHeader>
         <DialogTitle>
           {editing
@@ -190,7 +223,26 @@ function ForkWorkspaceDialogBody({
             <HostCombobox
               value={hostId}
               ariaLabel={t('orcaFork.workspaces.machine', 'Runs on')}
-              options={machines.map((machine) => ({ id: machine.hostId, label: machine.label }))}
+              options={[
+                ...machines.map((machine): HostComboboxOption => ({
+                  id: machine.hostId,
+                  label: machine.label,
+                  detail: doc.workspaces.some((ws) => ws.hostId === machine.hostId)
+                    ? undefined
+                    : t('orcaFork.workspaces.noWorkspaceYet', 'no workspace yet')
+                })),
+                {
+                  id: 'orca-fork:pair-server',
+                  label: t('orcaFork.workspaces.pairServer', 'Pair a new server…'),
+                  content: (
+                    <span className="flex items-center gap-2">
+                      <Link2 className="size-4" aria-hidden="true" />
+                      {t('orcaFork.workspaces.pairServer', 'Pair a new server…')}
+                    </span>
+                  ),
+                  onSelect: () => setPairMode('server')
+                }
+              ]}
               onChange={(value) => {
                 const machine = machines.find((m) => m.hostId === value)
                 if (machine) {
@@ -244,6 +296,7 @@ function ForkWorkspaceDialogBody({
           </div>
         </DialogFooter>
       </form>
+      {pairMode ? <AddRemoteHostDialog mode={pairMode} onOpenChange={setPairMode} /> : null}
     </DialogContent>
   )
 }
