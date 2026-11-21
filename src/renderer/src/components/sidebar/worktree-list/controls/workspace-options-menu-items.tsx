@@ -35,6 +35,7 @@ import {
 } from '../../../../../../shared/workspace-view/workspace-view-options'
 import { useTranslate } from '@/i18n/use-translate'
 import { SidebarGroupByToggle } from './SidebarGroupByToggle'
+import { ForkWorkspacesByMachineToggle } from '@/components/orca-fork/organization/workspaces-by-machine' // orca-fork:
 import { HideBotCreatedFilterRow } from '@/components/bots/HideBotCreatedFilterRow'
 import { withoutHiddenRepos } from '../../../../../../shared/project/catalog/hidden-projects'
 import { selectDrawsNewWorktreeCards } from '@/store/appearance/worktree-card-style'
@@ -144,6 +145,7 @@ function GroupByOptionItem(): JSX.Element {
   return (
     <div className="px-2 pt-0.5 pb-1">
       <SidebarGroupByToggle groupBy={groupBy} setGroupBy={setGroupBy} />
+      <ForkWorkspacesByMachineToggle />
     </div>
   )
 }

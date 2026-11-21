@@ -60,6 +60,12 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener)
 }
 
+/** The current document outside React; it may still be empty before the first read lands. */
+export function readBotOrganization(): BotOrganization {
+  load()
+  return current
+}
+
 export function useBotOrganization(): BotOrganization {
   return useSyncExternalStore(subscribe, () => current)
 }

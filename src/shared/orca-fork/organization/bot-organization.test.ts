@@ -77,6 +77,10 @@ describe('bot organization', () => {
       view: { groupBy: 'bogus', collapsed: ['fork-org:ops'] }
     })
     expect(doc.placements).toEqual({})
-    expect(doc.view).toEqual({ groupBy: 'none', collapsed: ['fork-org:ops'] })
+    expect(doc.view).toEqual({
+      groupBy: 'none',
+      collapsed: ['fork-org:ops'],
+      workspacesByMachine: false
+    })
   })
 })

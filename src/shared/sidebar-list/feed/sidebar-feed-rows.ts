@@ -75,6 +75,8 @@ export type SidebarFeedView = {
   localHostLabel: string
   /** The desktop window's own saved host order, which it writes; a phone reads the host's. */
   workspaceHostOrder?: readonly ExecutionHostId[]
+  /** orca-fork: false lists one section per machine even without a host filter (Group by Machine). */
+  preferProjectGrouping?: boolean
 }
 
 /** The catalog the feed does not carry: every host's repos (repo.list), groups and projects. */
@@ -278,7 +280,7 @@ export function renderSidebarFeedRows(
     localHostLabel: view.localHostLabel,
     collapsedHostKeys: collapsed,
     forceCollapseHosts,
-    preferProjectGrouping: true
+    preferProjectGrouping: view.preferProjectGrouping ?? true // orca-fork: Group by Machine
   })
   const sectionRows = planned.hostScoped
     ? scopeHostSectionCollapse({ rows: sectioned, collapsedGroups: collapsed })

@@ -41,6 +41,7 @@ import {
 } from '../controls/sidebar-host-options'
 import { selectPendingWorktreeCreationKeys } from './pending-worktree-creation-keys'
 import { selectEphemeralVmHostLifecycles } from '@/store/slices/ephemeral-vm/ephemeral-vm-lifecycle'
+import { useWorkspacesByMachine } from '@/components/orca-fork/organization/workspaces-by-machine' // orca-fork:
 
 function createSidebarHostOptionsSelector() {
   let inputs: readonly unknown[] = []
@@ -232,6 +233,7 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
     [hostOptions, workspaceHostOrder]
   )
   const [hostDragActive, setHostDragActive] = useState(false)
+  const byMachine = useWorkspacesByMachine() // orca-fork: Group by Machine
   const handleReorderHostSections = useCallback(
     (orderedVisibleHostIds: ExecutionHostId[]) =>
       setWorkspaceHostOrder(
@@ -254,7 +256,7 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
       collapsedHostKeys: effectiveCollapsedGroups,
       forceCollapseHosts: hostDragActive,
       // Why: projects/workspaces are the primary sidebar object; host sections are only an explicit host-filter view.
-      preferProjectGrouping: true
+      preferProjectGrouping: !byMachine
     })
     return hostScopedGroups
       ? scopeHostSectionCollapse({
@@ -268,6 +270,7 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
     defaultHostId,
     effectiveCollapsedGroups,
     hostDragActive,
+    byMachine,
     hostScopedGroups,
     orderedHostOptions,
     rows

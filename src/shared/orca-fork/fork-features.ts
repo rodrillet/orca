@@ -16,5 +16,9 @@ export const FORK_FEATURES = {
   /** Departments > Sections and Group by machine in the Bots sidebar (Phase 2). */
   botOrganization: true,
   /** Phase 4: a bot the owner lets build a team creates bots from its own offers. */
-  agentTeams: true
+  agentTeams: true,
+  /** Group by Machine in the workspace sidebar: one section per machine, projects inside. */
+  workspacesGroupByMachine: true,
+  /** "Move to…" in a bot row's menu, listing departments and sections. */
+  botMoveToMenu: true
 } as const
