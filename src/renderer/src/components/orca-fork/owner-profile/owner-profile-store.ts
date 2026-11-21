@@ -24,7 +24,8 @@ function emptyOwnerProfile(): OwnerProfile {
 }
 
 function normalizeOwnerProfile(raw: unknown): OwnerProfile {
-  const input = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+  const input: Record<string, unknown> =
+    raw && typeof raw === 'object' && !Array.isArray(raw) ? { ...raw } : {}
   const presence = OWNER_PRESENCES.find((p) => p === input.presence) ?? 'available'
   return {
     revision: typeof input.revision === 'number' ? input.revision : 0,

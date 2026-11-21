@@ -25208,12 +25208,10 @@
         "machine": "Máquina"
       },
       "close": "Fechar",
-      "agentCount_one": "{{count}} agente",
-      "agentCount_other": "{{count}} agentes",
+      "agentCount": "Agentes: {{count}}",
       "connectors": {
         "noBots": "Conectores pertencem aos bots: crie um neste workspace para conectar Slack, Linear, GitHub ou Google.",
-        "botCount_one": "{{count}} bot",
-        "botCount_other": "{{count}} bots",
+        "botCount": "Bots: {{count}}",
         "none": "Não conectado",
         "manage": "Gerenciar",
         "add": "Conectar um bot",
@@ -25230,8 +25228,7 @@
         "title": "O que cada agente pode fazer",
         "hint": "As permissões decidem o que um bot faz sem te perguntar; as pessoas que ele atende vêm dos conectores.",
         "empty": "Ainda não há bots neste workspace.",
-        "whoCanAsk_one": "{{count}} pode pedir",
-        "whoCanAsk_other": "{{count}} podem pedir",
+        "whoCanAsk": "Podem pedir: {{count}}",
         "permissions": "Permissões",
         "people": "Quem pode pedir"
       },
@@ -25243,8 +25240,7 @@
         "openChat": "Abrir chat",
         "settings": "Configurações do bot",
         "groups": "Grupos",
-        "groupMembers_one": "{{count}} membro",
-        "groupMembers_other": "{{count}} membros"
+        "groupMembers": "Membros: {{count}}"
       },
       "openOf": "Configurações do workspace {{name}}"
     },
@@ -25254,8 +25250,7 @@
       "search": "Buscar",
       "tasks": "Tarefas",
       "wiki": "Wiki",
-      "notificationsCount_one": "Notificações: {{count}} precisa de você",
-      "notificationsCount_other": "Notificações: {{count}} precisam de você",
+      "notificationsCount": "Notificações · {{count}} aguardando você",
       "notifications": "Notificações",
       "profile": "{{name}} · perfil e status",
       "compact": "Barra lateral compacta"

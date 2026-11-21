@@ -116,7 +116,7 @@ function ForkWorkspaceSettingsOverlay({ tab }: { tab: WorkspaceSettingsTab }): R
                   </span>
                   <span aria-hidden="true">·</span>
                   <span>
-                    {t('orcaFork.workspaceSettings.agentCount', '{{count}} agents', {
+                    {t('orcaFork.workspaceSettings.agentCount', 'Agents: {{count}}', {
                       count: bots.length
                     })}
                   </span>
@@ -136,12 +136,16 @@ function ForkWorkspaceSettingsOverlay({ tab }: { tab: WorkspaceSettingsTab }): R
             </header>
             <Tabs
               value={tab}
-              onValueChange={(value) => openWorkspaceSettings(value as WorkspaceSettingsTab)}
-              className="gap-4"
+              onValueChange={(value) => {
+                const next = WORKSPACE_SETTINGS_TABS.find((id) => id === value)
+                if (next) {
+                  openWorkspaceSettings(next)
+                }
+              }}
             >
               <TabsList variant="line" className="w-full justify-start overflow-x-auto">
                 {WORKSPACE_SETTINGS_TABS.map((id) => (
-                  <TabsTrigger key={id} value={id} className="flex-none px-3">
+                  <TabsTrigger key={id} value={id} className="flex-none">
                     {tabLabel(id)}
                   </TabsTrigger>
                 ))}

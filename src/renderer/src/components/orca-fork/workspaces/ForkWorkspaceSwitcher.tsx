@@ -106,7 +106,7 @@ function ForkWorkspaceSwitcherRow(): React.JSX.Element {
             <Button
               variant="ghost"
               size="icon-sm"
-              className="shrink-0 text-muted-foreground"
+              className="shrink-0"
               aria-label={t('orcaFork.workspaces.switch', 'Switch workspace')}
               title={t('orcaFork.workspaces.switch', 'Switch workspace')}
             >
@@ -175,7 +175,7 @@ function ForkWorkspaceSwitcherRow(): React.JSX.Element {
             <Button
               variant="ghost"
               size="icon-sm"
-              className="shrink-0 text-muted-foreground"
+              className="shrink-0"
               aria-label={t('orcaFork.sidebarRail.compact', 'Compact sidebar')}
               onClick={() => setForkSidebarMode('compact')}
             >

@@ -110,7 +110,7 @@ export function WorkspaceAgentsTab(): React.JSX.Element {
                 </ForkGroupPicture>
               }
               title={group.name}
-              detail={t('orcaFork.workspaceSettings.agents.groupMembers', '{{count}} members', {
+              detail={t('orcaFork.workspaceSettings.agents.groupMembers', 'Members: {{count}}', {
                 count: group.members.length
               })}
             >

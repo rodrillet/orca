@@ -1,6 +1,6 @@
 // orca-fork: the sidebar's compact mode, agentes.chat's icon rail: the workspace's photo (its settings),
 // expand, the tools, the bot groups and the agents with their presence, then notifications and my photo.
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Bell, HardDrive, Library, ListChecks, PanelLeftOpen, Search } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTranslate } from '@/i18n/use-translate'
@@ -9,8 +9,6 @@ import { useAppStore } from '@/store'
 import { openBotHome } from '@/lib/bot-catalog'
 import { openBotGroup } from '@/lib/bot-group-catalog'
 import { BotAvatar } from '@/components/bots/BotAvatar'
-import { activityThreadStatusId } from '@/components/activity/threads/activity-thread-presentation'
-import { useAgentPaneThreads } from '@/components/activity/threads/use-agent-pane-threads'
 import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import { ForkWorkspaceMark } from '../workspaces/ForkWorkspaceMark'
 import { useActiveForkWorkspace } from '../workspaces/fork-workspaces-store'
@@ -21,6 +19,8 @@ import { openForkDrivePage, useForkDriveActive } from '../drive/drive-page-state
 import { closeWikiPage, openWikiPage, useWikiPageOpen } from '../wiki/wiki-view-state'
 import { useWikiPlacementSync } from '../wiki/use-wiki-placement-sync'
 import { ForkGroupPicture } from '../group-photos/ForkGroupPicture'
+import { useForkBotPresence } from '../presence/ForkBotPresenceDot'
+import type { Bot } from '../../../../../shared/bot-types'
 import { OwnerAvatar, useOwnerDisplayName } from '../owner-profile/OwnerAvatar'
 import { openOwnerProfile } from '../owner-profile/owner-profile-open'
 import { ForkGroupInitials } from '../workspace-settings/workspace-group-picture'
@@ -70,23 +70,21 @@ function RailDivider(): React.JSX.Element {
   return <span aria-hidden="true" className="my-1 h-px w-8 shrink-0 bg-worktree-sidebar-border" />
 }
 
-/** "Needs you" across the agents' sessions, as the full sidebar's Agents badge counts it. */
-function useNeedsYouCount(): number {
-  const { visibleThreads } = useAgentPaneThreads({
-    query: '',
-    readFilter: 'all',
-    groupBy: 'none',
-    selectedPaneKey: null,
-    badgeOnly: true
-  })
-  let count = 0
-  for (const thread of visibleThreads) {
-    const status = thread.currentAgentState ? activityThreadStatusId(thread) : null
-    if (status === 'waiting' || status === 'blocked') {
-      count += 1
-    }
-  }
-  return count
+/** Reports whether one bot is stopped or needs the owner, so the bell can count them. */
+function NeedsYouProbe({
+  bot,
+  onChange
+}: {
+  bot: Bot
+  onChange: (key: string, needsYou: boolean) => void
+}): null {
+  const needsYou = useForkBotPresence(bot) === 'blocked'
+  const key = `${bot.hostId}/${bot.id}`
+  useEffect(() => {
+    onChange(key, needsYou)
+    return () => onChange(key, false)
+  }, [key, needsYou, onChange])
+  return null
 }
 
 export function ForkSidebarRail(): React.JSX.Element {
@@ -105,7 +103,22 @@ export function ForkSidebarRail(): React.JSX.Element {
   const driveActive = useForkDriveActive()
   const wikiOpen = useWikiPageOpen()
   const ownerName = useOwnerDisplayName()
-  const needsYou = useNeedsYouCount()
+  const [blockedBots, setBlockedBots] = useState<ReadonlySet<string>>(() => new Set())
+  const reportNeedsYou = React.useCallback((key: string, blocked: boolean) => {
+    setBlockedBots((prev) => {
+      if (prev.has(key) === blocked) {
+        return prev
+      }
+      const next = new Set(prev)
+      if (blocked) {
+        next.add(key)
+      } else {
+        next.delete(key)
+      }
+      return next
+    })
+  }, [])
+  const needsYou = blockedBots.size
   const expandLabel = `${t('orcaFork.sidebarRail.expand', 'Expand sidebar')} (${FORK_SIDEBAR_MODE_SHORTCUT_LABEL})`
 
   return (
@@ -174,6 +187,13 @@ export function ForkSidebarRail(): React.JSX.Element {
         ))}
         {bots.length > 0 ? <RailDivider /> : null}
         {bots.map((bot) => (
+          <NeedsYouProbe
+            key={`probe:${bot.hostId}/${bot.id}`}
+            bot={bot}
+            onChange={reportNeedsYou}
+          />
+        ))}
+        {bots.map((bot) => (
           <RailTile
             key={`${bot.hostId}/${bot.id}`}
             label={bot.name}
@@ -187,9 +207,13 @@ export function ForkSidebarRail(): React.JSX.Element {
       <RailTile
         label={
           needsYou > 0
-            ? t('orcaFork.sidebarRail.notificationsCount', 'Notifications: {{count}} need you', {
-                count: needsYou
-              })
+            ? t(
+                'orcaFork.sidebarRail.notificationsCount',
+                'Notifications · {{count}} waiting on you',
+                {
+                  count: needsYou
+                }
+              )
             : t('orcaFork.sidebarRail.notifications', 'Notifications')
         }
         onClick={() => {

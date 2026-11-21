@@ -56,7 +56,7 @@ export function WorkspaceConnectorsTab(): React.JSX.Element {
               <SettingsSectionTitle>{connector.name}</SettingsSectionTitle>
               <span className="text-xs text-muted-foreground">
                 {reached.length > 0
-                  ? t('orcaFork.workspaceSettings.connectors.botCount', '{{count}} bots', {
+                  ? t('orcaFork.workspaceSettings.connectors.botCount', 'Bots: {{count}}', {
                       count: reached.length
                     })
                   : t('orcaFork.workspaceSettings.connectors.none', 'Not connected')}

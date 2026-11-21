@@ -50,7 +50,7 @@ export function WorkspaceAccessTab(): React.JSX.Element {
                 </span>
                 <span aria-hidden="true">·</span>
                 <span className="shrink-0">
-                  {t('orcaFork.workspaceSettings.access.whoCanAsk', '{{count}} can ask', {
+                  {t('orcaFork.workspaceSettings.access.whoCanAsk', 'Can ask: {{count}}', {
                     count: bot.members.length
                   })}
                 </span>
