@@ -142,6 +142,25 @@ Tasks Agents view. Renderer only; stock `orca-server` works. Code: `src/renderer
 Dropped by the owner (2026-11-21): a desktop per machine costs too much RAM/CPU on the VPS. Nothing
 of it ships: no desktop service, scripts or agent tools.
 
+### Drive (agentes.chat's Drive)
+
+Every file the owner sends in a chat and every file agents make lands in a per-workspace **Drive**
+(sidebar → Drive, under Tasks), across this Mac and every paired server.
+
+- **Storage**: on the host that runs the bots (`userData/orca-fork/drive/<workspace>/index.json` +
+  `blobs/<id>`), so a paired server keeps its own bots' files; the page merges every host's Drive.
+- **Ingestion**: (1) chat uploads are copied when the host claims them for the chat
+  (`structured-agent-session-attachment-wiring.ts`), so they outlive the attachment sweep; (2) at each
+  turn end, new or changed files in the chat's scratch folder (`ORCA_CHAT_SCRATCH_DIR`, where agents put
+  what they show in chat) are kept; (3) agents run `orca files save <file> [--note] [--folder]` (taught in
+  the bot preamble), linked to their chat; (4) the owner uploads on the page (button or drag & drop).
+- **Page**: grid/list, folders, search, filters (who, type, agent, computer, chat), preview (images, PDF,
+  Markdown, text, code, video, audio), download, rename, move, trash/restore/delete forever, and "where it
+  came from" (the bot, its note or the message's words, Open the chat).
+- **RPC**: `orcaFork.drive.*` on the runtime (`src/main/runtime/rpc/methods/orca-fork/`). A stock
+  `orca-server` answers `method_not_found`; the page shows a notice to install the fork's server there.
+- **Scoping**: every call takes a `workspaceId` (stand-in `default` until the fork workspaces land).
+
 ## Decisions for the owner
 
 1. Base v1.4.266 and track upstream **release tags** (not upstream `main`).

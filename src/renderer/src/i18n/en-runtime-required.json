@@ -2818,6 +2818,28 @@
       "unreadChats_one": "{{count}} unread chat",
       "unreadChats_other": "{{count}} unread chats"
     },
+    "drive": {
+      "kind": {
+        "archive": "Archive",
+        "audio": "Audio",
+        "code": "Code",
+        "document": "Document",
+        "image": "Image",
+        "markdown": "Markdown",
+        "other": "Other",
+        "pdf": "PDF",
+        "spreadsheet": "Spreadsheet",
+        "text": "Text",
+        "video": "Video"
+      },
+      "when": {
+        "earlier": "Earlier",
+        "month": "This month",
+        "today": "Today",
+        "week": "This week",
+        "yesterday": "Yesterday"
+      }
+    },
     "resourceMonitor": {
       "children_one": "+{{count}} child process",
       "children_other": "+{{count}} child processes"

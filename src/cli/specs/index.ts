@@ -48,11 +48,13 @@ import { PAIR_COMMAND_SPECS } from './pair'
 import { PLUGIN_VIEW_COMMAND_SPECS } from './plugin-view'
 import { PLUGIN_INSTALL_COMMAND_SPECS } from './plugin-install'
 import { WORKSPACE_CLEANUP_COMMAND_SPECS } from './workspace-cleanup'
+import { DRIVE_COMMAND_SPECS } from '../orca-fork/drive/drive-command-specs' // orca-fork:
 
 export const COMMAND_SPECS: CommandSpec[] = [
   ...CORE_COMMAND_SPECS,
   ...REFERENCE_COMMAND_SPECS,
   ...ARTIFACT_COMMAND_SPECS,
+  ...DRIVE_COMMAND_SPECS, // orca-fork: Drive
   ...ACCOUNT_COMMAND_SPECS,
   ...AUTH_COMMAND_SPECS,
   ...PROJECT_COMMAND_SPECS,

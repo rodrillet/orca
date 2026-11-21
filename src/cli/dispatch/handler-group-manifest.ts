@@ -231,6 +231,12 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
     load: async () => (await import('../agents/chat.js')).CHAT_HANDLERS
   },
   ...BOT_HANDLER_GROUPS,
+  // orca-fork: Drive
+  {
+    name: 'orca-fork-drive',
+    keys: ['files save', 'files list'],
+    load: async () => (await import('../orca-fork/drive/drive-commands.js')).DRIVE_HANDLERS
+  },
   {
     name: 'profile-state',
     keys: ['profile state exports', 'profile state rollback'],
