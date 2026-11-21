@@ -29,7 +29,10 @@ import {
   setTokenSavingHostPolicy,
   tokenSavingHostPolicy
 } from '../../../../orca-fork/token-saving/token-saving-host-policy'
-import { tokenSavingSlug } from '../../../../orca-fork/token-saving/token-saving-launch'
+import {
+  tokenSavingSlug,
+  watchTokenSavingProxy
+} from '../../../../orca-fork/token-saving/token-saving-launch'
 
 const DEFAULT_DAYS = 30
 
@@ -85,6 +88,7 @@ export const TOKEN_SAVING_METHODS = [
       // Only the owner's desktop or phone sets it; an agent can't turn its own saving off.
       assertBotGroupOwner(context)
       const policy = await setTokenSavingHostPolicy(params)
+      watchTokenSavingProxy()
       if (policy.enabled || Object.values(policy.bots).some(Boolean)) {
         void startCavemanProxy(policy.proxyMode).catch(() => undefined)
       }

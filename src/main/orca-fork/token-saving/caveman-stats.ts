@@ -35,6 +35,33 @@ FROM requests
 WHERE ts >= ? AND (agent_slug = 'orca' OR agent_slug LIKE 'orca-%')
 GROUP BY agent_slug`
 
+function field(row: unknown, key: string): unknown {
+  return typeof row === 'object' && row !== null && key in row
+    ? Object.getOwnPropertyDescriptor(row, key)?.value
+    : null
+}
+
+function readRow(row: unknown): Row {
+  const text = (key: string): string | null => {
+    const value = field(row, key)
+    return typeof value === 'string' ? value : null
+  }
+  const count = (key: string): number | null => {
+    const value = field(row, key)
+    return typeof value === 'number' || typeof value === 'bigint' ? Number(value) : null
+  }
+  return {
+    slug: text('slug'),
+    requests: count('requests') ?? 0,
+    input: count('input'),
+    output: count('output'),
+    cache_read: count('cache_read'),
+    cache_write: count('cache_write'),
+    saved: count('saved'),
+    last_at: text('last_at')
+  }
+}
+
 function emptyTotals(): TokenSavingTotals {
   return {
     requests: 0,
@@ -67,8 +94,12 @@ export function readCavemanStats(
   try {
     db = new SyncDatabase(path, { readonly: true, fileMustExist: true, timeout: 1_000 })
     db.pragma('query_only = ON')
-    const since = new Date(Date.now() - days * 86_400_000).toISOString()
-    const rows = db.prepare(QUERY).all(since) as Row[]
+    // caveman.db writes `YYYY-MM-DD HH:MM:SS.mmm` (UTC), so the bound uses the same spelling.
+    const since = new Date(Date.now() - days * 86_400_000)
+      .toISOString()
+      .replace('T', ' ')
+      .slice(0, 23)
+    const rows = db.prepare(QUERY).all(since).map(readRow)
     const total = emptyTotals()
     const agents = rows
       .filter((row): row is Row & { slug: string } => typeof row.slug === 'string')

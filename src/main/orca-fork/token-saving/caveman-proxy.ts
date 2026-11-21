@@ -22,6 +22,17 @@ let managed: { pid: number; mode: TokenSavingProxyMode } | null = null
 let lastStartAttempt = 0
 let starting: Promise<void> | null = null
 
+function isHealthyCaveman(body: unknown): boolean {
+  return (
+    typeof body === 'object' &&
+    body !== null &&
+    'ok' in body &&
+    body.ok === true &&
+    'service' in body &&
+    body.service === 'caveman-proxy'
+  )
+}
+
 async function probe(): Promise<TokenSavingProxyState> {
   if (!cavemanBinary('caveman-proxy')) {
     return 'not_installed'
@@ -33,8 +44,8 @@ async function probe(): Promise<TokenSavingProxyState> {
     if (!response.ok) {
       return 'unhealthy'
     }
-    const body = (await response.json()) as { ok?: unknown; service?: unknown }
-    return body.ok === true && body.service === 'caveman-proxy' ? 'running' : 'unhealthy'
+    const body: unknown = await response.json()
+    return isHealthyCaveman(body) ? 'running' : 'unhealthy'
   } catch {
     return 'stopped'
   }
@@ -47,6 +58,28 @@ export async function cavemanProxyState(fresh = false): Promise<TokenSavingProxy
   const state = await probe()
   health = { state, at: Date.now() }
   return state
+}
+
+/** The proxy's address when the last health read found it running; no network read. */
+export function lastKnownCavemanProxyUrl(): string | null {
+  return health?.state === 'running' ? CAVEMAN_PROXY_URL : null
+}
+
+const WATCHDOG_MS = 60_000
+let watchdog: ReturnType<typeof setInterval> | null = null
+
+/** While token saving is on, a stopped proxy is started again within a minute. */
+export function watchCavemanProxy(mode: () => TokenSavingProxyMode | null): void {
+  if (watchdog) {
+    return
+  }
+  watchdog = setInterval(() => {
+    const wanted = mode()
+    if (wanted) {
+      void cavemanProxyForLaunch(wanted).catch(() => undefined)
+    }
+  }, WATCHDOG_MS)
+  watchdog.unref?.()
 }
 
 export function managedCavemanProxy(): { pid: number; mode: TokenSavingProxyMode } | null {

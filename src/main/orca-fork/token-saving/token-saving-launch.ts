@@ -6,7 +6,7 @@ import type { BotToolServer } from '../../../shared/bot-tools'
 import { FORK_FEATURES } from '../../../shared/orca-fork/fork-features'
 import { hostPolicyEnables } from '../../../shared/orca-fork/token-saving/token-saving'
 import { cavemanBinary } from './caveman-install'
-import { cavemanProxyForLaunch } from './caveman-proxy'
+import { cavemanProxyForLaunch, watchCavemanProxy } from './caveman-proxy'
 import { CAVEMAN_VOICE_RULES } from './caveman-voice-rules'
 import { tokenSavingHostPolicy } from './token-saving-host-policy'
 
@@ -30,6 +30,9 @@ export function setTokenSavingBotResolver(
 ): void {
   botOfRecord = resolve
 }
+
+/** Claude Code started in an Orca terminal (workers, the + menu): no bot names it. */
+export const TERMINAL_TOKEN_SAVING_SLUG = 'orca-terminal'
 
 /** The proxy route's agent slug: one per bot so savings read per bot, `orca` for anything else. */
 export function tokenSavingSlug(botId: string | null): string {
@@ -69,7 +72,7 @@ function withLoopbackNoProxy(env: Record<string, string>): Record<string, string
   return { NO_PROXY: noProxy, no_proxy: noProxy }
 }
 
-function claudeProxyEnv(
+export function claudeProxyEnv(
   proxyUrl: string | null,
   slug: string
 ): (agentEnv: Record<string, string>) => Record<string, string> {
@@ -94,12 +97,21 @@ function claudeProxyEnv(
   }
 }
 
+/** Keeps this host's proxy up while any launch here saves tokens. */
+export function watchTokenSavingProxy(): void {
+  watchCavemanProxy(() => {
+    const policy = tokenSavingHostPolicy()
+    return policy.enabled || Object.values(policy.bots).some(Boolean) ? policy.proxyMode : null
+  })
+}
+
 /** Null when token saving is off for this launch (or for this agent). */
 export async function tokenSavingForLaunch(
   agent: string,
   record: AgentSessionRecord
 ): Promise<TokenSavingLaunch | null> {
-  if (!FORK_FEATURES.tokenSaving || !SAVING_AGENTS.has(agent)) {
+  // Upstream's launch tests assert exact instructions and tools, as they would on a stock build.
+  if (!FORK_FEATURES.tokenSaving || !SAVING_AGENTS.has(agent) || process.env.VITEST) {
     return null
   }
   try {
@@ -107,6 +119,7 @@ export async function tokenSavingForLaunch(
     if (!on) {
       return null
     }
+    watchTokenSavingProxy()
     const mcp = cavemanBinary('caveman-mcp')
     // Codex threads are bound to their model provider, so moving one to the proxy could strand
     // its history; Codex gets the voice and the MCP server only.
