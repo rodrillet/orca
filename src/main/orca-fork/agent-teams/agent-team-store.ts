@@ -3,6 +3,7 @@
 import { readFile, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import * as z from 'zod'
+import { getProfileUserDataPath } from '../../orca-profiles/profile-storage-paths'
 import {
   AgentTeamSettingsSchema,
   createdInLastDay,
@@ -97,4 +98,18 @@ export class AgentTeamStore {
   setGroup(botId: string, groupId: string): Promise<void> {
     return this.change(botId, (entry) => ({ ...entry, groupId }))
   }
+
+  /** Team groups whose lead may build a team now, each with its lead. */
+  async autonomousGroups(): Promise<{ groupId: string; leadId: string }[]> {
+    await this.writing
+    return Object.entries(await this.load()).flatMap(([leadId, entry]) =>
+      entry.teamBuilder && entry.groupId ? [{ groupId: entry.groupId, leadId }] : []
+    )
+  }
+}
+
+let store: AgentTeamStore | null = null
+export function agentTeamStore(): AgentTeamStore {
+  store ??= new AgentTeamStore(() => agentTeamFile(getProfileUserDataPath()))
+  return store
 }

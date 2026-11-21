@@ -29610,7 +29610,9 @@
     },
     "teams": {
       "builder": "Can build a team",
-      "builderDetail": "Creates the bots it proposes without asking you (up to {{cap}} a day) and shares a group with them. They hand work to each other without your approval."
+      "builderDetail": "Creates the bots it proposes without asking you and shares a group with them, where the team hands work to each other without your approval.",
+      "dailyCap": "Bots it may create a day",
+      "createdToday": "Created in the last 24 hours: {{created}}"
     },
     "workspaces": {
       "groupByMachine": "Group by machine",
