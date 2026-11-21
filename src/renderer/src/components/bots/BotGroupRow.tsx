@@ -22,6 +22,7 @@ import { botErrorMessage } from './bot-presentation'
 import { botGroupFaces } from '../../../../shared/bots/bot-group-face-layout'
 import { BotGroupFaces } from './BotGroupFaces'
 import { ForkBotMoveToMenu } from '../orca-fork/organization/ForkBotMoveToMenu' // orca-fork:
+import { ForkMoveToWorkspaceMenu } from '../orca-fork/workspaces/ForkMoveToWorkspaceMenu' // orca-fork:
 import { botSidebarEntryKey } from './bot-sidebar-entry-keys' // orca-fork:
 
 /** A group in the Bots section: its members' faces, then the room's newest post. */
@@ -106,6 +107,11 @@ export function BotGroupRow({
           </ContextMenuItem>
           {/* orca-fork: department/section from the row */}
           <ForkBotMoveToMenu entryKey={botSidebarEntryKey(group)} />
+          <ForkMoveToWorkspaceMenu
+            menu="context"
+            hostId={group.hostId}
+            item={{ botKey: botSidebarEntryKey(group) }}
+          />
         </>
       }
       menuFooter={

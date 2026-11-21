@@ -61,6 +61,7 @@ import {
   useForkBotSidebarRows,
   withForkBotOrganizationRows
 } from '@/components/orca-fork/organization/fork-bot-sidebar-rows' // orca-fork:
+import { useForkWorkspaceOwners } from '@/components/orca-fork/workspaces/use-fork-workspace-scope' // orca-fork: the active workspace's bots and groups
 
 // The + menu's rows only: 28px tall (a 20px line in the item's own 4px padding), roomier than other menus.
 const BOT_MENU_ROW = 'flex min-h-5 items-center gap-2'
@@ -74,7 +75,7 @@ export function SidebarBotsSection({
   reorderable?: boolean
 }): React.JSX.Element {
   const t = useTranslate()
-  const bots = useBots()
+  const bots = useForkWorkspaceOwners(useBots())
   const savedCollapsed = useAppStore((s) => s.collapsedGroups.has(BOTS_GROUP_KEY))
   const toggleCollapsedGroup = useAppStore((s) => s.toggleCollapsedGroup)
   const activeWorkspaceId = useAppStore((s) =>
@@ -84,7 +85,7 @@ export function SidebarBotsSection({
       ? null
       : getActiveSidebarWorkspaceId(s.activeWorkspaceKey, s.activeWorktreeId)
   )
-  const groups = useBotGroups()
+  const groups = useForkWorkspaceOwners(useBotGroups())
   const folderWorkspaces = useBotHomeWorkspaces(bots, groups)
   const activeRoomId = useAppStore(selectActiveBotGroupRoomId)
   const activeGroupId = activeRoomId ? findBotGroupRoom(groups, activeRoomId)?.group.id : null

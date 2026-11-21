@@ -24950,7 +24950,30 @@
     },
     "workspaces": {
       "groupByMachine": "Agrupar por máquina",
-      "groupByMachineAria": "Listar os workspaces sob este Mac e cada servidor pareado"
+      "groupByMachineAria": "Listar os workspaces sob este Mac e cada servidor pareado",
+      "addPhoto": "Adicionar foto",
+      "cancel": "Cancelar",
+      "changePhoto": "Trocar foto",
+      "create": "Criar workspace",
+      "delete": "Excluir workspace",
+      "description": "Um workspace reúne seus bots, times, projetos, wiki, drive e chats, em uma máquina.",
+      "lastOnMachine": "O único workspace de uma máquina não pode ser excluído.",
+      "machine": "Roda em",
+      "machineHint": "Este computador, um servidor pareado ou outro workspace na mesma máquina.",
+      "machineOffline": "Máquina não pareada",
+      "menuOf": "Menu do workspace {{name}}",
+      "name": "Nome",
+      "namePlaceholder": "Acme, Pessoal…",
+      "new": "Novo workspace…",
+      "newTitle": "Novo workspace",
+      "photoTooSmall": "Essa imagem é pequena demais.",
+      "photoUnreadable": "Não foi possível ler esse arquivo como imagem.",
+      "removePhoto": "Remover foto",
+      "save": "Salvar",
+      "settings": "Configurações do workspace…",
+      "settingsTitle": "Configurações do workspace",
+      "yourWorkspaces": "Seus workspaces",
+      "moveTo": "Mover para workspace"
     },
     "agentsBoard": {
       "column": {

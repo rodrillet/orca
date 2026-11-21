@@ -11,6 +11,7 @@ import {
 import type { BotSidebarEntry } from '../../../../../shared/bots/bot-sidebar-entries'
 import type { ExecutionHostId } from '../../../../../shared/execution-host/execution-host'
 import { useBotOrganization } from './bot-organization-store'
+import { useForkWorkspaceDepartments } from '../workspaces/fork-workspace-departments'
 
 type Hosted = { hostId: ExecutionHostId }
 type HostedEntry = BotSidebarEntry<Hosted, Hosted, unknown>
@@ -25,7 +26,7 @@ export function useForkBotSidebarRows<E extends HostedEntry>(
   entries: readonly E[]
 ): readonly (E | BotOrganizationHeader)[] {
   const t = useTranslate()
-  const doc = useBotOrganization()
+  const doc = useForkWorkspaceDepartments(useBotOrganization())
   const groupBy = FORK_FEATURES.botOrganization ? doc.view.groupBy : 'none'
   const hostIds = useMemo(() => [...new Set(entries.map(hostOf))], [entries])
   // Joined into one string so the selector stays stable between renders.

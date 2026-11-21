@@ -39,6 +39,7 @@ import { BotSidebarRow } from './BotSidebarRow'
 import { ForkBotUnreadChatCount } from '../orca-fork/sidebar/ForkBotUnreadChatCount'
 import { ForkChangePhotoMenuItem } from '../orca-fork/sidebar/ForkChangePhotoMenuItem'
 import { ForkBotMoveToMenu } from '../orca-fork/organization/ForkBotMoveToMenu' // orca-fork:
+import { ForkMoveToWorkspaceMenu } from '../orca-fork/workspaces/ForkMoveToWorkspaceMenu' // orca-fork:
 import { BotHoverNeedsYou, revealBotHome } from './BotHoverNeedsYou'
 import { usageLimitStopTip } from './BotUsageLimitMark'
 import { BotUpNextCount } from './BotUpNextCount'
@@ -193,6 +194,11 @@ export function BotRow({
           <ForkChangePhotoMenuItem bot={bot} disabled={offline} />
           {/* orca-fork: department/section from the row */}
           <ForkBotMoveToMenu entryKey={botSidebarEntryKey(bot)} />
+          <ForkMoveToWorkspaceMenu
+            menu="context"
+            hostId={bot.hostId}
+            item={{ botKey: botSidebarEntryKey(bot) }}
+          />
           <ContextMenuItem
             disabled={offline}
             onSelect={() => run(updateBot(bot, { paused: !bot.paused }))}

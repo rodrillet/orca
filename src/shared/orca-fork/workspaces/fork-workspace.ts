@@ -32,6 +32,8 @@ export type ForkWorkspace = {
   repoIds: string[]
   /** Bots and bot groups (sidebar key `hostId/id`) placed here; same home rule as repos. */
   botKeys: string[]
+  /** Departments (Bots sidebar organization) made in this workspace; unclaimed ones show in every workspace. */
+  departmentIds?: string[]
   createdAt: number
 }
 
@@ -150,6 +152,7 @@ export function normalizeForkWorkspaces(
       hostId: host.id,
       repoIds: readStrings(ws.repoIds),
       botKeys: readStrings(ws.botKeys),
+      departmentIds: readStrings(ws.departmentIds),
       createdAt:
         typeof ws.createdAt === 'number' && Number.isFinite(ws.createdAt) ? ws.createdAt : 0
     })
@@ -165,4 +168,46 @@ export function normalizeForkWorkspaces(
     workspaces,
     activeWorkspaceId: active.id
   }
+}
+
+/** A project filter id no repo has: a workspace with no projects lists none, not all. */
+export const FORK_WORKSPACE_NO_REPOS = 'orca-fork:no-projects'
+
+/**
+ * The sidebar's project filter for a workspace: [] (no filter) while it is the only one showing its
+ * machine's projects, else exactly the projects that belong to it.
+ */
+export function forkWorkspaceRepoFilter(
+  doc: ForkWorkspacesDocument,
+  workspaceId: ForkWorkspaceId,
+  repos: readonly { id: string; hostId: ExecutionHostId }[]
+): string[] {
+  const ws = doc.workspaces.find((w) => w.id === workspaceId)
+  if (!ws) {
+    return []
+  }
+  const sharesMachine = doc.workspaces.some(
+    (w) => w.id !== ws.id && w.hostId === ws.hostId && w.repoIds.length > 0
+  )
+  if (!sharesMachine && forkWorkspaceHomeOf(doc, ws.hostId)?.id === ws.id) {
+    return []
+  }
+  const ids = repos
+    .filter(
+      (repo) =>
+        repo.hostId === ws.hostId &&
+        forkWorkspaceOfItem(doc, repo.hostId, { repoId: repo.id })?.id === ws.id
+    )
+    .map((repo) => repo.id)
+  return ids.length > 0 ? ids : [FORK_WORKSPACE_NO_REPOS]
+}
+
+/** Whether a Bots-sidebar department shows in a workspace: it was made there, or in none. */
+export function forkWorkspaceShowsDepartment(
+  doc: ForkWorkspacesDocument,
+  workspaceId: ForkWorkspaceId,
+  departmentId: string
+): boolean {
+  const owner = doc.workspaces.find((ws) => ws.departmentIds?.includes(departmentId))
+  return !owner || owner.id === workspaceId
 }
