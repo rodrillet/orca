@@ -7,9 +7,6 @@ export const MACHINE_RESOURCES_STOP_METHOD = 'orcaFork.resources.stopProcess'
 export const MachineResourcesParams = z.object({}).strict().optional()
 export const MachineResourcesStopParams = z.object({ pid: z.number().int().positive() }).strict()
 
-/** Placeholder until src/shared/orca-fork/workspaces/ lands: today the worktree id Orca keys sessions by. */
-export type ForkWorkspaceId = string
-
 export type AgentProcessKind = 'claude' | 'codex' | 'agent'
 
 export type MachineUsage = { cpu: number; memory: number }
@@ -23,8 +20,11 @@ export type MachineAgentProcess = MachineUsage & {
   children: number
   botId: string | null
   botName: string | null
-  workspaceId: ForkWorkspaceId | null
-  workspaceName: string | null
+  /** The Orca worktree (or folder workspace) whose terminal runs it, and its project. */
+  worktreeId: string | null
+  worktreeName: string | null
+  /** With the bot key, what places the process in a fork workspace (`forkWorkspaceOfItem`). */
+  repoId: string | null
   /** The folder it runs in, shortened to its last two parts; null when the host can't tell. */
   folder: string | null
 }

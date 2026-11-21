@@ -78,12 +78,16 @@ function isUnder(folder: string, home: string): boolean {
 
 function sessionWorkspaces(
   snapshot: MemorySnapshot
-): Map<number, { worktreeId: string; name: string }> {
-  const byPid = new Map<number, { worktreeId: string; name: string }>()
+): Map<number, { worktreeId: string; name: string; repoId: string }> {
+  const byPid = new Map<number, { worktreeId: string; name: string; repoId: string }>()
   for (const worktree of snapshot.worktrees) {
     for (const session of worktree.sessions) {
       if (session.pid > 0) {
-        byPid.set(session.pid, { worktreeId: worktree.worktreeId, name: worktree.worktreeName })
+        byPid.set(session.pid, {
+          worktreeId: worktree.worktreeId,
+          name: worktree.worktreeName,
+          repoId: worktree.repoId
+        })
       }
     }
   }
@@ -153,8 +157,9 @@ export async function collectMachineResources(
       children: tree.length - 1,
       botId: bot?.id ?? null,
       botName: bot?.name ?? null,
-      workspaceId: workspace?.worktreeId ?? null,
-      workspaceName: workspace?.name ?? null,
+      worktreeId: workspace?.worktreeId ?? null,
+      worktreeName: workspace?.name ?? null,
+      repoId: workspace?.repoId || null,
       folder: cwd ? shortFolder(cwd) : null
     }
   })

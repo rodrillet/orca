@@ -181,7 +181,7 @@ function AgentRow({
   canStop: boolean
 }): React.JSX.Element {
   const t = useTranslate()
-  const owner = agent.botName ?? agent.workspaceName ?? agent.folder
+  const owner = agent.botName ?? agent.worktreeName ?? agent.folder
   return (
     <li className="flex items-center gap-2 px-3 py-1.5 hover:bg-accent/40">
       {bot ? (
@@ -198,7 +198,7 @@ function AgentRow({
         </span>
         <span className="truncate text-[11px] text-muted-foreground">
           {[
-            agent.botName && agent.workspaceName ? agent.workspaceName : null,
+            agent.botName && agent.worktreeName ? agent.worktreeName : null,
             `pid ${agent.pid}`,
             agent.children > 0
               ? t('orcaFork.resourceMonitor.children', '+{{count}} child processes', {

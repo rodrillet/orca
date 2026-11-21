@@ -45,8 +45,9 @@ const data: MachineResources = {
       children: 8,
       botId: 'devzin',
       botName: 'Devzin',
-      workspaceId: 'repo::/home/ubuntu/src/orca',
-      workspaceName: 'orca',
+      worktreeId: 'repo::/home/ubuntu/src/orca',
+      worktreeName: 'orca',
+      repoId: null,
       folder: 'src/orca'
     },
     {
@@ -58,8 +59,9 @@ const data: MachineResources = {
       children: 1,
       botId: null,
       botName: null,
-      workspaceId: 'repo::/home/ubuntu/src/site',
-      workspaceName: 'site',
+      worktreeId: 'repo::/home/ubuntu/src/site',
+      worktreeName: 'site',
+      repoId: null,
       folder: 'src/site'
     },
     {
@@ -71,8 +73,9 @@ const data: MachineResources = {
       children: 0,
       botId: null,
       botName: null,
-      workspaceId: null,
-      workspaceName: null,
+      worktreeId: null,
+      worktreeName: null,
+      repoId: null,
       folder: 'scratch/notes'
     }
   ],
