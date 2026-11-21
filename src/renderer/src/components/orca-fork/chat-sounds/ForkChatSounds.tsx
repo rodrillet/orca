@@ -2,6 +2,7 @@
 // a channel turns unread (muted channels stay quiet).
 import React, { useEffect, useRef } from 'react'
 import { useAppStore } from '@/store'
+import { selectFolderWorkspaces } from '@/store/workspaces/catalog/workspace-record-fields'
 import { useBotGroups } from '@/lib/bot-group-list'
 import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import { botSidebarEntryKey } from '../../bots/bot-sidebar-entry-keys'
@@ -55,14 +56,14 @@ export function ForkChatSounds(): React.JSX.Element | null {
     }
     const unreadIds = (folders: readonly { id: string; isUnread: boolean }[]): Set<string> =>
       new Set(folders.filter((folder) => folder.isUnread).map((folder) => folder.id))
-    let folders = useAppStore.getState().folderWorkspaces
+    let folders = selectFolderWorkspaces(useAppStore.getState())
     let previous = unreadIds(folders)
     return useAppStore.subscribe((state) => {
       // Most store changes leave the folders alone; only a new list is read.
-      if (state.folderWorkspaces === folders) {
+      if (selectFolderWorkspaces(state) === folders) {
         return
       }
-      folders = state.folderWorkspaces
+      folders = selectFolderWorkspaces(state)
       const next = unreadIds(folders)
       const fresh = [...next].some((id) => !previous.has(id) && !mutedFolders.current.has(id))
       previous = next

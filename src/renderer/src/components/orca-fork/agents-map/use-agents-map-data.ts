@@ -5,6 +5,7 @@ import { useBots } from '@/lib/bot-catalog'
 import { useBotGroups } from '@/lib/bot-group-list'
 import { callBotRpc } from '@/lib/bot-hosts'
 import { onBotsChanged } from '@/lib/bots-changed-window-event'
+import { installWindowVisibilityInterval } from '@/lib/window-activity/window-visibility-interval'
 import type { Bot } from '../../../../../shared/bot-types'
 import type { BotGroup, BotGroupMessage } from '../../../../../shared/bots/bot-group'
 import {
@@ -86,11 +87,15 @@ export function useAgentsMapData(open: boolean): AgentsMapData {
       })
     }
     read()
-    const timer = setInterval(read, REFRESH_MS)
+    const stopTimer = installWindowVisibilityInterval({
+      run: read,
+      intervalMs: REFRESH_MS,
+      slowWhileUnfocused: true
+    })
     const stop = onBotsChanged(() => read())
     return () => {
       closed = true
-      clearInterval(timer)
+      stopTimer()
       stop()
     }
   }, [open, groups])

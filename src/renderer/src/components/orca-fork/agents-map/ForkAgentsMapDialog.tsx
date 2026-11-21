@@ -148,7 +148,7 @@ function ForkAgentsMapDialog({ onClose }: { onClose: () => void }): React.JSX.El
                     strokeDasharray={glowing ? '8 5' : style.dash}
                     strokeOpacity={edge.kind === 'member' && !glowing ? 0.8 : 0.9}
                     markerEnd={edge.kind === 'handoff' ? 'url(#fork-map-arrow)' : undefined}
-                    className={glowing ? 'fork-agents-map-live' : undefined}
+                    data-fork-map-live={glowing ? '' : undefined}
                   >
                     <title>
                       {t('orcaFork.agentsMap.edgeTip', '{{kind}} · {{count}} messages', {
@@ -160,7 +160,7 @@ function ForkAgentsMapDialog({ onClose }: { onClose: () => void }): React.JSX.El
                 )
               })}
             </svg>
-            <style>{`.fork-agents-map-live{animation:fork-agents-map-flow 0.8s linear infinite;filter:drop-shadow(0 0 3px var(--status-success))}@keyframes fork-agents-map-flow{to{stroke-dashoffset:-13}}@media (prefers-reduced-motion:reduce){.fork-agents-map-live{animation:none}}`}</style>
+            <style>{`[data-fork-map-live]{animation:fork-agents-map-flow 0.8s linear infinite;filter:drop-shadow(0 0 3px var(--status-success))}@keyframes fork-agents-map-flow{to{stroke-dashoffset:-13}}@media (prefers-reduced-motion:reduce){[data-fork-map-live]{animation:none}}`}</style>
             <MapNode point={points.get(OWNER_NODE)} label={t('orcaFork.agentsMap.you', 'You')}>
               <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <User className="size-4" />
