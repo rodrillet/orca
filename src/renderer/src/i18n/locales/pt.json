@@ -25191,6 +25191,15 @@
       "unmute": "Reativar som do canal",
       "bots": "Bots"
     },
+    "chatPaths": {
+      "open": "Abrir no Orca",
+      "showOnMachine": "Mostrar nos arquivos de {{machine}}",
+      "showInFiles": "Mostrar nos arquivos do Orca",
+      "reveal": "Mostrar no {{name}}",
+      "terminal": "Abrir um terminal aqui",
+      "copied": "Caminho copiado",
+      "copy": "Copiar caminho"
+    },
     "bots": {
       "unreadChats_one": "{{count}} conversa não lida",
       "unreadChats_other": "{{count}} conversas não lidas",

@@ -11,6 +11,7 @@ import { resolveNativeChatHttpLinkRouting } from './native-chat-link-target-acti
 import { handleNativeChatWebLink } from './native-chat-web-link-actions'
 import { nativeChatPlainLinkClickBehavior } from './native-chat-link-click-behavior'
 import { useNativeChatFileLinkClick } from './use-native-chat-file-link-click'
+import { tagForkLinkClickScope } from '../../../orca-fork/chat-paths/fork-link-click-scope' // orca-fork:
 
 export type NativeChatLinkActions = {
   onLinkClick: CommentMarkdownLinkClickHandler | undefined
@@ -89,5 +90,5 @@ export function useNativeChatLinkClick(
     [context, openFileLink, request, rootRef]
   )
 
-  return context ? onLinkClick : undefined
+  return context ? tagForkLinkClickScope(onLinkClick, context) : undefined // orca-fork: path badges
 }

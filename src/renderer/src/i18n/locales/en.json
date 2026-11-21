@@ -29846,6 +29846,15 @@
       "unmute": "Unmute channel",
       "bots": "Bots"
     },
+    "chatPaths": {
+      "open": "Open in Orca",
+      "showOnMachine": "Show in {{machine}} files",
+      "showInFiles": "Show in Orca files",
+      "reveal": "Reveal in {{name}}",
+      "terminal": "Open a terminal here",
+      "copied": "Path copied",
+      "copy": "Copy path"
+    },
     "bots": {
       "unreadChats_one": "{{count}} unread chat",
       "unreadChats_other": "{{count}} unread chats",
