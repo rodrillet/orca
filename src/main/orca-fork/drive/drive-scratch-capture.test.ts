@@ -24,7 +24,7 @@ afterEach(async () => {
 })
 
 describe('captureScratchFilesInDrive', () => {
-  it('keeps what an agent wrote in its chat folder once, and again when it is rewritten', async () => {
+  it('keeps what an agent wrote in its chat folder once, and updates it when it is rewritten', async () => {
     const folder = nativeChatScratchFolderFor(root, 'session-1')
     await mkdir(join(folder, 'charts'), { recursive: true })
     await writeFile(join(folder, 'charts', 'funnel.png'), 'png-v1')
@@ -38,7 +38,9 @@ describe('captureScratchFilesInDrive', () => {
     expect(await captureScratchFilesInDrive(root, 'session-1')).toBe(1)
 
     const { files } = await store.list()
-    expect(files.map((file) => file.name)).toEqual(['funnel.png', 'funnel.png'])
+    expect(files.map((file) => [file.name, file.byteLength])).toEqual([['funnel.png', 13]])
     expect(files[0]?.source).toEqual({ kind: 'agent', sessionId: 'session-1' })
+    const read = await store.read(files[0]?.id ?? '')
+    expect(Buffer.from(read.contentBase64, 'base64').toString()).toBe('png-version-2')
   })
 })

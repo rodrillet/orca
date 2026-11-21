@@ -1,6 +1,6 @@
 // orca-fork: what an agent writes in its chat's scratch folder (ORCA_CHAT_SCRATCH_DIR, where chat
-// visuals and made files go) lands in the Drive when its turn ends. A file rewritten later is kept
-// again as a new version.
+// visuals and made files go) lands in the Drive when its turn ends. A file rewritten later updates
+// the same Drive file.
 import type { Dirent } from 'node:fs'
 import { readdir, stat } from 'node:fs/promises'
 import { join, relative, sep } from 'node:path'
@@ -58,13 +58,15 @@ export async function captureScratchFilesInDrive(
         continue
       }
       const rel = relative(root, path).split(sep).join('/')
-      const originKey = `chat-scratch:${sessionId}:${rel}:${info.size}:${Math.floor(info.mtimeMs)}`
-      if (await store.hasOrigin(originKey)) {
+      const originKey = `chat-scratch:${sessionId}:${rel}`
+      const originStamp = `${info.size}:${Math.floor(info.mtimeMs)}`
+      if ((await store.originStampOf(originKey)) === originStamp) {
         continue
       }
       await store.addFromPath(path, {
         name: rel.split('/').pop() ?? rel,
         originKey,
+        originStamp,
         source: { kind: 'agent', sessionId }
       })
       kept++

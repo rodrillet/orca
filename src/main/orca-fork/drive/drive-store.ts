@@ -42,7 +42,11 @@ export class DriveNotFoundError extends Error {
   }
 }
 
-function publicFile({ originKey: _originKey, ...file }: StoredFile): DriveFile {
+function publicFile({
+  originKey: _originKey,
+  originStamp: _originStamp,
+  ...file
+}: StoredFile): DriveFile {
   return file
 }
 
@@ -52,6 +56,8 @@ export type DriveAddInput = {
   source: DriveFileSource
   workspaceId?: ForkWorkspaceId
   originKey?: string
+  /** A new stamp for a known origin replaces that file's bytes (a rewritten chat file). */
+  originStamp?: string
 }
 
 export class DriveStore {
@@ -179,10 +185,21 @@ export class DriveStore {
     await place(blob)
     try {
       const { size } = await stat(blob)
-      return await this.mutate((index) => {
+      return await this.mutate(async (index) => {
         const existing = input.originKey
           ? index.files.find((file) => file.originKey === input.originKey)
           : undefined
+        if (
+          existing &&
+          input.originStamp !== undefined &&
+          existing.originStamp !== input.originStamp
+        ) {
+          await renameFileWithWindowsRetryAsync(blob, this.blobPath(existing.id))
+          existing.byteLength = size
+          existing.updatedAt = Date.now()
+          existing.originStamp = input.originStamp
+          return publicFile(existing)
+        }
         if (existing) {
           void unlink(blob).catch(() => undefined)
           return publicFile(existing)
@@ -201,7 +218,8 @@ export class DriveStore {
           trashedAt: null,
           source: input.source,
           ...(input.workspaceId ? { workspaceId: input.workspaceId } : {}),
-          ...(input.originKey ? { originKey: input.originKey } : {})
+          ...(input.originKey ? { originKey: input.originKey } : {}),
+          ...(input.originStamp ? { originStamp: input.originStamp } : {})
         }
         index.files.push(file)
         return publicFile(file)
@@ -226,6 +244,12 @@ export class DriveStore {
 
   async hasOrigin(originKey: string): Promise<boolean> {
     return (await this.load()).files.some((file) => file.originKey === originKey)
+  }
+
+  /** The version a captured source was last kept at; null when it was never kept. */
+  async originStampOf(originKey: string): Promise<string | null> {
+    const file = (await this.load()).files.find((entry) => entry.originKey === originKey)
+    return file ? (file.originStamp ?? '') : null
   }
 
   async commitUpload(uploadId: string): Promise<DriveFile> {

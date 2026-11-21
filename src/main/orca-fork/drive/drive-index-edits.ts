@@ -14,8 +14,9 @@ import type {
 } from '../../../shared/orca-fork/drive/drive-rpc-params'
 import type { ForkWorkspaceId } from '../../../shared/orca-fork/workspaces/fork-workspace'
 
-/** A file record as stored: `originKey` keeps one capture of the same source to one file. */
-export type StoredFile = DriveFile & { originKey?: string }
+/** A file record as stored: `originKey` keeps one capture of the same source to one file, and
+ *  `originStamp` says which version of that source it holds. */
+export type StoredFile = DriveFile & { originKey?: string; originStamp?: string }
 
 export type DriveIndex = { version: number; files: StoredFile[]; folders: DriveFolder[] }
 

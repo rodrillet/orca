@@ -56,7 +56,7 @@ type Thumb = { kind: 'image'; url: string } | { kind: 'text'; text: string }
 const cache = new Map<string, Promise<Thumb | null>>()
 
 function thumbKey(file: DriveEntry): string {
-  return `${file.hostId}\u0000${file.id}`
+  return `${file.hostId}\u0000${file.id}\u0000${file.updatedAt}`
 }
 
 function loadThumb(file: DriveEntry, workspaceId: DriveWorkspaceId | null): Promise<Thumb | null> {
