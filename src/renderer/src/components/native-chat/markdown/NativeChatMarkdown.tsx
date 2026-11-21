@@ -35,8 +35,8 @@ import type { SlackPeople } from '../../../../../shared/connectors/slack-message
 import { NativeChatLinkPeekContext } from '../links/previews/native-chat-link-peek-context'
 import { useNativeChatLinkClick } from '../links/actions/native-chat-link-click-context'
 import './native-chat-markdown.css'
-// orca-fork: #group chips
-import { withForkGroupMentions } from '../../orca-fork/group-mentions/fork-group-mention-markdown'
+// orca-fork: #group chips and path badges
+import { withForkChatMarkdown } from '../../orca-fork/chat-paths/fork-chat-markdown'
 import { forkWikiChatContent, useForkWikiLinkClick } from '../../orca-fork/wiki/wiki-chat-links' // orca-fork: [[Page]] in chat
 
 /** Existing words stay opaque when a reply first starts growing. */
@@ -87,8 +87,8 @@ function withFileDestinations(
         slackPeople
       )
     : null
-  // orca-fork: #group chips
-  return withForkGroupMentions({
+  // orca-fork: #group chips and path badges
+  return withForkChatMarkdown({
     remarkPlugins: [
       ...(visualExtension?.remarkPlugins ?? []),
       remarkNativeChatFileDestinations,
