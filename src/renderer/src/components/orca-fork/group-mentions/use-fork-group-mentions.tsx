@@ -3,9 +3,9 @@ import React, { useCallback, useMemo } from 'react'
 import { Users } from 'lucide-react'
 import { useTranslate } from '@/i18n/use-translate'
 import { useBots } from '@/lib/bot-catalog'
-import { useBotGroups } from '@/lib/bot-group-list'
 import type { BotGroup } from '../../../../../shared/bots/bot-group'
 import { botGroupTabFaces } from '../../../../../shared/bots/bot-group-face-layout'
+import { useForkBotGroups } from './use-fork-bot-groups'
 import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import {
   groupMentionQuery,
@@ -47,7 +47,7 @@ export function useForkGroupMentions(
 ): ComposerMentions {
   const t = useTranslate()
   const enabled = FORK_FEATURES.groupMentions && mentions.autocomplete.mode === 'none'
-  const groups = useBotGroups(enabled)
+  const groups = useForkBotGroups(enabled)
   const typed = enabled ? groupMentionQuery(draft.slice(0, caret)) : null
   const query = typed?.query ?? null
   const from = typed?.from ?? null

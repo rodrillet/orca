@@ -3,8 +3,8 @@ import React, { type ComponentPropsWithoutRef } from 'react'
 import { toast } from 'sonner'
 import type { ExtraProps } from 'react-markdown'
 import type { CommentMarkdownExtension } from '@/components/comment-markdown/CommentMarkdown'
-import { useBotGroups } from '@/lib/bot-group-list'
 import { openBotGroup } from '@/lib/bot-group-catalog'
+import { useForkBotGroups } from './use-fork-bot-groups'
 import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import {
   groupSlug,
@@ -61,7 +61,7 @@ function GroupChip({
   slug: string
   children: React.ReactNode
 }): React.JSX.Element {
-  const group = useBotGroups().find((g) => groupSlug(g.name) === slug) ?? null
+  const group = useForkBotGroups().find((g) => groupSlug(g.name) === slug) ?? null
   if (!group) {
     return <>{children}</>
   }
