@@ -267,6 +267,39 @@ Every file the owner sends in a chat and every file agents make lands in a per-w
   to open that bot or room. Code: `src/shared/orca-fork/agents-map/`, `.../orca-fork/agents-map/`.
 - Code: `src/shared/orca-fork/channels/`, `src/renderer/src/components/orca-fork/channels/`.
 
+### Token saving (Caveman)
+
+Every Claude Code / Codex agent Orca launches saves tokens by default, with
+[Caveman](https://github.com/JuliusBrussee/caveman) (Apache-2.0) as the engine. Flag `tokenSaving`.
+
+- **Setting**: global > workspace > department > bot, each "Inherit / On / Off", nothing set = On
+  (`src/shared/orca-fork/token-saving/token-saving.ts`, `resolveTokenSaving`). The desktop keeps the
+  choices in `userData/orca-fork/token-saving.json`, resolves them per machine and per bot, and pushes
+  the result to each host (`orcaFork.tokenSaving.setPolicy`), which keeps it in
+  `userData/orca-fork/token-saving-host.json` so it holds with the desktop closed. A host that never
+  heard from the desktop saves tokens (default On). Departments keep their own choice in the
+  departments document (`forkDepartmentTokenSaving`).
+- **What a launch gets** (chats, bots, automations: `structured-agent-launch-composition.ts`):
+  Caveman's terse voice appended to the agent's instructions; the `caveman` MCP server (when
+  `caveman-mcp` is installed); and, for Claude, `ANTHROPIC_BASE_URL=http://127.0.0.1:8787/w/<slug>`
+  plus `_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL=1` (keeps the 1M context) and
+  `ENABLE_TOOL_SEARCH=true`, only while the proxy answers `/health/ready`. A route the owner set, or a
+  Bedrock/Vertex lane, is never replaced. Slug `orca-<botId>` per bot, `orca` for other chats.
+- **Terminals** (workers, the + menu): a plugin dir on `CLAUDE_CODE_PLUGIN_DIRS`
+  (`userData/orca-fork/token-saving/orca-token-saving`) whose SessionStart hook loads the voice and
+  whose `.mcp.json` registers the MCP, plus the proxy route (slug `orca-terminal`) when the proxy was
+  healthy at spawn.
+- **Codex** gets the voice and the MCP only: its threads are bound to their model provider, so moving
+  one to the proxy could strand its history.
+- **Proxy per machine**: Orca finds Caveman in `~/.caveman/bin` (`CAVEMAN_HOME`), starts
+  `caveman-proxy serve` detached with `CAVEMAN_MODE=compress|record` when it is down, keeps it up with a
+  one-minute watchdog, and makes `~/.caveman` private (a group-writable home drops the proxy to
+  record-only). It only stops a proxy it started.
+- **Savings**: read from the proxy's own `caveman.db` (`requests`, grouped by slug), shown in Machines →
+  Token saving (per bot and per department), on the bot's Tasks card and in its settings.
+- **Server**: all of it runs in `orca-server` too (same main code); a stock server answers
+  `method_not_found` and the panel says so.
+
 ## Decisions for the owner
 
 1. Base v1.4.266 and track upstream **release tags** (not upstream `main`).
