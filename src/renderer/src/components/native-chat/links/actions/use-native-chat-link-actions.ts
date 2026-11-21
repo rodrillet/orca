@@ -1,4 +1,4 @@
-import { useCallback, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useState, type RefObject } from 'react'
 import {
   closeLinkActionRequest,
   type LinkActionRequest
@@ -90,5 +90,6 @@ export function useNativeChatLinkClick(
     [context, openFileLink, request, rootRef]
   )
 
-  return context ? tagForkLinkClickScope(onLinkClick, context) : undefined // orca-fork: path badges
+  useEffect(() => tagForkLinkClickScope(onLinkClick, context), [onLinkClick, context]) // orca-fork: path badges
+  return context ? onLinkClick : undefined
 }

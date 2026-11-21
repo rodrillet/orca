@@ -113,8 +113,9 @@ export const map = defineFixture({
   },
   setup: () => {
     publishBots(BOTS)
+    const runtime: unknown = window.api.runtime
     Reflect.set(window.api, 'runtime', {
-      ...(window.api.runtime as object),
+      ...(typeof runtime === 'object' ? runtime : {}),
       call: async ({ method, params }: { method: string; params?: { groupId?: string } }) => {
         const results: Record<string, unknown> = {
           'bots.list': { bots: BOTS },

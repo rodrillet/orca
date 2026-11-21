@@ -5,15 +5,14 @@ import type { NativeChatFileLinkContext } from '@/components/native-chat/links/a
 
 const scopes = new WeakMap<CommentMarkdownLinkClickHandler, NativeChatFileLinkContext>()
 
-/** Tags a chat's link handler with its chat's file-link context; returns the handler. */
-export function tagForkLinkClickScope<H extends CommentMarkdownLinkClickHandler | undefined>(
-  handler: H,
+/** Tags a chat's link handler with its chat's file-link context (from an effect, after render). */
+export function tagForkLinkClickScope(
+  handler: CommentMarkdownLinkClickHandler,
   scope: NativeChatFileLinkContext | null
-): H {
-  if (handler && scope) {
+): void {
+  if (scope) {
     scopes.set(handler, scope)
   }
-  return handler
 }
 
 export function forkLinkClickScope(

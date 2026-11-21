@@ -54,22 +54,7 @@ function openInOrca(href: string, scope: NativeChatFileLinkContext): void {
 }
 
 export function ForkChatPathBadge({ chatPath }: { chatPath: ChatPath }): React.JSX.Element {
-  const t = useTranslate()
-  const onLinkClick = useNativeChatLinkClick()
-  const scope = onLinkClick ? forkLinkClickScope(onLinkClick) : null
-  // The chat's machine: this computer, or the paired server or SSH host its workspace runs on.
-  const hostId = useAppStore((state) =>
-    scope ? getExecutionHostIdForWorktree(state, scope.worktreeId) : null
-  )
-  const machine = useAppStore((state) =>
-    hostId && hostId !== LOCAL_EXECUTION_HOST_ID
-      ? selectExecutionHostDisplayLabel(state, hostId)
-      : null
-  )
-  const local = hostId === LOCAL_EXECUTION_HOST_ID
   const Icon = chatPath.isDirectory ? Folder : File
-  const location = chatPath.line ? `${chatPath.path}:${chatPath.line}` : chatPath.path
-  const href = createNativeChatFileHref(location)
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -85,67 +70,88 @@ export function ForkChatPathBadge({ chatPath }: { chatPath: ChatPath }): React.J
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
-        <DropdownMenuLabel
-          className="truncate font-mono text-[11px] font-normal"
-          title={chatPath.path}
-        >
-          {machine ? `${machine}: ${chatPath.path}` : chatPath.path}
-        </DropdownMenuLabel>
-        {scope ? (
-          <DropdownMenuItem onSelect={() => openInOrca(href, scope)}>
-            <ExternalLink className="size-3.5" />
-            {t('orcaFork.chatPaths.open', 'Open in Orca')}
-          </DropdownMenuItem>
-        ) : null}
-        {scope ? (
-          <DropdownMenuItem
-            onSelect={() =>
-              useAppStore.getState().revealInExplorer(scope.worktreeId, chatPath.path)
-            }
-          >
-            <FolderSearch className="size-3.5" />
-            {machine
-              ? t('orcaFork.chatPaths.showOnMachine', 'Show in {{machine}} files', { machine })
-              : t('orcaFork.chatPaths.showInFiles', 'Show in Orca files')}
-          </DropdownMenuItem>
-        ) : null}
-        {local ? (
-          <DropdownMenuItem
-            onSelect={() =>
-              void window.api.shell
-                .openInFileManager(chatPath.path, LOCAL_EXECUTION_HOST_ID)
-                .catch((error: unknown) => toast.error(String(error)))
-            }
-          >
-            <FolderOpen className="size-3.5" />
-            {t('orcaFork.chatPaths.reveal', 'Reveal in {{name}}', {
-              name: getLocalFileManagerLabel()
-            })}
-          </DropdownMenuItem>
-        ) : null}
-        {scope ? (
-          <DropdownMenuItem
-            onSelect={() =>
-              createNewTerminalTab(scope.worktreeId, undefined, {
-                startupCwd: chatPathFolder(chatPath)
-              })
-            }
-          >
-            <SquareTerminal className="size-3.5" />
-            {t('orcaFork.chatPaths.terminal', 'Open a terminal here')}
-          </DropdownMenuItem>
-        ) : null}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onSelect={() => {
-            void window.api.ui.writeClipboardText(chatPath.path)
-            toast.success(t('orcaFork.chatPaths.copied', 'Path copied'))
-          }}
-        >
-          <Copy className="size-3.5" />
-          {t('orcaFork.chatPaths.copy', 'Copy path')}
-        </DropdownMenuItem>
+        <ForkChatPathMenuItems chatPath={chatPath} />
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+/** The badge's menu, mounted when it opens (so the chat's link scope, tagged after render, is set). */
+function ForkChatPathMenuItems({ chatPath }: { chatPath: ChatPath }): React.JSX.Element {
+  const t = useTranslate()
+  const onLinkClick = useNativeChatLinkClick()
+  const scope = onLinkClick ? forkLinkClickScope(onLinkClick) : null
+  // The chat's machine: this computer, or the paired server or SSH host its workspace runs on.
+  const hostId = useAppStore((state) =>
+    scope ? getExecutionHostIdForWorktree(state, scope.worktreeId) : null
+  )
+  const machine = useAppStore((state) =>
+    hostId && hostId !== LOCAL_EXECUTION_HOST_ID
+      ? selectExecutionHostDisplayLabel(state, hostId)
+      : null
+  )
+  const local = hostId === LOCAL_EXECUTION_HOST_ID
+  const location = chatPath.line ? `${chatPath.path}:${chatPath.line}` : chatPath.path
+  const href = createNativeChatFileHref(location)
+  return (
+    <>
+      <DropdownMenuLabel title={chatPath.path}>
+        <span className="block truncate font-mono text-[11px] font-normal">
+          {machine ? `${machine}: ${chatPath.path}` : chatPath.path}
+        </span>
+      </DropdownMenuLabel>
+      {scope ? (
+        <DropdownMenuItem onSelect={() => openInOrca(href, scope)}>
+          <ExternalLink className="size-3.5" />
+          {t('orcaFork.chatPaths.open', 'Open in Orca')}
+        </DropdownMenuItem>
+      ) : null}
+      {scope ? (
+        <DropdownMenuItem
+          onSelect={() => useAppStore.getState().revealInExplorer(scope.worktreeId, chatPath.path)}
+        >
+          <FolderSearch className="size-3.5" />
+          {machine
+            ? t('orcaFork.chatPaths.showOnMachine', 'Show in {{machine}} files', { machine })
+            : t('orcaFork.chatPaths.showInFiles', 'Show in Orca files')}
+        </DropdownMenuItem>
+      ) : null}
+      {local ? (
+        <DropdownMenuItem
+          onSelect={() =>
+            void window.api.shell
+              .openInFileManager(chatPath.path, LOCAL_EXECUTION_HOST_ID)
+              .catch((error: unknown) => toast.error(String(error)))
+          }
+        >
+          <FolderOpen className="size-3.5" />
+          {t('orcaFork.chatPaths.reveal', 'Reveal in {{name}}', {
+            name: getLocalFileManagerLabel()
+          })}
+        </DropdownMenuItem>
+      ) : null}
+      {scope ? (
+        <DropdownMenuItem
+          onSelect={() =>
+            createNewTerminalTab(scope.worktreeId, undefined, {
+              startupCwd: chatPathFolder(chatPath)
+            })
+          }
+        >
+          <SquareTerminal className="size-3.5" />
+          {t('orcaFork.chatPaths.terminal', 'Open a terminal here')}
+        </DropdownMenuItem>
+      ) : null}
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        onSelect={() => {
+          void window.api.ui.writeClipboardText(chatPath.path)
+          toast.success(t('orcaFork.chatPaths.copied', 'Path copied'))
+        }}
+      >
+        <Copy className="size-3.5" />
+        {t('orcaFork.chatPaths.copy', 'Copy path')}
+      </DropdownMenuItem>
+    </>
   )
 }

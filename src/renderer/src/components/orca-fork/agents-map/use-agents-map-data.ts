@@ -75,7 +75,8 @@ export function useAgentsMapData(open: boolean): AgentsMapData {
             return [group.id, page.messages.map(toMapMessage)] as const
           } catch {
             // An offline machine's room keeps no posts on the map.
-            return [group.id, [] as MapMessage[]] as const
+            const none: MapMessage[] = []
+            return [group.id, none] as const
           }
         })
       ).then((pairs) => {
