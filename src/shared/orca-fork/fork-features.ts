@@ -14,5 +14,7 @@ export const FORK_FEATURES = {
   /** Tasks page "Agents" view: every bot on every paired machine, its items and its workers' PRs. */
   agentsInTasks: true,
   /** Departments > Sections and Group by machine in the Bots sidebar (Phase 2). */
-  botOrganization: true
+  botOrganization: true,
+  /** Phase 4: a bot the owner lets build a team creates bots from its own offers. */
+  agentTeams: true
 } as const
