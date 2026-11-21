@@ -27,6 +27,7 @@ import { ForkWorkspaceMark } from './ForkWorkspaceMark'
 import { forkWorkspacesStore, useForkWorkspaces } from './fork-workspaces-store'
 import { useForkWorkspaceMachines } from './use-fork-workspace-machines'
 import { useForkWorkspaceScope } from './use-fork-workspace-scope'
+import { useForkWorkspaceDepartmentMigration } from './fork-workspace-departments'
 
 function MachineIcon({ hostId, className }: { hostId: ExecutionHostId; className?: string }) {
   const Icon = hostId === LOCAL_EXECUTION_HOST_ID ? Laptop : Server
@@ -45,6 +46,7 @@ function ForkWorkspaceSwitcherRow(): React.JSX.Element {
   const doc = useForkWorkspaces()
   const machines = useForkWorkspaceMachines()
   useForkWorkspaceScope(machines)
+  useForkWorkspaceDepartmentMigration()
   const [dialog, setDialog] = useState<ForkWorkspaceDialogTarget | null>(null)
   const active = activeForkWorkspace(doc)
   const machineLabel = (ws: ForkWorkspace): string =>

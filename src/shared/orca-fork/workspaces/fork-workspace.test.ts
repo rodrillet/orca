@@ -4,6 +4,7 @@ import {
   emptyForkWorkspaces,
   forkWorkspaceOfItem,
   forkWorkspaceProjectsToClaim,
+  forkWorkspaceUnclaimedDepartments,
   forkWorkspaceRepoFilter,
   type ForkWorkspace,
   type ForkWorkspacesDocument
@@ -56,5 +57,21 @@ describe('fork workspaces', () => {
     expect(forkWorkspaceProjectsToClaim(doc, 'host:local', ['site'], repos)).toEqual([])
     const moved = edits.move('local', { repoId: 'site' }, 'ws_side')(doc)
     expect(forkWorkspaceProjectsToClaim(moved, 'ws_side', ['site'], repos)).toEqual([])
+  })
+
+  it('moves unclaimed departments to the workspace of most of their bots, else this computer’s', () => {
+    let doc = edits.move('local', { botKey: 'local/b1' }, 'ws_side')(twoOnThisMac())
+    doc = edits.claimDepartments('host:runtime:vps', ['held'])(doc)
+    const moves = forkWorkspaceUnclaimedDepartments(doc, ['sales', 'empty', 'ops', 'held'], {
+      'local/b1': { departmentId: 'sales' },
+      'local/b2': { departmentId: 'ops' },
+      'runtime:vps/b3': { departmentId: 'ops' },
+      'runtime:vps/b4': { departmentId: 'ops' }
+    })
+    expect(Object.fromEntries(moves)).toEqual({
+      ws_side: ['sales'],
+      'host:local': ['empty'],
+      'host:runtime:vps': ['ops']
+    })
   })
 })

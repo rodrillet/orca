@@ -1,9 +1,12 @@
-// orca-fork: each workspace's teams: a department made in a workspace shows only there; older ones
-// (made before Workspaces) show in every workspace.
-import { useMemo } from 'react'
+// orca-fork: each workspace's teams: a department (with its sections) shows only in its workspace.
+import { useEffect, useMemo } from 'react'
 import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import type { BotOrganization } from '../../../../../shared/orca-fork/organization/bot-organization'
-import { forkWorkspaceShowsDepartment } from '../../../../../shared/orca-fork/workspaces/fork-workspace'
+import {
+  forkWorkspaceShowsDepartment,
+  forkWorkspaceUnclaimedDepartments
+} from '../../../../../shared/orca-fork/workspaces/fork-workspace'
+import { useBotOrganization } from '../organization/bot-organization-store'
 import { forkWorkspaceEdits } from '../../../../../shared/orca-fork/workspaces/fork-workspace-edits'
 import { forkWorkspacesStore, useForkWorkspaces } from './fork-workspaces-store'
 
@@ -33,4 +36,24 @@ export function useForkWorkspaceDepartments(doc: BotOrganization): BotOrganizati
     )
     return { ...doc, departments, placements }
   }, [doc, workspaces])
+}
+
+/** Gives every department no workspace holds to the workspace of its bots (or this computer's). */
+export function useForkWorkspaceDepartmentMigration(): void {
+  const organization = useBotOrganization()
+  const workspaces = useForkWorkspaces()
+  const ready = forkWorkspacesStore.useReady()
+  useEffect(() => {
+    if (!FORK_FEATURES.workspaces || !ready || organization.departments.length === 0) {
+      return
+    }
+    const moves = forkWorkspaceUnclaimedDepartments(
+      workspaces,
+      organization.departments.map((dept) => dept.id),
+      organization.placements
+    )
+    for (const [workspaceId, departmentIds] of moves) {
+      forkWorkspacesStore.edit(forkWorkspaceEdits.claimDepartments(workspaceId, departmentIds))
+    }
+  }, [ready, organization, workspaces])
 }
