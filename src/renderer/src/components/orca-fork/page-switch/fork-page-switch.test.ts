@@ -29,7 +29,7 @@ function setup() {
   }))
   const wiki = overlay()
   const drive = overlay()
-  const root = new EventTarget() as unknown as Document
+  const root = new EventTarget()
   const uninstall = installForkPageSwitch({ store, wiki, drive, root })
   return { store, wiki, drive, root, uninstall }
 }

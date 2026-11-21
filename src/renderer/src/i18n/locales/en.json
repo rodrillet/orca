@@ -29741,7 +29741,6 @@
     },
     "agentsTasks": {
       "empty": "No bots on this computer or its paired servers yet.",
-      "idle": "Idle",
       "item": {
         "canceled": "Canceled",
         "done": "Done",
@@ -29752,12 +29751,9 @@
       "items": "Open items",
       "loading": "Loading…",
       "more": "+{{value0}} more",
-      "needsYou": "Needs you",
       "noItems": "No open items",
       "noWorkers": "No workers",
-      "offline": "Offline",
       "openChat": "Open chat",
-      "paused": "Paused",
       "pr": {
         "approved": "approved",
         "changes": "changes requested",
@@ -29780,7 +29776,6 @@
         "working": "Working"
       },
       "workers": "Workers",
-      "working": "Working",
       "openBoard": "Board"
     },
     "botOrganization": {

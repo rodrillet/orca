@@ -25,7 +25,7 @@ export type PageSwitchInput = {
   /** The Drive shares the Artifacts slot, so opening it there changes no view. */
   drive: PageSwitchOverlay
   /** Clicks in the sidebar's page navigation; absent outside a window. */
-  root?: Pick<Document, 'addEventListener' | 'removeEventListener'>
+  root?: Pick<EventTarget, 'addEventListener' | 'removeEventListener'>
 }
 
 export const PAGE_NAV_SELECTOR = '[data-fork-page-nav]'

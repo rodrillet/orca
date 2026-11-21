@@ -25085,7 +25085,6 @@
     },
     "agentsTasks": {
       "empty": "Nenhum bot neste computador ou nos servidores pareados ainda.",
-      "idle": "Ocioso",
       "item": {
         "canceled": "Cancelado",
         "done": "Concluído",
@@ -25096,12 +25095,9 @@
       "items": "Itens abertos",
       "loading": "Carregando…",
       "more": "+{{value0}} a mais",
-      "needsYou": "Precisa de você",
       "noItems": "Nenhum item aberto",
       "noWorkers": "Nenhum worker",
-      "offline": "Offline",
       "openChat": "Abrir chat",
-      "paused": "Pausado",
       "pr": {
         "approved": "aprovado",
         "changes": "alterações pedidas",
@@ -25124,7 +25120,6 @@
         "working": "Trabalhando"
       },
       "workers": "Workers",
-      "working": "Trabalhando",
       "openBoard": "Quadro"
     },
     "botOrganization": {

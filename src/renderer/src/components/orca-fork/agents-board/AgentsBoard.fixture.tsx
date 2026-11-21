@@ -201,7 +201,13 @@ export const board = defineFixture({
     const runtime: unknown = window.api.runtime
     Reflect.set(window.api, 'runtime', {
       ...(typeof runtime === 'object' ? runtime : {}),
-      call: async ({ method, params }: { method: string; params?: { botId?: string } }) => {
+      call: async ({
+        method,
+        params
+      }: {
+        method: string
+        params?: { botId?: string; item?: string }
+      }) => {
         const botId = params?.botId ?? ''
         if (method === 'bots.items.owner.list') {
           return { ok: true, result: { items: ITEMS[botId] ?? [], counts: {}, seenEventId: 'e0' } }
@@ -209,7 +215,7 @@ export const board = defineFixture({
         if (method === 'bots.items.owner.show') {
           const item = Object.values(ITEMS)
             .flat()
-            .find((entry) => entry.uid === (params as { item?: string } | undefined)?.item)
+            .find((entry) => entry.uid === params?.item)
           return { ok: true, result: { item, events: [] } }
         }
         if (method === 'bots.work.list') {

@@ -2,64 +2,22 @@
 // state and times, what came of it (each worker's report and PR), its full item activity (status
 // changes, comments, worker results), and what it left in the Drive and the Wiki.
 import React, { useEffect, useRef } from 'react'
-import { ExternalLink, MessageSquare, Workflow, X } from 'lucide-react'
+import { ExternalLink, MessageSquare, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BotItemView } from '@/components/bots/items/BotItemView'
-import { BotItemMarkdown } from '@/components/bots/items/BotItemMarkdown'
-import { useTranslate, type Translate } from '@/i18n/use-translate'
-import { cn } from '@/lib/class-names'
+import { useTranslate } from '@/i18n/use-translate'
 import type { Bot } from '../../../../../shared/bot-types'
-import {
-  botItemLinksOnePerChain,
-  formatBotItemNumber,
-  type BotItem,
-  type BotItemLinkView
-} from '../../../../../shared/bots/bot-items'
+import { formatBotItemNumber, type BotItem } from '../../../../../shared/bots/bot-items'
 import type { OrchestrationSessionWorker } from '../../../../../shared/orchestration-session-workers'
 import { AgentPrBadge } from './AgentPrBadge'
 import { agentsBoardColumnLabel } from './AgentsBoardCard'
 import { AgentsBoardDetailSources } from './AgentsBoardDetailSources'
-import type { AgentsBoardCard, AgentsBoardPr } from './agents-board-model'
-import { boardTimeSpan, formatBoardClock, formatBoardDuration } from './agents-board-time'
+import { ResultTab } from './AgentsBoardDetailResult'
+import type { AgentsBoardCard } from './agents-board-model'
+import { formatBoardClock, formatBoardDuration } from './agents-board-time'
 import { PresenceBotAvatar } from './PresenceBotAvatar'
 import type { BotPresence } from './use-bot-presence'
-
-type DispatchLink = Extract<BotItemLinkView, { kind: 'dispatch' }>
-
-const WORKER_STATE_KEYS = {
-  working: ['orcaFork.agentsBoard.detail.state.working', 'Working'],
-  completed: ['orcaFork.agentsBoard.detail.state.completed', 'Finished'],
-  failed: ['orcaFork.agentsTasks.worker.failed', 'Failed'],
-  stopped: ['orcaFork.agentsTasks.worker.stopped', 'Stopped'],
-  unknown: ['orcaFork.agentsTasks.worker.unknown', 'Out of contact'],
-  unverifiable: ['orcaFork.agentsTasks.worker.unknown', 'Out of contact'],
-  missing: ['orcaFork.agentsBoard.detail.state.missing', 'Record gone']
-} as const
-
-function workerStateLabel(t: Translate, state: keyof typeof WORKER_STATE_KEYS): string {
-  const [key, fallback] = WORKER_STATE_KEYS[state]
-  return t(key, fallback)
-}
-
-function linkPr(link: DispatchLink): AgentsBoardPr | null {
-  const pr = link.pr
-  return pr?.shown
-    ? {
-        number: pr.number,
-        url: pr.url,
-        state: pr.state,
-        checks:
-          pr.checks === 'pending' ||
-          pr.checks === 'success' ||
-          pr.checks === 'failure' ||
-          pr.checks === 'neutral'
-            ? pr.checks
-            : null,
-        review: pr.review
-      }
-    : null
-}
 
 function Fact({
   label,
@@ -74,172 +32,6 @@ function Fact({
         {label}
       </dt>
       <dd className="min-w-0 truncate text-[12px] text-foreground">{children}</dd>
-    </div>
-  )
-}
-
-/** One worker's run: its task, state, times, report and PR. */
-function WorkerResult({
-  title,
-  state,
-  startedAt,
-  settledAt,
-  subject,
-  body,
-  pr,
-  now
-}: {
-  title: string
-  state: keyof typeof WORKER_STATE_KEYS
-  startedAt: number | null
-  settledAt: number | null
-  subject: string | null
-  body: string | null
-  pr: AgentsBoardPr | null
-  now: number
-}): React.JSX.Element {
-  const t = useTranslate()
-  const span = boardTimeSpan(
-    startedAt,
-    settledAt,
-    now,
-    t,
-    state !== 'working' && state !== 'unknown' && state !== 'unverifiable'
-  )
-  return (
-    <li className="flex flex-col gap-1.5 rounded-lg border border-border/60 bg-card p-2.5">
-      <div className="flex min-w-0 items-center gap-1.5 text-[12px]">
-        <Workflow className="size-3.5 shrink-0 text-muted-foreground" />
-        <span className="min-w-0 flex-1 truncate font-medium">{title}</span>
-        <span
-          className={cn(
-            'shrink-0 text-[11px]',
-            state === 'failed' ? 'text-destructive' : 'text-muted-foreground'
-          )}
-        >
-          {workerStateLabel(t, state)}
-        </span>
-      </div>
-      {span ? <div className="text-[11px] tabular-nums text-muted-foreground">{span}</div> : null}
-      {subject ? <div className="text-[12px] font-medium text-foreground/90">{subject}</div> : null}
-      {body ? (
-        <div className="max-h-48 overflow-y-auto text-[12px] text-foreground/80 scrollbar-sleek">
-          <BotItemMarkdown text={body} />
-        </div>
-      ) : null}
-      {pr ? (
-        <div className="text-[11px]">
-          <AgentPrBadge pr={pr} className="-ml-1" />
-        </div>
-      ) : null}
-    </li>
-  )
-}
-
-function ResultTab({
-  card,
-  item,
-  record,
-  now
-}: {
-  card: AgentsBoardCard
-  item: BotItem | null
-  record: OrchestrationSessionWorker | null
-  now: number
-}): React.JSX.Element {
-  const t = useTranslate()
-  const dispatches = item
-    ? botItemLinksOnePerChain(item.links).flatMap((link) =>
-        link.kind === 'dispatch' ? [link] : []
-      )
-    : []
-  const others = item
-    ? botItemLinksOnePerChain(item.links).filter(
-        (link): link is Extract<BotItemLinkView, { kind: 'url' | 'file' }> =>
-          link.kind === 'url' || link.kind === 'file'
-      )
-    : []
-  return (
-    <div className="flex flex-col gap-3">
-      {item?.closeNote ? (
-        <section className="flex flex-col gap-1">
-          <h3 className="text-[11px] font-medium text-muted-foreground">
-            {t('orcaFork.agentsBoard.card.result', 'What was done')}
-          </h3>
-          <div className="text-[12.5px] text-foreground">
-            <BotItemMarkdown text={item.closeNote} />
-          </div>
-        </section>
-      ) : null}
-      {card.kind === 'worker' ? (
-        <ul className="flex flex-col gap-2">
-          <WorkerResult
-            title={card.title}
-            state={record?.state ?? (card.column === 'done' ? 'completed' : 'working')}
-            startedAt={card.startedAt}
-            settledAt={record?.settledAt ?? card.finishedAt}
-            subject={null}
-            body={record?.summary ?? null}
-            pr={card.pr}
-            now={now}
-          />
-        </ul>
-      ) : dispatches.length > 0 ? (
-        <section className="flex flex-col gap-1.5">
-          <h3 className="text-[11px] font-medium text-muted-foreground">
-            {t('orcaFork.agentsBoard.detail.workers', 'Workers')}
-          </h3>
-          <ul className="flex flex-col gap-2">
-            {dispatches.toReversed().map((link) => (
-              <WorkerResult
-                key={link.latest ?? link.ref}
-                title={link.title ?? link.ref}
-                state={link.state}
-                startedAt={link.startedAt}
-                settledAt={link.settledAt}
-                subject={link.report?.subject ?? null}
-                body={link.report?.body ?? null}
-                pr={linkPr(link)}
-                now={now}
-              />
-            ))}
-          </ul>
-        </section>
-      ) : null}
-      {others.length > 0 ? (
-        <section className="flex flex-col gap-1">
-          <h3 className="text-[11px] font-medium text-muted-foreground">
-            {t('orcaFork.agentsBoard.detail.links', 'Links')}
-          </h3>
-          <ul className="flex flex-col gap-0.5 text-[12px]">
-            {others.map((link) => (
-              <li key={`${link.kind}:${link.ref}`} className="flex min-w-0 items-center gap-1.5">
-                <ExternalLink className="size-3 shrink-0 text-muted-foreground" />
-                {link.kind === 'url' ? (
-                  <a
-                    href={link.ref}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="min-w-0 truncate text-foreground hover:underline"
-                  >
-                    {link.issue?.title ?? link.ref}
-                  </a>
-                ) : (
-                  <span className="min-w-0 truncate font-mono text-[11px]">{link.ref}</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-      {!item?.closeNote &&
-      dispatches.length === 0 &&
-      card.kind === 'item' &&
-      others.length === 0 ? (
-        <p className="text-[12px] text-muted-foreground">
-          {t('orcaFork.agentsBoard.detail.noResult', 'Nothing reported yet.')}
-        </p>
-      ) : null}
     </div>
   )
 }
@@ -370,7 +162,7 @@ export function AgentsBoardDetail({
       <Tabs
         key={card.key}
         defaultValue={card.kind === 'item' ? 'activity' : 'result'}
-        className="flex min-h-0 flex-1 flex-col gap-0"
+        className="flex min-h-0 flex-1 flex-col"
       >
         <TabsList variant="line" className="mx-3 mt-1 shrink-0 self-start">
           {card.kind === 'item' ? (
@@ -390,17 +182,13 @@ export function AgentsBoardDetail({
             <BotItemView bot={bot} uid={card.itemUid} listed={item ?? undefined} />
           </TabsContent>
         ) : null}
-        <TabsContent
-          value="result"
-          className="min-h-0 flex-1 overflow-y-auto px-3 py-3 scrollbar-sleek"
-        >
-          <ResultTab card={card} item={item} record={record} now={now} />
+        <TabsContent value="result" className="min-h-0 flex-1">
+          <div className="scrollbar-sleek h-full overflow-y-auto px-3 py-3">
+            <ResultTab card={card} item={item} record={record} now={now} />
+          </div>
         </TabsContent>
-        <TabsContent
-          value="files"
-          className="min-h-0 flex-1 overflow-y-auto px-3 py-3 scrollbar-sleek"
-        >
-          {filesTab}
+        <TabsContent value="files" className="min-h-0 flex-1">
+          <div className="scrollbar-sleek h-full overflow-y-auto px-3 py-3">{filesTab}</div>
         </TabsContent>
       </Tabs>
 
