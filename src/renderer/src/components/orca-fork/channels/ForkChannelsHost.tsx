@@ -2,7 +2,7 @@
 // New channel dialog, and gives the list's empty space its own right-click menu.
 import React, { useEffect, useRef, useState } from 'react'
 import type { BotGroup } from '../../../../../shared/bots/bot-group'
-import { ChevronsDownUp } from 'lucide-react'
+import { ChevronsDownUp, Network } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,8 @@ import {
 import { registerForkSidebarDialogs } from './fork-sidebar-create'
 import { ForkNewChannelDialog } from './ForkNewChannelDialog'
 import { ForkChatSounds } from '../chat-sounds/ForkChatSounds'
+import { ForkAgentsMapHost } from '../agents-map/ForkAgentsMapDialog'
+import { openAgentsMap } from '../agents-map/open-agents-map'
 import { ForkSidebarCreateMenuItems } from './ForkSidebarCreateMenuItems'
 import { NewBotDialog } from '../../bots/NewBotDialog'
 import { BotGroupMembersDialog } from '../../bots/BotGroupMembersDialog'
@@ -53,6 +55,7 @@ export function ForkChannelsHost({ onOpen }: { onOpen: () => void }): React.JSX.
     <>
       <ForkSidebarSpaceMenu />
       <ForkChatSounds />
+      <ForkAgentsMapHost />
       {open?.kind === 'channel' ? (
         <ForkNewChannelDialog categoryId={open.categoryId} onClose={close} />
       ) : null}
@@ -98,6 +101,12 @@ function ForkSidebarSpaceMenu(): React.JSX.Element | null {
       <DropdownMenuContent side="bottom" align="start" className="w-56">
         <ForkSidebarCreateMenuItems menu="dropdown" />
         <DropdownMenuSeparator />
+        {FORK_FEATURES.agentsMap ? (
+          <DropdownMenuItem onSelect={openAgentsMap}>
+            <Network className="size-3.5" />
+            {t('orcaFork.agentsMap.open', 'Agents map')}
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuItem
           onSelect={() =>
             editChatStructure(chatStructureEdits.toggleCollapsed(CHANNELS_HEADER_KEY))

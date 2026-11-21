@@ -25205,6 +25205,19 @@
       "description": "Um clique suave enquanto você digita num chat, um bipe ao enviar e um toque quando um bot ou canal tem mensagem nova. Canais silenciados ficam quietos.",
       "volume": "Volume dos sons do chat"
     },
+    "agentsMap": {
+      "open": "Mapa de agentes",
+      "title": "Mapa de agentes",
+      "description": "Como seus bots trabalham juntos: as salas que dividem, quem passa trabalho para quem e quem menciona quem. Linhas que acabaram de levar uma mensagem brilham.",
+      "all": "Tudo",
+      "rooms": "Salas",
+      "handoffs": "Repasses",
+      "mentions": "Menções",
+      "counts": "{{bots}} bots · {{rooms}} salas · {{live}} ao vivo",
+      "empty": "Nenhum bot neste workspace ainda.",
+      "edgeTip": "{{kind}} · {{count}} mensagens",
+      "you": "Você"
+    },
     "bots": {
       "unreadChats_one": "{{count}} conversa não lida",
       "unreadChats_other": "{{count}} conversas não lidas",

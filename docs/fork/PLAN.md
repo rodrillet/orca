@@ -233,6 +233,12 @@ Every file the owner sends in a chat and every file agents make lands in a per-w
 - **Chat sounds** (OpenBot / agentes.chat): a soft key click while typing in any chat box, a blip on
   send, a two-note chime when a bot's chat or a channel turns unread (muted channels stay quiet).
   Synthesized with Web Audio, no files. Settings › Notifications › Chat sounds (switch + volume).
+- **Agents map** (right click on the Bots list or the Channels header › Agents map): the owner in the
+  middle, rooms (channels `#`, groups) on an inner ring, bots on the outer ring with their presence;
+  lines for room membership, hand-offs (peer requests, arrows) and @mentions (dashed), thicker the
+  more messages; a line that carried a message in the last 2 min glows and flows. Read from each
+  room's `bots.groups.read` on its machine (stock server), every 20 s and on bot changes. Click a node
+  to open that bot or room. Code: `src/shared/orca-fork/agents-map/`, `.../orca-fork/agents-map/`.
 - Code: `src/shared/orca-fork/channels/`, `src/renderer/src/components/orca-fork/channels/`.
 
 ## Decisions for the owner

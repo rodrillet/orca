@@ -1,7 +1,7 @@
 // orca-fork: the Channels header and a category header in the Bots list: fold, rename in place,
 // a + and a right-click menu, drops of channels into it and (a category) drag to reorder.
 import React, { useRef, useState } from 'react'
-import { ChevronRight, ChevronsDownUp, Pencil, Plus, Trash2 } from 'lucide-react'
+import { ChevronRight, ChevronsDownUp, Network, Pencil, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -37,6 +37,8 @@ import {
   startChatDrag
 } from './chat-structure-drag'
 import { ForkSidebarCreateMenuItems } from './ForkSidebarCreateMenuItems'
+import { openAgentsMap } from '../agents-map/open-agents-map'
+import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 
 type DropMark = 'into' | 'before' | 'after' | null
 
@@ -101,6 +103,12 @@ export function ForkChatHeaderRow({
         <ContextMenuItem onSelect={() => setEditing(true)}>
           <Pencil className="size-3.5" />
           {t('orcaFork.chatStructure.rename', 'Rename')}
+        </ContextMenuItem>
+      ) : null}
+      {FORK_FEATURES.agentsMap && !categoryId ? (
+        <ContextMenuItem onSelect={openAgentsMap}>
+          <Network className="size-3.5" />
+          {t('orcaFork.agentsMap.open', 'Agents map')}
         </ContextMenuItem>
       ) : null}
       <ContextMenuItem onSelect={foldAll}>
