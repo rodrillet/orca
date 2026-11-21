@@ -23,6 +23,15 @@ export class BotLaunchTools {
     readonly relayed: boolean
   ) {}
 
+  /** orca-fork: the same tools plus one more server (token saving's caveman MCP); a name already
+   *  taken keeps the bot's own. */
+  withServer(server: BotToolServer): BotLaunchTools {
+    if (this.servers.some((existing) => existing.name === server.name)) {
+      return this
+    }
+    return new BotLaunchTools([...this.servers, server], this.env, this.commandEnv, this.relayed)
+  }
+
   /**
    * Every bot launch gets the bot's token, whichever agent runs it: tools present it to the relay,
    * and the `orca` calls the session makes to the runtime, which names the bot by it.

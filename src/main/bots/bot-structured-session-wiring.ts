@@ -1,4 +1,5 @@
 // A host's structured-session wiring for bots: preambles, own tools, the turn context, and look-around turns.
+import { setTokenSavingBotResolver } from '../orca-fork/token-saving/token-saving-launch' // orca-fork: token saving
 import type { Bot } from '../../shared/bot-types'
 import type { AgentJournalMessageItem } from '../../shared/agent-session/journal/agent-session-journal-types'
 import type { KnownPairedBotRoster } from './paired-bot-rosters'
@@ -183,6 +184,7 @@ export function botStructuredSessionWiring(deps: {
   }
   const botOfRecord = (record: AgentSessionRecord): Bot | null =>
     botOfHomeWorkspace(bots(), record.location.workspaceId)
+  setTokenSavingBotResolver((record) => botOfRecord(record)?.id ?? null) // orca-fork: token saving
   /** The bot's linked-skills folder brought up to date; rejects when it can't be. */
   const syncLinkedSkills = (bot: Bot): Promise<LinkedSkills> =>
     linkedSkillProjects(bot, deps.store().getRepos(), botLinkedSkillsFolder(bot.id))

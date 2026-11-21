@@ -90,6 +90,7 @@ import type { BotOrganizationApi } from './api/orca-fork/bot-organization-bridge
 import type { ForkWorkspacesApi } from './api/orca-fork/fork-workspaces-bridge' // orca-fork:
 import type { ForkAppearanceApi } from './api/orca-fork/fork-appearance-bridge' // orca-fork:
 import type { ChatStructureApi } from './api/orca-fork/chat-structure-bridge' // orca-fork:
+import type { TokenSavingSettingsApi } from './api/orca-fork/token-saving-bridge' // orca-fork:
 import type {
   FolderWorkspacesApi,
   SparsePresetsApi,
@@ -155,6 +156,7 @@ export type PreloadApi = {
   orcaForkWorkspaces: ForkWorkspacesApi // orca-fork: Workspaces
   orcaForkAppearance?: ForkAppearanceApi // orca-fork: window opacity (desktop only)
   orcaForkChatStructure: ChatStructureApi // orca-fork: Channels and categories
+  orcaForkTokenSaving: TokenSavingSettingsApi // orca-fork: token saving
   googleSetup: GoogleSetupApi
   slackHandOff: SlackHandOffApi
   skills: SkillsApi

@@ -22,6 +22,10 @@ import {
   STRUCTURED_CHILD_ENV_TO_DELETE
 } from '../environment/structured-session-child-env'
 import { type LinkedSkills, NO_LINKED_SKILLS } from '../../../native-chat/native-chat-skill-roots'
+import {
+  tokenSavingForLaunch,
+  withTokenSavingInstructions
+} from '../../../orca-fork/token-saving/token-saving-launch' // orca-fork: token saving
 
 /** Where a launch's shared inputs come from. */
 export type StructuredAgentLaunchSources = {
@@ -188,6 +192,8 @@ async function composedPart<L>(
   let environments = readEnvironments()
   const refresh = sources.refreshAfterMissingProgram
   const readOnly = sources.readOnlySession?.(record.sessionId) ?? null
+  // orca-fork: token saving adds Caveman's voice, its MCP server and the proxy route to this launch.
+  const tokenSaving = once(() => tokenSavingForLaunch(definition.agent, record))
   const basis: StructuredAgentLaunchBasis = {
     record,
     launchDirectory,
@@ -203,16 +209,24 @@ async function composedPart<L>(
       let read: Promise<string | null> | null = null
       return (linkedSkills: string | null = null) =>
         (read ??= (async () =>
-          sources.resolveInstructions
-            ? sources.resolveInstructions(record, await launchDirectory(), linkedSkills)
-            : linkedSkills)())
+          withTokenSavingInstructions(
+            sources.resolveInstructions
+              ? await sources.resolveInstructions(record, await launchDirectory(), linkedSkills)
+              : linkedSkills,
+            await tokenSaving() // orca-fork: token saving
+          ))())
     })(),
     // A read-only session gets none: Look around keeps every tool off.
-    toolServers: once(async () =>
-      readOnly || !sources.resolveToolServers
-        ? BotLaunchTools.none
-        : sources.resolveToolServers(record, await launchDirectory())
-    ),
+    toolServers: once(async () => {
+      if (readOnly) {
+        return BotLaunchTools.none
+      }
+      const tools = sources.resolveToolServers
+        ? await sources.resolveToolServers(record, await launchDirectory())
+        : BotLaunchTools.none
+      const caveman = (await tokenSaving())?.mcpServer // orca-fork: token saving
+      return caveman ? tools.withServer(caveman) : tools
+    }),
     linkedSkills: once(
       async () => (await sources.resolveLinkedSkills?.(record)) ?? NO_LINKED_SKILLS
     ),
@@ -233,8 +247,10 @@ async function composedPart<L>(
   }
   await sources.prepareLaunch?.(record, await launchDirectory())
   const composed = await part(basis, identity)
+  const saving = await tokenSaving() // orca-fork: token saving
   return {
     ...composed,
+    ...(saving ? { env: saving.env(composed.env) } : {}),
     // Why: applied once here so no agent can opt out of stripping the launching pane's identity.
     inheritedEnvToDelete: [...STRUCTURED_CHILD_ENV_TO_DELETE, ...composed.inheritedEnvToDelete],
     cwd: await basis.launchDirectory()

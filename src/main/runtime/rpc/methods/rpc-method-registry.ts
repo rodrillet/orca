@@ -122,6 +122,7 @@ import { BOT_COMPOSIO_METHODS } from './bots-composio'
 import { BOT_COMPOSIO_EVENTS_METHODS } from './bots-composio-events'
 import { WEBHOOK_METHODS } from './webhooks'
 import { FORK_WIKI_METHODS } from '../../../orca-fork/wiki/wiki-rpc-methods' // orca-fork: workspace wiki
+import { TOKEN_SAVING_METHODS } from './orca-fork/token-saving-methods' // orca-fork: token saving
 import {
   LAYOUT_APPLY_METHODS,
   LAYOUT_VIEW_REPORT_METHODS,
@@ -211,6 +212,7 @@ const SERVICE_RPC_METHODS = [
   ...DIAGNOSTICS_METHODS,
   ...GROUP_PHOTO_METHODS, // orca-fork: group photos
   ...RESOURCE_MONITOR_METHODS, // orca-fork: resource monitor
+  ...TOKEN_SAVING_METHODS, // orca-fork: token saving
   ...TERMINAL_DAEMON_METHODS,
   ...ACCOUNT_METHODS,
   ...ANTIGRAVITY_ACCOUNT_METHODS,
