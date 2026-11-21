@@ -29587,7 +29587,8 @@
         "working": "Working"
       },
       "workers": "Workers",
-      "working": "Working"
+      "working": "Working",
+      "openBoard": "Board"
     },
     "botOrganization": {
       "unassigned": "No department",
@@ -29617,6 +29618,32 @@
     "workspaces": {
       "groupByMachine": "Group by machine",
       "groupByMachineAria": "List workspaces under this Mac and each paired server"
+    },
+    "agentsBoard": {
+      "column": {
+        "todo": "To do",
+        "doing": "In progress",
+        "needsYou": "Needs you",
+        "done": "Done"
+      },
+      "worker": "Worker",
+      "moveTo": "Move to…",
+      "dropHere": "Drop here",
+      "moveFailed": "Couldn't move the card",
+      "openInTasks": "Agents in Tasks",
+      "search": "Search tasks, bots or workspaces…",
+      "searchLabel": "Search the board",
+      "filter": {
+        "workspace": "Workspace",
+        "machine": "Machine",
+        "bot": "Bot",
+        "tag": "Tag"
+      },
+      "view": {
+        "bots": "Bots",
+        "terminals": "Terminals",
+        "label": "Board view"
+      }
     }
   }
 }

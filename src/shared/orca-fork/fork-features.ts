@@ -22,5 +22,7 @@ export const FORK_FEATURES = {
   /** "Move to…" in a bot row's menu, listing departments and sections. */
   botMoveToMenu: true,
   /** agentes.chat-style Workspaces at the top of the sidebar; data is keyed by workspace id. */
-  workspaces: true
+  workspaces: true,
+  /** The Agent Dashboard on by default, opening on a Kanban of every bot's items and workers. */
+  agentsBoard: true
 } as const

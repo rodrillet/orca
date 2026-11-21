@@ -1,21 +1,16 @@
 // orca-fork: one bot in the Tasks Agents view: what it is doing now, its open items, its workers' PRs.
 import React from 'react'
-import { ExternalLink, GitPullRequest, MessageSquare } from 'lucide-react'
+import { MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import StatusIndicator from '@/components/sidebar/workspace-card/surface/StatusIndicator'
-import { useWorktreeActivityStatus } from '@/components/sidebar/workspace-card/activity/use-worktree-activity-status'
 import { BotAvatar } from '@/components/bots/BotAvatar'
 import { BotRowLineView, useBotRowLine } from '@/components/bots/BotRowActivityLine'
-import { useBotNow } from '@/components/bots/use-bot-now'
 import { useBotItems } from '@/components/bots/items/use-bot-items'
 import { openBotItem } from '@/components/bots/items/bot-item-open'
 import { useBotHostOffline } from '@/lib/bot-host-views'
 import { openBotHome, openBotHomeTab } from '@/lib/bot-catalog'
-import { openAppHttpLink } from '@/lib/browser/navigation/app-http-link-open'
 import { cn } from '@/lib/class-names'
 import { useTranslate, type Translate } from '@/i18n/use-translate'
-import { foldBotStatus } from '../../../../../shared/bots/bot-row-status'
-import { folderWorkspaceKey } from '../../../../../shared/workspace/identity/workspace-scope'
 import {
   formatBotItemNumber,
   isOpenBotItemStatus,
@@ -25,8 +20,9 @@ import {
 import type { Bot } from '../../../../../shared/bot-types'
 import type { BotWorkerSummary } from '../../../../../shared/bots/bot-work-list'
 import type { FolderWorkspace } from '../../../../../shared/folder-workspaces/folder-workspace-types'
-import type { WorktreeStatus } from '../../../../../shared/worktree/row-display/worktree-status-rollup'
 import { useBotWorkList } from './use-bot-work-list'
+import { AgentPrBadge } from '../agents-board/AgentPrBadge'
+import { useBotPresence } from '../agents-board/use-bot-presence'
 
 const SHOWN_ITEMS = 5
 const SHOWN_WORKERS = 5
@@ -73,44 +69,6 @@ function workerStateLabel(t: Translate, worker: BotWorkerSummary): string {
   }
 }
 
-function prLabel(t: Translate, pr: NonNullable<BotWorkerSummary['pr']>): string {
-  if (pr.state === 'merged') {
-    return t('orcaFork.agentsTasks.pr.merged', 'merged')
-  }
-  if (pr.state === 'closed') {
-    return t('orcaFork.agentsTasks.pr.closed', 'closed')
-  }
-  const checks =
-    pr.checks === 'success'
-      ? t('orcaFork.agentsTasks.pr.ciGreen', 'CI green')
-      : pr.checks === 'failure'
-        ? t('orcaFork.agentsTasks.pr.ciFailing', 'CI failing')
-        : pr.checks === 'pending'
-          ? t('orcaFork.agentsTasks.pr.ciRunning', 'CI running')
-          : t('orcaFork.agentsTasks.pr.noCi', 'no CI')
-  const review =
-    pr.review === 'APPROVED'
-      ? t('orcaFork.agentsTasks.pr.approved', 'approved')
-      : pr.review === 'CHANGES_REQUESTED'
-        ? t('orcaFork.agentsTasks.pr.changes', 'changes requested')
-        : null
-  return review ? `${checks} · ${review}` : checks
-}
-
-function prTone(pr: NonNullable<BotWorkerSummary['pr']>): string {
-  if (pr.state === 'merged') {
-    return 'text-workspace-status-done'
-  }
-  if (pr.state === 'closed') {
-    return 'text-muted-foreground'
-  }
-  return pr.checks === 'failure'
-    ? 'text-destructive'
-    : pr.checks === 'success'
-      ? 'text-status-success'
-      : 'text-muted-foreground'
-}
-
 function AgentNowLine({ bot, home }: { bot: Bot; home: FolderWorkspace }): React.JSX.Element {
   const { line, limit, now } = useBotRowLine(bot, home)
   return <BotRowLineView line={line} limit={limit} unread={false} now={now} />
@@ -127,8 +85,6 @@ export function AgentTaskCard({
 }): React.JSX.Element {
   const t = useTranslate()
   const offline = useBotHostOffline(bot.hostId)
-  const homeStatus = useWorktreeActivityStatus(folderWorkspaceKey(bot.folderWorkspaceId))
-  const now = useBotNow(offline ? null : bot)
   const items = useBotItems(offline ? null : bot)
   const work = useBotWorkList(bot)
 
@@ -143,22 +99,7 @@ export function AgentTaskCard({
   )
   const runningWorkers = workers.filter((worker) => worker.state === 'working').length
 
-  const folded = foldBotStatus(homeStatus, bot.paused)
-  const status: WorktreeStatus =
-    now.needsYou > 0 || needsYouItems > 0 || folded === 'permission'
-      ? 'permission'
-      : now.working > 0 || folded === 'working'
-        ? 'working'
-        : folded
-  const statusText = offline
-    ? t('orcaFork.agentsTasks.offline', 'Offline')
-    : bot.paused
-      ? t('orcaFork.agentsTasks.paused', 'Paused')
-      : status === 'permission'
-        ? t('orcaFork.agentsTasks.needsYou', 'Needs you')
-        : status === 'working'
-          ? t('orcaFork.agentsTasks.working', 'Working')
-          : t('orcaFork.agentsTasks.idle', 'Idle')
+  const { status, label: statusText } = useBotPresence(bot, needsYouItems)
 
   const openItem = (item: BotItem): void => {
     if (openBotHome(bot)) {
@@ -267,22 +208,7 @@ export function AgentTaskCard({
                 {worker.title}
               </span>
               {worker.pr ? (
-                <button
-                  type="button"
-                  className={cn(
-                    'flex shrink-0 items-center gap-1 rounded px-1 hover:bg-accent',
-                    prTone(worker.pr)
-                  )}
-                  title={worker.pr.url}
-                  onClick={(event) => {
-                    if (worker.pr) {
-                      openAppHttpLink(worker.pr.url, { event })
-                    }
-                  }}
-                >
-                  <GitPullRequest className="size-3" />#{worker.pr.number} · {prLabel(t, worker.pr)}
-                  <ExternalLink className="size-3" />
-                </button>
+                <AgentPrBadge pr={worker.pr} className="shrink-0" />
               ) : worker.server ? (
                 <span className="shrink-0 text-muted-foreground">{worker.server}</span>
               ) : null}

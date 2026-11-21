@@ -19,6 +19,7 @@ import { useLiveDashboardSnapshot } from './snapshot/useLiveDashboardSnapshot'
 import { useAgentDashboardTelemetry } from './board/use-agent-dashboard-telemetry'
 import { useTranslate } from '@/i18n/use-translate'
 import { trackSidebarLiveWidth } from '@/components/sidebar/chrome/sidebar-live-width'
+import { ForkAgentsDashboard } from '@/components/orca-fork/agents-board/ForkAgentsDashboard' // orca-fork:
 
 // Nested interactive overlays own Escape before the companion sheet; exclude the sheet’s own role=dialog marker.
 const AGENT_BOARD_ESCAPE_BLOCKING_OVERLAY_SELECTOR = [
@@ -35,11 +36,13 @@ const AGENT_BOARD_ESCAPE_BLOCKING_OVERLAY_SELECTOR = [
 function AgentDashboardDrawerBody({
   onClose,
   onFocusHandoff,
-  onMenuOpenChange
+  onMenuOpenChange,
+  viewSwitch
 }: {
   onClose: () => void
   onFocusHandoff: () => void
   onMenuOpenChange: (open: boolean) => void
+  viewSwitch?: React.ReactNode // orca-fork: Bots/Terminals switch
 }): React.JSX.Element {
   const snapshot = useLiveDashboardSnapshot()
   useAgentDashboardTelemetry('in_window')
@@ -75,10 +78,13 @@ function AgentDashboardDrawerBody({
       onBrowserForeground={onFocusHandoff}
       onClose={onClose}
       headerActions={
-        <AgentDashboardSettingsMenu
-          onSwitchToPopout={handleSwitchToPopout}
-          onOpenChange={onMenuOpenChange}
-        />
+        <>
+          {viewSwitch /* orca-fork: Bots/Terminals switch */}
+          <AgentDashboardSettingsMenu
+            onSwitchToPopout={handleSwitchToPopout}
+            onOpenChange={onMenuOpenChange}
+          />
+        </>
       }
     />
   )
@@ -247,10 +253,18 @@ export function AgentDashboardDrawer({
         <SheetTitle className="sr-only">{t('dashboardPopout.title', 'Agents')}</SheetTitle>
         {/* Closed SheetContent unmounts the live snapshot body, avoiding closed-path derivation. */}
         <div ref={boardRef} className="flex min-h-0 flex-1 flex-col">
-          <AgentDashboardDrawerBody
+          {/* orca-fork: opens on the bots board; the terminals board is behind its switch */}
+          <ForkAgentsDashboard
             onClose={close}
-            onFocusHandoff={closeForFocusHandoff}
-            onMenuOpenChange={setMenuOpen}
+            onNavigate={closeForFocusHandoff}
+            terminals={(viewSwitch) => (
+              <AgentDashboardDrawerBody
+                onClose={close}
+                onFocusHandoff={closeForFocusHandoff}
+                onMenuOpenChange={setMenuOpen}
+                viewSwitch={viewSwitch}
+              />
+            )}
           />
         </div>
       </SheetContent>
