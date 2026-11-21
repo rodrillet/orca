@@ -38,11 +38,19 @@ jobs:
     if: github.repository == 'rodrillet/orca' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
     outputs:
       sha: ${{ steps.resolve.outputs.sha }}
       version: ${{ steps.resolve.outputs.version }}
       tag: ${{ steps.resolve.outputs.tag }}
     steps:
+      # Something outside the repo keeps disabling this workflow; its state and last change date the next one.
+      - name: Log this workflow's state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api "repos/$GITHUB_REPOSITORY/actions/workflows/fork-build.yml" -q '"Fork build is \(.state), last changed \(.updated_at)"'
       - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || github.event.workflow_run.head_sha || github.sha }}

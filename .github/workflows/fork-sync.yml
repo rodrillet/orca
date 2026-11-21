@@ -27,6 +27,24 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A disabled Fork build misses merges; turn every fork workflow back on daily too (Fork CI does it per push).
+  fork-workflows-on:
+    if: github.repository == 'rodrillet/orca'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows" \
+            -q '.workflows[] | select(.state != "active") | select(.path | test("/fork-[^/]+\\.yml$")) | "\(.id) \(.state) \(.path)"' |
+            while read -r id state path; do
+              echo "enable $path (was $state)"
+              gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/$id/enable"
+            done
+
   sync:
     if: github.repository == 'rodrillet/orca'
     runs-on: ubuntu-24.04-arm
