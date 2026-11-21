@@ -121,6 +121,7 @@ import { BOT_TOOLS_OWNED_SIGN_IN_METHODS } from './bots-tools-owned-sign-in'
 import { BOT_COMPOSIO_METHODS } from './bots-composio'
 import { BOT_COMPOSIO_EVENTS_METHODS } from './bots-composio-events'
 import { WEBHOOK_METHODS } from './webhooks'
+import { FORK_WIKI_METHODS } from '../../../orca-fork/wiki/wiki-rpc-methods' // orca-fork: workspace wiki
 import {
   LAYOUT_APPLY_METHODS,
   LAYOUT_VIEW_REPORT_METHODS,
@@ -260,7 +261,8 @@ const SERVICE_RPC_METHODS = [
   // Switch point: a window-fed build publishes no sidebar input.
   ...(ORCA_SIDEBAR_INPUTS_IS_MAIN ? SIDEBAR_INPUT_METHODS : []),
   ...UPDATER_METHODS,
-  ...AUTOMATIC_WORK_METHODS
+  ...AUTOMATIC_WORK_METHODS,
+  ...FORK_WIKI_METHODS // orca-fork: workspace wiki
 ] as const
 
 type ConcatMethods<A extends readonly unknown[], B extends readonly unknown[]> = readonly [

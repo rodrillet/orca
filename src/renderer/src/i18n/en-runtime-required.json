@@ -2843,6 +2843,18 @@
     "resourceMonitor": {
       "children_one": "+{{count}} child process",
       "children_other": "+{{count}} child processes"
+    },
+    "wiki": {
+      "allVersions_one": "{{count}} version",
+      "allVersions_other": "All {{count}} versions",
+      "matching_one": "{{count}} page matches",
+      "matching_other": "{{count}} pages match",
+      "subtitle_one": "What your agents learned, in linked pages. {{count}} page.",
+      "subtitle_other": "What your agents learned, in linked pages. {{count}} pages.",
+      "viewerCount_one": "{{count}}×",
+      "viewerCount_other": "{{count}}×",
+      "views_one": "{{count}} view",
+      "views_other": "{{count}} views"
     }
   },
   "pet": {

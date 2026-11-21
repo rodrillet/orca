@@ -635,6 +635,17 @@ import {
   MachineResourcesParams,
   MachineResourcesStopParams
 } from './orca-fork-resource-monitor-params'
+import {
+  ForkWikiCreate,
+  ForkWikiLink,
+  ForkWikiList,
+  ForkWikiMention,
+  ForkWikiPageRef,
+  ForkWikiRestoreVersion,
+  ForkWikiShow,
+  ForkWikiTag,
+  ForkWikiUpdate
+} from './orca-fork-wiki-params'
 import { ApprovalAnswerParams } from './orchestration/orchestration-approval-answer-params'
 import {
   FederationDispatchParams,
@@ -1839,6 +1850,18 @@ export const RPC_PARAMS_BY_METHOD = {
   'orcaFork.teams.get': AgentTeamsGet,
   'orcaFork.teams.post': AgentTeamsPost,
   'orcaFork.teams.set': AgentTeamsSet,
+  'orcaFork.wiki.create': ForkWikiCreate,
+  'orcaFork.wiki.history': ForkWikiPageRef,
+  'orcaFork.wiki.link': ForkWikiLink,
+  'orcaFork.wiki.list': ForkWikiList,
+  'orcaFork.wiki.mention': ForkWikiMention,
+  'orcaFork.wiki.purge': ForkWikiPageRef,
+  'orcaFork.wiki.restore': ForkWikiPageRef,
+  'orcaFork.wiki.restoreVersion': ForkWikiRestoreVersion,
+  'orcaFork.wiki.show': ForkWikiShow,
+  'orcaFork.wiki.tag': ForkWikiTag,
+  'orcaFork.wiki.trash': ForkWikiPageRef,
+  'orcaFork.wiki.update': ForkWikiUpdate,
   'orcad.migration.abortCatalog': OrcadMigrationCatalogParams,
   'orcad.migration.abortCatalogByReference': OrcadMigrationCatalogReferenceParams,
   'orcad.migration.catalogState': OrcadMigrationCatalogParams,

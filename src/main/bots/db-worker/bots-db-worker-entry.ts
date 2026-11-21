@@ -10,6 +10,7 @@ import type {
   BotsDbWorkerResponse
 } from './bots-db-worker-protocol'
 import { installWorkerSendLedger } from '../../worker-threads/worker-send-ledger'
+import { openForkWikiDbStore } from '../../orca-fork/wiki/wiki-db-worker-store' // orca-fork: workspace wiki
 
 installWorkerSendLedger('orca-bots-db')
 
@@ -30,7 +31,8 @@ function openItems(path: string): OpenStore {
 
 /** Each store this worker hosts, by the name requests carry. */
 const STORES: Record<BotsDbStoreName, (path: string) => OpenStore> = {
-  items: openItems
+  items: openItems,
+  orcaForkWiki: openForkWikiDbStore // orca-fork: workspace wiki
 }
 
 const opened = new Map<string, OpenStore>()

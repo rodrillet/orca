@@ -2,6 +2,7 @@ import type { OrchestrationCliCommand } from './orchestration-cli-command'
 import type { RuntimeAgentPromptWriteOptions } from '../../../terminal/input/agent-prompt-write-options'
 import { ORCA_DISPATCH_PROMPT_LEAD_LINE } from '../../../../../shared/orchestration/workers/orca-dispatch-status-prompt'
 import { ORCA_SESSION_ADDRESS_PREFIX } from '../../../../../shared/agent-session/identity/orca-session-address-prefix'
+import { forkWikiWorkerSection } from '../../../../orca-fork/wiki/wiki-agent-instructions' // orca-fork: workspace wiki
 
 export type PreambleParams = {
   taskId: string
@@ -132,7 +133,7 @@ ${postDoneInstructions}`
       : buildSubDispatchSection(cli, params.workerHandle)
     : ''
 
-  return `${header}${drift}${subDispatch}
+  return `${header}${drift}${subDispatch}${forkWikiWorkerSection(cli)}
 
 === TASK ===
 ${params.taskSpec}`
