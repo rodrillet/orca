@@ -3,7 +3,9 @@ import { mascotAvatar } from '../../../../../shared/bot-avatar'
 import { publishBots } from '@/lib/bot-catalog-snapshot'
 import type { Bot } from '../../../../../shared/bot-types'
 import type {
+  WikiActivityResult,
   WikiActor,
+  WikiConsultation,
   WikiListResult,
   WikiPage,
   WikiPageSummary
@@ -65,6 +67,7 @@ function summary(
     updatedBy: by,
     viewCount: views,
     lastViewedAt: now - HOUR,
+    pinned: slug === 'glossary',
     deletedAt: null,
     deletedBy: null
   }
@@ -84,7 +87,7 @@ const pages: WikiPageSummary[] = [
   summary(
     'ci-flaky-tests',
     'CI flaky tests',
-    'Engineering',
+    'Engineering/CI',
     ['ci', 'tests'],
     dev,
     5,
@@ -149,7 +152,93 @@ const samplePage: WikiPage = {
     { actor: owner, count: 4, lastAt: now - 4 * HOUR },
     { actor: dev, count: 2, lastAt: now - 26 * HOUR }
   ],
-  recentViews: []
+  recentViews: [
+    {
+      at: now - HOUR,
+      by: nora,
+      chatId: 's1',
+      chatTitle: 'Fix the VPS deploy',
+      taskId: 't1',
+      taskTitle: 'Install the fork orca-server'
+    },
+    { at: now - 4 * HOUR, by: owner, chatId: null, chatTitle: null, taskId: null, taskTitle: null },
+    {
+      at: now - 26 * HOUR,
+      by: dev,
+      chatId: 's2',
+      chatTitle: 'Release 1.4.266',
+      taskId: null,
+      taskTitle: null
+    }
+  ]
+}
+
+function consultation(
+  page: WikiPageSummary,
+  by: WikiActor,
+  hoursAgo: number,
+  chatTitle: string | null,
+  taskTitle: string | null = null
+): WikiConsultation {
+  return {
+    pageId: page.id,
+    slug: page.slug,
+    title: page.title,
+    folder: page.folder,
+    trashed: false,
+    at: now - hoursAgo * HOUR,
+    by,
+    chatId: chatTitle ? `chat-${hoursAgo}` : null,
+    chatTitle,
+    taskId: taskTitle ? `task-${hoursAgo}` : null,
+    taskTitle
+  }
+}
+
+const activity: WikiActivityResult = {
+  workspaceId: 'default',
+  windowDays: 30,
+  consultations: [
+    consultation(pages[0]!, nora, 0.5, 'Fix the VPS deploy', 'Install the fork orca-server'),
+    consultation(pages[1]!, dev, 1.2, 'Flaky CI', 'Stabilize the terminal suites'),
+    consultation(pages[2]!, nora, 2, 'Onboarding the new bot'),
+    consultation(pages[0]!, owner, 3, null),
+    consultation(pages[3]!, dev, 27, 'Release 1.4.266', 'Cut the fork release')
+  ],
+  readers: [
+    { actor: nora, key: 'bot:nora', count: 14, pages: 5, lastAt: now - 0.5 * HOUR },
+    { actor: dev, key: 'bot:dev', count: 9, pages: 3, lastAt: now - 1.2 * HOUR },
+    { actor: owner, key: 'owner', count: 4, pages: 2, lastAt: now - 3 * HOUR }
+  ],
+  popular: [
+    {
+      pageId: pages[0]!.id,
+      slug: pages[0]!.slug,
+      title: pages[0]!.title,
+      folder: pages[0]!.folder,
+      count: 11,
+      readers: [
+        { actor: nora, count: 8 },
+        { actor: dev, count: 3 }
+      ]
+    },
+    {
+      pageId: pages[1]!.id,
+      slug: pages[1]!.slug,
+      title: pages[1]!.title,
+      folder: pages[1]!.folder,
+      count: 6,
+      readers: [{ actor: dev, count: 6 }]
+    },
+    {
+      pageId: pages[2]!.id,
+      slug: pages[2]!.slug,
+      title: pages[2]!.title,
+      folder: pages[2]!.folder,
+      count: 2,
+      readers: [{ actor: nora, count: 2 }]
+    }
+  ]
 }
 
 const list: WikiListResult = {
@@ -172,7 +261,8 @@ function stubWiki(): void {
     'bots.list': { bots },
     'bots.groups.list': { groups: [] },
     'orcaFork.wiki.list': list,
-    'orcaFork.wiki.show': samplePage
+    'orcaFork.wiki.show': samplePage,
+    'orcaFork.wiki.activity': activity
   }
   const runtime: unknown = window.api.runtime
   Reflect.set(window.api, 'runtime', {
@@ -219,6 +309,36 @@ export const tagFilter = defineFixture({
     stubWiki()
     openWikiPage({ kind: 'home' })
     setWikiTag('ci')
+  },
+  render: frame
+})
+
+export const consultations = defineFixture({
+  width: 1280,
+  setup: () => {
+    stubWiki()
+    setWikiTag(null)
+    openWikiPage({ kind: 'consultations' })
+  },
+  render: frame
+})
+
+export const readerView = defineFixture({
+  width: 1280,
+  setup: () => {
+    stubWiki()
+    setWikiTag(null)
+    openWikiPage({ kind: 'readers', actorKey: 'bot:nora' })
+  },
+  render: frame
+})
+
+export const folderView = defineFixture({
+  width: 1280,
+  setup: () => {
+    stubWiki()
+    setWikiTag(null)
+    openWikiPage({ kind: 'folder', folder: 'Engineering' })
   },
   render: frame
 })

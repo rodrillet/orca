@@ -15,7 +15,9 @@ const Scope = {
   /** A worker or terminal agent with no bot: how it signs its edits. */
   agentName: OptionalString,
   /** The caller's ORCA_WORKTREE_ID / ORCA_WORKSPACE_ID: which project or bot home it runs in. */
-  callerWorkspaceIds: z.array(z.string()).max(4).optional()
+  callerWorkspaceIds: z.array(z.string()).max(4).optional(),
+  /** The caller's ORCA_TERMINAL_HANDLE: names the orchestration task a worker reads the wiki for. */
+  callerTerminalHandle: OptionalString
 }
 const Page = requiredString('Name the page by its title or slug.')
 const Tags = z.array(z.string()).optional()
@@ -81,6 +83,17 @@ export const ForkWikiMention = z.object({
 })
 
 export const ForkWikiPageRef = z.object({ ...Scope, page: Page })
+
+export const ForkWikiPin = z.object({ ...Scope, page: Page, pinned: z.boolean() })
+
+/** The consultation log: everyone's, one reader's (`actorKey`, as `wikiActorKey` writes it) or one page's. */
+export const ForkWikiActivity = z.object({
+  ...Scope,
+  actorKey: OptionalString,
+  page: OptionalString,
+  before: OptionalPositiveInt,
+  limit: OptionalPositiveInt
+})
 
 export const ForkWikiRestoreVersion = z.object({
   ...Scope,

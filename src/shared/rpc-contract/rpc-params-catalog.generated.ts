@@ -636,11 +636,13 @@ import {
   MachineResourcesStopParams
 } from './orca-fork-resource-monitor-params'
 import {
+  ForkWikiActivity,
   ForkWikiCreate,
   ForkWikiLink,
   ForkWikiList,
   ForkWikiMention,
   ForkWikiPageRef,
+  ForkWikiPin,
   ForkWikiRestoreVersion,
   ForkWikiSetPlacement,
   ForkWikiShow,
@@ -1851,11 +1853,13 @@ export const RPC_PARAMS_BY_METHOD = {
   'orcaFork.teams.get': AgentTeamsGet,
   'orcaFork.teams.post': AgentTeamsPost,
   'orcaFork.teams.set': AgentTeamsSet,
+  'orcaFork.wiki.activity': ForkWikiActivity,
   'orcaFork.wiki.create': ForkWikiCreate,
   'orcaFork.wiki.history': ForkWikiPageRef,
   'orcaFork.wiki.link': ForkWikiLink,
   'orcaFork.wiki.list': ForkWikiList,
   'orcaFork.wiki.mention': ForkWikiMention,
+  'orcaFork.wiki.pin': ForkWikiPin,
   'orcaFork.wiki.purge': ForkWikiPageRef,
   'orcaFork.wiki.restore': ForkWikiPageRef,
   'orcaFork.wiki.restoreVersion': ForkWikiRestoreVersion,

@@ -35,6 +35,14 @@ export const FORK_WIKI_COMMAND_SPECS: CommandSpec[] = [
     notes: WIKI_NOTES
   },
   {
+    path: ['wiki', 'consultations'],
+    summary: 'Who read the wiki, when, and from which chat or task (one page, one reader, or all)',
+    usage:
+      'orca wiki consultations [--page <page>] [--reader owner|bot:<id>|agent:<name>] [--limit <n>] [--workspace <id>] [--json]',
+    allowedFlags: [...SCOPE_FLAGS, 'page', 'reader', 'limit'],
+    notes: WIKI_NOTES
+  },
+  {
     path: ['wiki', 'create'],
     summary: 'Write down something you learned as a new wiki page',
     usage:

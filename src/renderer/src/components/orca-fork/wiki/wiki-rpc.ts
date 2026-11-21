@@ -4,6 +4,7 @@ import { botHostTarget } from '@/lib/bot-hosts'
 import { callRuntimeRpc } from '@/runtime/rpc/calls/runtime-rpc-call'
 import type { ExecutionHostId } from '../../../../../shared/execution-host/execution-host'
 import type {
+  WikiActivityResult,
   WikiHistoryResult,
   WikiListResult,
   WikiPage,
@@ -165,6 +166,25 @@ export function useWikiHistory(
   const key = target && slug ? `${target.hostId}|${target.workspaceId}|${slug}|history` : null
   return useWikiRead(key, () =>
     callWiki<WikiHistoryResult>(needTarget(target), 'history', { page: slug })
+  )
+}
+
+export type WikiActivityQuery = { actorKey?: string; page?: string; limit?: number }
+
+/** The consultation log; an older orca-server answers method_not_found, which reads as `error`. */
+export function useWikiActivity(
+  target: WikiTarget | null,
+  query: WikiActivityQuery = {}
+): Read<WikiActivityResult> {
+  const key = target
+    ? `${target.hostId}|${target.workspaceId}|activity|${query.actorKey ?? ''}|${query.page ?? ''}|${query.limit ?? ''}`
+    : null
+  return useWikiRead(key, () =>
+    callWiki<WikiActivityResult>(needTarget(target), 'activity', {
+      ...(query.actorKey ? { actorKey: query.actorKey } : {}),
+      ...(query.page ? { page: query.page } : {}),
+      ...(query.limit ? { limit: query.limit } : {})
+    })
   )
 }
 
