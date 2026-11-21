@@ -57,7 +57,7 @@ function ResourceMonitorPopover({ iconOnly }: { iconOnly: boolean }): React.JSX.
         align="end"
         sideOffset={8}
         {...STATUS_BAR_CONTEXT_MENU_EXEMPT_PROPS}
-        className="flex h-[min(42rem,var(--radix-popover-content-available-height))] w-[30rem] max-w-[calc(100vw-2rem)] flex-col p-0"
+        className="flex h-[min(42rem,var(--radix-popover-content-available-height))] w-[30rem] max-w-[calc(100vw-2rem)] flex-col"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <div className="flex shrink-0 items-center justify-between border-b border-border/50 px-3 py-2">
@@ -71,7 +71,7 @@ function ResourceMonitorPopover({ iconOnly }: { iconOnly: boolean }): React.JSX.
             <RefreshCw />
           </Button>
         </div>
-        <Tabs value={current} onValueChange={setSelected} className="min-h-0 flex-1 gap-0">
+        <Tabs value={current} onValueChange={setSelected} className="min-h-0 flex-1">
           <div className="shrink-0 overflow-x-auto px-3 pt-1 scrollbar-none">
             <TabsList variant="line" size="sm">
               {panels.map((panel) => (
@@ -82,12 +82,10 @@ function ResourceMonitorPopover({ iconOnly }: { iconOnly: boolean }): React.JSX.
             </TabsList>
           </div>
           {panels.map((panel) => (
-            <TabsContent
-              key={panel.key}
-              value={panel.key}
-              className="min-h-0 flex-1 overflow-y-auto scrollbar-sleek"
-            >
-              <MachineResourcesCard machine={panel} bots={bots} />
+            <TabsContent key={panel.key} value={panel.key} className="min-h-0 flex-1">
+              <div className="h-full overflow-y-auto scrollbar-sleek">
+                <MachineResourcesCard machine={panel} bots={bots} />
+              </div>
             </TabsContent>
           ))}
         </Tabs>

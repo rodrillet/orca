@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react'
 import { CircleStop } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Progress } from '@/components/ui/progress'
 import { AgentIcon } from '@/components/agent/icons/AgentIcon'
 import { BotAvatar } from '@/components/bots/BotAvatar'
 import { cn } from '@/lib/class-names'
@@ -23,16 +22,6 @@ function percent(part: number, total: number): number {
   return total > 0 ? Math.min(100, Math.max(0, (part / total) * 100)) : 0
 }
 
-function toneClass(value: number): string {
-  if (value >= 90) {
-    return '[&_[data-slot=progress-indicator]]:bg-destructive'
-  }
-  if (value >= 75) {
-    return '[&_[data-slot=progress-indicator]]:bg-yellow-500'
-  }
-  return ''
-}
-
 function Meter({
   label,
   value,
@@ -48,7 +37,22 @@ function Meter({
         <span className="text-muted-foreground">{label}</span>
         <span className="tabular-nums text-foreground">{detail}</span>
       </div>
-      <Progress value={value} className={cn('h-1.5', toneClass(value))} aria-label={label} />
+      <div
+        role="meter"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(value)}
+        className="h-1.5 w-full overflow-hidden rounded-full bg-primary/20"
+      >
+        <div
+          className={cn(
+            'h-full rounded-full transition-[width] duration-300 motion-reduce:transition-none',
+            value >= 90 ? 'bg-destructive' : value >= 75 ? 'bg-status-warning' : 'bg-primary'
+          )}
+          style={{ width: `${value}%` }}
+        />
+      </div>
     </div>
   )
 }
