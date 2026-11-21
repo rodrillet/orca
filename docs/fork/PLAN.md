@@ -159,7 +159,9 @@ Every file the owner sends in a chat and every file agents make lands in a per-w
   came from" (the bot, its note or the message's words, Open the chat).
 - **RPC**: `orcaFork.drive.*` on the runtime (`src/main/runtime/rpc/methods/orca-fork/`). A stock
   `orca-server` answers `method_not_found`; the page shows a notice to install the fork's server there.
-- **Scoping**: every call takes a `workspaceId` (stand-in `default` until the fork workspaces land).
+- **Scoping**: the page follows the active fork workspace (`ForkWorkspaceId`): it reads that workspace's
+  machine and shows what was put in it, its bots' files, and (for a machine's home workspace) everything
+  else on that machine. Uploads carry the workspace id; captures are placed by their bot.
 
 ## Decisions for the owner
 

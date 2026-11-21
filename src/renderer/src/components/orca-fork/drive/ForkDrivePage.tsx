@@ -10,7 +10,7 @@ import {
   LOCAL_EXECUTION_HOST_ID,
   type ExecutionHostId
 } from '../../../../../shared/execution-host/execution-host'
-import { useDriveData, type DriveEntry, type DriveFolderEntry } from './drive-host-data'
+import type { DriveEntry, DriveFolderEntry } from './drive-host-data'
 import {
   DRIVE_NAME_COLLATOR,
   driveFolderTrail,
@@ -23,13 +23,9 @@ import {
 } from './drive-view-model'
 import { findDriveFileBot } from './drive-file-origin'
 import { useDriveActions, type DriveSelection } from './use-drive-actions'
+import { useScopedDriveData } from './use-drive-workspace-scope'
 import { useDriveSelection } from './use-drive-selection'
-import {
-  useDriveLayout,
-  useDriveMachines,
-  useDriveWorkspaceId,
-  useDriveKeys
-} from './drive-page-hooks'
+import { useDriveLayout, useDriveMachines, useDriveKeys } from './drive-page-hooks'
 import { ForkDriveToolbar } from './ForkDriveToolbar'
 import { ForkDriveHeader, ForkDriveSelectionBar, ForkDriveTrail } from './ForkDriveHeader'
 import { ForkDriveContent } from './ForkDriveContent'
@@ -47,8 +43,8 @@ type DialogState =
 export default function ForkDrivePage(): React.JSX.Element {
   const t = useTranslate()
   const confirm = useConfirmationDialog()
-  const workspaceId = useDriveWorkspaceId()
-  const data = useDriveData(workspaceId)
+  const { scope, data } = useScopedDriveData()
+  const workspaceId = scope.workspaceId
   const actions = useDriveActions(workspaceId, data.refresh)
   const bots = useBots()
   const [layout, setLayout] = useDriveLayout()
@@ -104,7 +100,7 @@ export default function ForkDrivePage(): React.JSX.Element {
     )
     return ['Drive', ...path.map((entry) => entry.name)].join(' / ')
   }
-  const uploadHost = folder?.hostId ?? filters.hostId ?? LOCAL_EXECUTION_HOST_ID
+  const uploadHost = folder?.hostId ?? scope.hostId ?? filters.hostId ?? LOCAL_EXECUTION_HOST_ID
   const upload = (hostId: ExecutionHostId | null, files: File[]): void => {
     const target = hostId ?? uploadHost
     void actions.upload(target, files, folder && folder.hostId === target ? folder.id : null)

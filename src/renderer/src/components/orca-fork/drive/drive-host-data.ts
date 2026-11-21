@@ -59,14 +59,17 @@ type HostRead = {
   folders: DriveFolderEntry[]
 }
 
-export function useDriveData(workspaceId: DriveWorkspaceId | null): DriveData {
+export function useDriveData(
+  workspaceId: DriveWorkspaceId | null,
+  onlyHostId: ExecutionHostId | null = null
+): DriveData {
   const [reads, setReads] = useState<Map<ExecutionHostId, HostRead>>(() => new Map())
   const [loaded, setLoaded] = useState(false)
   const generation = useRef(0)
 
   const refresh = useCallback(() => {
     const current = ++generation.current
-    const hostIds = driveHostIds()
+    const hostIds = onlyHostId ? [onlyHostId] : driveHostIds()
     void Promise.all(
       hostIds.map(async (hostId): Promise<[ExecutionHostId, HostRead]> => {
         try {
@@ -104,7 +107,7 @@ export function useDriveData(workspaceId: DriveWorkspaceId | null): DriveData {
       })
       setLoaded(true)
     })
-  }, [workspaceId])
+  }, [workspaceId, onlyHostId])
 
   useEffect(() => {
     refresh()

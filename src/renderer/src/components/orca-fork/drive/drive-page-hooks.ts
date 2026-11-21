@@ -3,16 +3,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppStore } from '@/store'
 import { useTranslate } from '@/i18n/use-translate'
 import { selectExecutionHostDisplayLabel } from '@/runtime/hosts/display/execution-host-display-label'
-import type { DriveWorkspaceId } from '../../../../../shared/orca-fork/drive/drive-types'
 import type { DriveHostState } from './drive-host-data'
 import type { DriveLayout } from './drive-view-model'
 import type { DriveMachine } from './ForkDriveToolbar'
 import type { ExecutionHostId } from '../../../../../shared/execution-host/execution-host'
-
-/** The fork workspace the Drive shows; none (every file) until the active-workspace store lands. */
-export function useDriveWorkspaceId(): DriveWorkspaceId | null {
-  return null
-}
 
 const LAYOUT_KEY = 'orca-fork.drive.layout'
 
