@@ -29588,6 +29588,23 @@
       },
       "workers": "Workers",
       "working": "Working"
+    },
+    "botOrganization": {
+      "unassigned": "No department",
+      "newSectionName": "New section",
+      "rename": "Rename",
+      "newDepartment": "New department",
+      "newDepartmentName": "New department",
+      "actions": "{{name}} actions",
+      "newSection": "New section",
+      "deleteDepartment": "Delete department",
+      "deleteSection": "Delete section",
+      "groupNone": "None",
+      "groupMachine": "Machine",
+      "groupMachineDescription": "This Mac and each paired server.",
+      "groupOrganization": "Departments",
+      "groupOrganizationDescription": "Departments and sections. Drag bots between them.",
+      "groupBy": "Group by"
     }
   }
 }

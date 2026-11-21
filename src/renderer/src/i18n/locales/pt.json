@@ -24927,6 +24927,23 @@
       },
       "workers": "Workers",
       "working": "Trabalhando"
+    },
+    "botOrganization": {
+      "unassigned": "Sem departamento",
+      "newSectionName": "Nova seção",
+      "rename": "Renomear",
+      "newDepartment": "Novo departamento",
+      "newDepartmentName": "Novo departamento",
+      "actions": "Ações de {{name}}",
+      "newSection": "Nova seção",
+      "deleteDepartment": "Excluir departamento",
+      "deleteSection": "Excluir seção",
+      "groupNone": "Nenhum",
+      "groupMachine": "Máquina",
+      "groupMachineDescription": "Este Mac e cada servidor pareado.",
+      "groupOrganization": "Departamentos",
+      "groupOrganizationDescription": "Departamentos e seções. Arraste bots entre eles.",
+      "groupBy": "Agrupar por"
     }
   }
 }

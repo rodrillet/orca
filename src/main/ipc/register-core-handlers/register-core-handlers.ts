@@ -104,6 +104,7 @@ import {
   closeNotificationDismissalsBeforeRelaunch,
   type CoreHandlerLifecycleOptions
 } from './core-handler-lifecycle'
+import { registerBotOrganizationHandlers } from '../../orca-fork/organization/bot-organization-store' // orca-fork:
 
 let registration: Promise<void> | null = null
 
@@ -195,6 +196,7 @@ export async function registerCoreHandlers(
       registerPluginHandlers(store, pluginService, marketplaceServices)
     }
     registerTelemetryHandlers(store)
+    registerBotOrganizationHandlers() // orca-fork: Bots sidebar departments/sections
     if (!lifecycleOptions.orcaAccount) {
       throw new Error('Orca account service must be initialized before core handlers')
     }
