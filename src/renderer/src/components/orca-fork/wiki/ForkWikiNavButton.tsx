@@ -5,10 +5,12 @@ import { cn } from '@/lib/class-names'
 import { useTranslate } from '@/i18n/use-translate'
 import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import { closeWikiPage, openWikiPage, useWikiPageOpen } from './wiki-view-state'
+import { useWikiPlacementSync } from './use-wiki-placement-sync'
 
 export function ForkWikiNavButton(): React.JSX.Element | null {
   const t = useTranslate()
   const open = useWikiPageOpen()
+  useWikiPlacementSync()
   if (!FORK_FEATURES.workspaceWiki) {
     return null
   }

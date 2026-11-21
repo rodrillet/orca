@@ -5,7 +5,7 @@ import type { CommandSpec } from '../../discovery/command-spec'
 const SCOPE_FLAGS = [...GLOBAL_FLAGS, 'workspace', 'as']
 const WIKI_NOTES = [
   'The wiki lives on the computer Orca runs on; --environment <name> reads and writes another paired computer’s.',
-  '--workspace <id> names another workspace on this computer (default: ORCA_FORK_WORKSPACE_ID, else this computer\u2019s home workspace). A bot signs as itself; another agent signs with --as <name>.',
+  'Without --workspace, the wiki is your own workspace\u2019s: your bot\u2019s or your project\u2019s, as your owner placed them (ORCA_FORK_WORKSPACE_ID overrides). A bot signs as itself; another agent signs with --as <name>.',
   'Link pages by writing [[Page title]] in a body. Text flags have a -file twin that reads a file or - (stdin).'
 ]
 

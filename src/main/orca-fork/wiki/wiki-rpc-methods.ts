@@ -7,52 +7,25 @@ import {
   ForkWikiMention,
   ForkWikiPageRef,
   ForkWikiRestoreVersion,
+  ForkWikiSetPlacement,
   ForkWikiShow,
   ForkWikiTag,
   ForkWikiUpdate
 } from '../../../shared/rpc-contract/orca-fork-wiki-params'
-import {
-  DEFAULT_FORK_WIKI_WORKSPACE_ID,
-  type WikiActor,
-  type WikiHistoryResult
-} from '../../../shared/orca-fork/wiki/wiki-types'
+import type { WikiHistoryResult } from '../../../shared/orca-fork/wiki/wiki-types'
 import { FORK_FEATURES } from '../../../shared/orca-fork/fork-features'
-import { botOfCaller } from '../../bots/bot-of-caller'
 import { readAgentSessionRecordStore } from '../../runtime/orchestration/addressing/session-lineage/structured-session-lineage'
 import { isAgentRpcCaller } from '../../runtime/rpc/callers/rpc-caller-identity'
-import { defineMethod, type RpcContext } from '../../runtime/rpc/core'
+import { defineMethod } from '../../runtime/rpc/core'
 import { forkWikiDb } from './wiki-db-remote'
 import { WikiError } from './wiki-error'
+import { actor, callerChat, rememberPlacement, workspace } from './wiki-caller'
 
 function store(): typeof forkWikiDb {
   if (!FORK_FEATURES.workspaceWiki) {
     throw new WikiError('The wiki is turned off in this build.')
   }
   return forkWikiDb
-}
-
-type Scope = { workspaceId?: string; callerSessionId?: string; agentName?: string }
-
-function workspace(params: Scope): string {
-  return params.workspaceId?.trim() || DEFAULT_FORK_WIKI_WORKSPACE_ID
-}
-
-/** The calling chat, which only this host's own CLI may claim. */
-function callerChat(params: Scope, context: RpcContext): string | null {
-  return context.pairedDeviceId === undefined && isAgentRpcCaller(context.caller)
-    ? (params.callerSessionId ?? null)
-    : null
-}
-
-function actor(params: Scope, context: RpcContext): WikiActor {
-  if (!isAgentRpcCaller(context.caller)) {
-    return { kind: 'owner' }
-  }
-  const bot = botOfCaller(context.runtime, params.callerSessionId, context.pairedDeviceId)
-  if (bot) {
-    return { kind: 'bot', botId: bot.id, name: bot.name }
-  }
-  return { kind: 'agent', name: params.agentName?.trim().slice(0, 80) || 'Agent' }
 }
 
 function chatTitle(sessionId: string): string {
@@ -63,8 +36,8 @@ const LIST = defineMethod({
   name: 'orcaFork.wiki.list',
   permission: 'workspace',
   params: ForkWikiList,
-  handler: async (params) =>
-    store().list(workspace(params), {
+  handler: async (params, context) =>
+    store().list(await workspace(params, context), {
       ...(params.query ? { query: params.query } : {}),
       ...(params.tag ? { tag: params.tag } : {}),
       ...(params.trash ? { trash: true } : {}),
@@ -78,10 +51,14 @@ const SHOW = defineMethod({
   params: ForkWikiShow,
   handler: async (params, context) => {
     const wiki = store()
-    const page = await wiki.show(workspace(params), params.page, !isAgentRpcCaller(context.caller))
+    const page = await wiki.show(
+      await workspace(params, context),
+      params.page,
+      !isAgentRpcCaller(context.caller)
+    )
     if (params.view && page.deletedAt === null) {
       await wiki.recordView(page.id, actor(params, context), callerChat(params, context))
-      return wiki.show(workspace(params), page.id)
+      return wiki.show(await workspace(params, context), page.id)
     }
     return page
   }
@@ -92,7 +69,7 @@ const CREATE = defineMethod({
   permission: 'workspace',
   params: ForkWikiCreate,
   handler: async (params, context) =>
-    store().create(workspace(params), actor(params, context), {
+    store().create(await workspace(params, context), actor(params, context), {
       title: params.title,
       ...(params.body !== undefined ? { body: params.body } : {}),
       ...(params.folder !== undefined ? { folder: params.folder } : {}),
@@ -106,7 +83,7 @@ const UPDATE = defineMethod({
   permission: 'workspace',
   params: ForkWikiUpdate,
   handler: async (params, context) =>
-    store().update(workspace(params), actor(params, context), params.page, {
+    store().update(await workspace(params, context), actor(params, context), params.page, {
       ...(params.mode ? { mode: params.mode } : {}),
       ...(params.body !== undefined ? { body: params.body } : {}),
       ...(params.section ? { section: params.section } : {}),
@@ -124,7 +101,7 @@ const TAG = defineMethod({
   params: ForkWikiTag,
   handler: async (params, context) =>
     store().tag(
-      workspace(params),
+      await workspace(params, context),
       actor(params, context),
       params.page,
       params.add ?? [],
@@ -138,7 +115,7 @@ const LINK = defineMethod({
   params: ForkWikiLink,
   handler: async (params, context) => {
     const targets = params.to.map((to) => to.replace(/[[\]]/g, '').trim()).filter(Boolean)
-    return store().update(workspace(params), actor(params, context), params.page, {
+    return store().update(await workspace(params, context), actor(params, context), params.page, {
       mode: 'append',
       body: targets.map((to) => `- [[${to}]]`).join('\n'),
       section: params.section ?? 'See also',
@@ -162,7 +139,7 @@ const MENTION = defineMethod({
         params.sourceTitle ??
         `Item #${params.sourceId}${who.kind === 'bot' ? ` · ${who.name}` : ''}`
       return store().mention(
-        workspace(params),
+        await workspace(params, context),
         params.page,
         { kind: 'item', id: `${owner}:${params.sourceId}`, title },
         who
@@ -173,7 +150,7 @@ const MENTION = defineMethod({
       throw new WikiError('Run this from the chat that mentions the page, or pass --chat <id>.')
     }
     return store().mention(
-      workspace(params),
+      await workspace(params, context),
       params.page,
       { kind: 'chat', id: chatId, title: params.sourceTitle ?? chatTitle(chatId) },
       who
@@ -185,8 +162,8 @@ const HISTORY = defineMethod({
   name: 'orcaFork.wiki.history',
   permission: 'workspace',
   params: ForkWikiPageRef,
-  handler: async (params): Promise<WikiHistoryResult> =>
-    store().history(workspace(params), params.page)
+  handler: async (params, context): Promise<WikiHistoryResult> =>
+    store().history(await workspace(params, context), params.page)
 })
 
 const RESTORE_VERSION = defineMethod({
@@ -194,7 +171,12 @@ const RESTORE_VERSION = defineMethod({
   permission: 'workspace',
   params: ForkWikiRestoreVersion,
   handler: async (params, context) =>
-    store().restoreVersion(workspace(params), actor(params, context), params.page, params.version)
+    store().restoreVersion(
+      await workspace(params, context),
+      actor(params, context),
+      params.page,
+      params.version
+    )
 })
 
 const TRASH = defineMethod({
@@ -202,14 +184,14 @@ const TRASH = defineMethod({
   permission: 'workspace',
   params: ForkWikiPageRef,
   handler: async (params, context) =>
-    store().trash(workspace(params), actor(params, context), params.page)
+    store().trash(await workspace(params, context), actor(params, context), params.page)
 })
 
 const RESTORE = defineMethod({
   name: 'orcaFork.wiki.restore',
   permission: 'workspace',
   params: ForkWikiPageRef,
-  handler: async (params) => store().restore(workspace(params), params.page)
+  handler: async (params, context) => store().restore(await workspace(params, context), params.page)
 })
 
 const PURGE = defineMethod({
@@ -220,7 +202,21 @@ const PURGE = defineMethod({
     if (isAgentRpcCaller(context.caller)) {
       throw new WikiError('Only your owner empties the trash, in Orca.')
     }
-    return store().purge(workspace(params), params.page)
+    return store().purge(await workspace(params, context), params.page)
+  }
+})
+
+const SET_PLACEMENT = defineMethod({
+  name: 'orcaFork.wiki.setPlacement',
+  permission: 'workspace',
+  params: ForkWikiSetPlacement,
+  handler: async (params, context) => {
+    if (isAgentRpcCaller(context.caller)) {
+      throw new WikiError('Only your owner’s Orca places bots and projects in workspaces.')
+    }
+    const saved = await store().setPlacement(params)
+    rememberPlacement(saved)
+    return saved
   }
 })
 
@@ -236,5 +232,6 @@ export const FORK_WIKI_METHODS = [
   RESTORE_VERSION,
   TRASH,
   RESTORE,
-  PURGE
+  PURGE,
+  SET_PLACEMENT
 ] as const

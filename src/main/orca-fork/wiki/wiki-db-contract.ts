@@ -31,6 +31,28 @@ export type WikiUpdateInput = {
   note?: string
 }
 
+/** Bot id → workspace key and repo id → workspace key, for this machine's non-home workspaces only. */
+export type WikiPlacement = { bots: Record<string, string>; repos: Record<string, string> }
+
+function stringMap(value: unknown): Record<string, string> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return {}
+  }
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1] !== '')
+      .slice(0, 5_000)
+  )
+}
+
+export function normalizeWikiPlacement(value: unknown): WikiPlacement {
+  const record = typeof value === 'object' && value !== null ? value : {}
+  return {
+    bots: stringMap('bots' in record ? record.bots : null),
+    repos: stringMap('repos' in record ? record.repos : null)
+  }
+}
+
 export type WikiListOptions = { query?: string; tag?: string; trash?: boolean; limit?: number }
 export type WikiMentionSource = {
   kind: Exclude<WikiBacklinkKind, 'page'>
@@ -76,6 +98,8 @@ export type WikiDbOps = {
   trash: (workspaceId: ForkWikiWorkspaceId, actor: WikiActor, ref: string) => WikiPageSummary
   restore: (workspaceId: ForkWikiWorkspaceId, ref: string) => WikiPage
   purge: (workspaceId: ForkWikiWorkspaceId, ref: string) => { id: string; title: string }
+  setPlacement: (placement: WikiPlacement) => WikiPlacement
+  placement: () => WikiPlacement
 }
 
 export type WikiDbOp = keyof WikiDbOps
@@ -92,5 +116,7 @@ export const FORK_WIKI_DB_OPS: readonly WikiDbOp[] = [
   'restoreVersion',
   'trash',
   'restore',
-  'purge'
+  'purge',
+  'setPlacement',
+  'placement'
 ]

@@ -10,6 +10,7 @@ import { readTextOrFileFlag } from '../../arguments/command-body-input'
 import { printResult } from '../../output/command-result-output'
 import { RuntimeClientError } from '../../runtime/connection/types'
 import { callerChat } from '../../automations/automation-caller-chat'
+import { getCallerWorkspaceIds } from '../../workspace-selection/caller-host-worktree-selection'
 import type {
   WikiActor,
   WikiHistoryResult,
@@ -20,12 +21,15 @@ import type {
 
 type Flags = HandlerContext['flags']
 
-function scope(flags: Flags): Record<string, string> {
+function scope(flags: Flags): Record<string, string | string[]> {
   const workspaceId =
     getOptionalStringFlag(flags, 'workspace') ?? process.env.ORCA_FORK_WORKSPACE_ID?.trim()
   const agentName = getOptionalStringFlag(flags, 'as')
+  const callerWorkspaceIds = getCallerWorkspaceIds()
   return {
     ...callerChat(),
+    // Without --workspace, the host picks the caller's own workspace from where it runs.
+    ...(callerWorkspaceIds.length ? { callerWorkspaceIds } : {}),
     ...(workspaceId ? { workspaceId } : {}),
     ...(agentName ? { agentName } : {})
   }
