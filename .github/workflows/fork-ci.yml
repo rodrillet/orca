@@ -26,6 +26,48 @@ env:
   ORCA_BACKGROUND_LAUNCH: '1'
 
 jobs:
+  # Upstream's workflows stay off in the fork, including new ones a merge brings. Fork workflows and the
+  # reusable workflows they call are never disabled, and a disabled fork workflow is turned back on here,
+  # before this run completes, so the Fork build that follows it on main always starts.
+  fork-workflows:
+    if: github.repository == 'rodrillet/orca' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          sparse-checkout: .github/workflows
+          persist-credentials: false
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd .github/workflows
+          keep="$(ls fork-*.yml)"
+          frontier="$keep"
+          while [ -n "$frontier" ]; do
+            called="$(grep -ho 'uses: *\./\.github/workflows/[^ @]*\.ya\?ml' $frontier | sed 's|.*/||' | sort -u)"
+            frontier="$(comm -13 <(sort <<<"$keep") <(sort <<<"$called") | grep . || true)"
+            keep="$(printf '%s\n%s\n' "$keep" "$frontier" | grep . | sort -u)"
+          done
+          echo "Never disabled: $(tr '\n' ' ' <<<"$keep")"
+          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows" -q '.workflows[] | "\(.id) \(.state) \(.path)"' |
+            while read -r id state path; do
+              file="${path##*/}"
+              if grep -qxF "$file" <<<"$keep"; then
+                if [[ "$file" == fork-* && "$state" != active ]]; then
+                  echo "enable $path (was $state)"
+                  gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/$id/enable"
+                fi
+              elif [ "$state" = active ]; then
+                echo "disable $path"
+                gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/$id/disable"
+              fi
+            done
+
   check:
     if: github.repository == 'rodrillet/orca' && github.event.pull_request.draft != true
     runs-on: ubuntu-24.04-arm
