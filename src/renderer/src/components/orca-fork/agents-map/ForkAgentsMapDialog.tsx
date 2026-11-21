@@ -251,9 +251,9 @@ function MapBotNode({
       <span
         className={cn(
           'rounded-lg',
-          presence.status === 'working' &&
+          presence.presence === 'working' &&
             'ring-2 ring-primary ring-offset-2 ring-offset-background',
-          presence.status === 'permission' &&
+          presence.presence === 'blocked' &&
             'ring-2 ring-[var(--status-warning)] ring-offset-2 ring-offset-background'
         )}
         title={presence.label}
