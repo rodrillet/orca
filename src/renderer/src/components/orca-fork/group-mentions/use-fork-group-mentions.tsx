@@ -1,5 +1,5 @@
 // orca-fork: `#` in a chat composer lists the bot groups; picking one writes `#<slug>`.
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState, type KeyboardEvent } from 'react'
 import { Users } from 'lucide-react'
 import { useTranslate } from '@/i18n/use-translate'
 import { useBots } from '@/lib/bot-catalog'
@@ -49,7 +49,10 @@ export function useForkGroupMentions(
   const groups = useForkBotGroups(enabled)
   const typed = enabled ? groupMentionQuery(draft.slice(0, caret)) : null
   const query = typed?.query ?? null
-  const from = typed?.from ?? null
+  const typedFrom = typed?.from ?? null
+  // Escape closes the list for this `#` until another one is typed.
+  const [dismissed, setDismissed] = useState<number | null>(null)
+  const from = typedFrom !== null && typedFrom !== dismissed ? typedFrom : null
   const options = useMemo(
     () => (query !== null && groups.length > 0 ? groupOptions(query, groups) : []),
     [query, groups]
@@ -91,7 +94,14 @@ export function useForkGroupMentions(
       mentionFiles: listed,
       activeIndex: null,
       chooseMention: choose,
-      handleKey: () => false,
+      handleKey: (event: KeyboardEvent<HTMLElement>) => {
+        if (event.key !== 'Escape') {
+          return false
+        }
+        event.preventDefault()
+        setDismissed(from)
+        return true
+      },
       roomContext: { replies: null, mentions: entries, withFiles: false, unavailable: [] }
     }
   }, [from, options, mentions, choose, t, query])
