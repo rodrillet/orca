@@ -35,6 +35,8 @@ import type { SlackPeople } from '../../../../../shared/connectors/slack-message
 import { NativeChatLinkPeekContext } from '../links/previews/native-chat-link-peek-context'
 import { useNativeChatLinkClick } from '../links/actions/native-chat-link-click-context'
 import './native-chat-markdown.css'
+// orca-fork: #group chips
+import { withForkGroupMentions } from '../../orca-fork/group-mentions/fork-group-mention-markdown'
 
 /** Existing words stay opaque when a reply first starts growing. */
 function useWordFadeArmed(fadeWords: boolean): boolean {
@@ -84,7 +86,8 @@ function withFileDestinations(
         slackPeople
       )
     : null
-  return {
+  // orca-fork: #group chips
+  return withForkGroupMentions({
     remarkPlugins: [
       ...(visualExtension?.remarkPlugins ?? []),
       remarkNativeChatFileDestinations,
@@ -98,7 +101,7 @@ function withFileDestinations(
       ...mentions?.sanitizeAttributes
     },
     components: { ...visualExtension?.components, ...mentions?.components }
-  }
+  })
 }
 
 type MarkdownElementProps = { node?: { tagName: string }; children?: ReactNode }

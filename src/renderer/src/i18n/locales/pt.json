@@ -25034,6 +25034,9 @@
       "stopFailed": "Não foi possível parar: {{error}}",
       "otherProcess": "{{name}} · pid {{pid}}",
       "children_many": "+{{count}} processos filhos"
+    },
+    "groupMentions": {
+      "option": "{{name}} · {{count}} bots"
     }
   }
 }
