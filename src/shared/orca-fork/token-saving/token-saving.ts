@@ -60,12 +60,17 @@ export function emptyTokenSavingSettings(): TokenSavingSettings {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readRecord(value: unknown): Record<string, unknown> {
+  return isRecord(value) ? value : {}
+}
+
 function readChoices(value: unknown): Record<string, boolean> {
   const out: Record<string, boolean> = {}
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return out
-  }
-  for (const [key, choice] of Object.entries(value)) {
+  for (const [key, choice] of Object.entries(readRecord(value))) {
     if (typeof choice === 'boolean' && key.length > 0 && key.length <= 256) {
       out[key] = choice
     }
@@ -78,8 +83,7 @@ function readProxyMode(value: unknown): TokenSavingProxyMode {
 }
 
 export function normalizeTokenSavingSettings(raw: unknown): TokenSavingSettings {
-  const doc =
-    raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {}
+  const doc = readRecord(raw)
   return {
     version: TOKEN_SAVING_VERSION,
     revision: typeof doc.revision === 'number' && Number.isFinite(doc.revision) ? doc.revision : 0,
@@ -108,8 +112,7 @@ export function defaultTokenSavingHostPolicy(): TokenSavingHostPolicy {
 }
 
 export function normalizeTokenSavingHostPolicy(raw: unknown): TokenSavingHostPolicy {
-  const doc =
-    raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {}
+  const doc = readRecord(raw)
   return {
     enabled: typeof doc.enabled === 'boolean' ? doc.enabled : TOKEN_SAVING_DEFAULT,
     bots: readChoices(doc.bots),
