@@ -11,6 +11,7 @@ import {
 import { NotificationSettingToggle } from './NotificationSettingToggle'
 import { NotificationHostToggles } from './NotificationHostToggles'
 import { NotificationSoundSection } from './NotificationSoundSection'
+import { ForkChatSoundsSetting } from '../../orca-fork/chat-sounds/ForkChatSoundsSetting' // orca-fork:
 import { sendNotificationSettingsTestNotification } from '@/components/notifications/notification-test-delivery'
 import { useTranslate } from '@/i18n/use-translate'
 
@@ -133,7 +134,6 @@ export function NotificationsPane({
             void updateNotificationSettings({ enabled: !notificationSettings.enabled })
           }}
         />
-
         <NotificationSettingToggle
           icon={<Bot className="size-4" />}
           label={t('auto.components.settings.NotificationsPane.0acae1066d', 'Agent task complete')}
@@ -149,7 +149,6 @@ export function NotificationsPane({
             })
           }
         />
-
         <NotificationSettingToggle
           icon={<MessageCircleQuestion className="size-4" />}
           label={t('auto.components.settings.NotificationsPane.05f5c5ab50', 'Agent needs input')}
@@ -165,7 +164,6 @@ export function NotificationsPane({
             })
           }
         />
-
         <NotificationSettingToggle
           icon={<Siren className="size-4" />}
           label={t('auto.components.settings.NotificationsPane.6bc7bd7b6e', 'Terminal bell')}
@@ -181,7 +179,6 @@ export function NotificationsPane({
             })
           }
         />
-
         <NotificationHostToggles
           mutedNotificationSourceIds={notificationSettings.mutedNotificationSourceIds}
           disabled={!notificationSettings.enabled}
@@ -200,7 +197,6 @@ export function NotificationsPane({
             })
           }
         />
-
         <NotificationSettingToggle
           icon={<EyeOff className="size-4" />}
           label={t(
@@ -218,7 +214,6 @@ export function NotificationsPane({
             })
           }
         />
-
         <NotificationSoundSection
           notificationSettings={notificationSettings}
           notificationsEnabled={notificationSettings.enabled}
@@ -227,7 +222,7 @@ export function NotificationsPane({
           onVolumeCommit={handleVolumeCommit}
           onUpdateNotificationSettings={updateNotificationSettings}
         />
-
+        <ForkChatSoundsSetting /> {/* orca-fork: typing and message sounds */}
         <NotificationSettingToggle
           label={t(
             'auto.components.settings.NotificationsPane.badd7ed4cf',
@@ -245,7 +240,6 @@ export function NotificationsPane({
             })
           }
         />
-
         <div data-settings-row="" className="flex flex-wrap items-center gap-2 py-2">
           <Button
             variant="outline"

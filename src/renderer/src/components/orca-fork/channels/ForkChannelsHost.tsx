@@ -18,6 +18,7 @@ import {
 } from '../../../../../shared/orca-fork/channels/chat-structure'
 import { registerForkSidebarDialogs } from './fork-sidebar-create'
 import { ForkNewChannelDialog } from './ForkNewChannelDialog'
+import { ForkChatSounds } from '../chat-sounds/ForkChatSounds'
 import { ForkSidebarCreateMenuItems } from './ForkSidebarCreateMenuItems'
 import { NewBotDialog } from '../../bots/NewBotDialog'
 import { BotGroupMembersDialog } from '../../bots/BotGroupMembersDialog'
@@ -49,6 +50,7 @@ export function ForkChannelsHost({ onOpen }: { onOpen: () => void }): React.JSX.
   return (
     <>
       <ForkSidebarSpaceMenu />
+      <ForkChatSounds />
       {open?.kind === 'channel' ? (
         <ForkNewChannelDialog categoryId={open.categoryId} onClose={close} />
       ) : null}

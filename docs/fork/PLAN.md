@@ -182,6 +182,9 @@ Every file the owner sends in a chat and every file agents make lands in a per-w
   backticks) draws as a badge (icon + short name). Its menu: Open in Orca, Show in Orca files (the
   paired server's files when the chat runs there), Reveal in Finder (this Mac only), Open a terminal
   here, Copy path. Code: `src/shared/orca-fork/chat-paths/`, `src/renderer/src/components/orca-fork/chat-paths/`.
+- **Chat sounds** (OpenBot / agentes.chat): a soft key click while typing in any chat box, a blip on
+  send, a two-note chime when a bot's chat or a channel turns unread (muted channels stay quiet).
+  Synthesized with Web Audio, no files. Settings › Notifications › Chat sounds (switch + volume).
 - Code: `src/shared/orca-fork/channels/`, `src/renderer/src/components/orca-fork/channels/`.
 
 ## Decisions for the owner

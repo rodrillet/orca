@@ -29780,6 +29780,11 @@
       "copied": "Path copied",
       "copy": "Copy path"
     },
+    "chatSounds": {
+      "label": "Chat sounds",
+      "description": "A soft click while you type in a chat, a blip when you send and a chime when a bot or channel has a new message. Muted channels stay quiet.",
+      "volume": "Chat sound volume"
+    },
     "bots": {
       "unreadChats_one": "{{count}} unread chat",
       "unreadChats_other": "{{count}} unread chats",
