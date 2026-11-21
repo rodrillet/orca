@@ -27,6 +27,8 @@ import { NOTIFICATION_METHODS } from './notifications/notifications'
 import { STATS_METHODS } from './host-management/stats'
 import { USAGE_ANALYTICS_METHODS } from './host-management/usage-analytics'
 import { DIAGNOSTICS_METHODS } from './host-management/diagnostics'
+// orca-fork: group photos
+import { GROUP_PHOTO_METHODS } from '../../../orca-fork/group-photos/group-photo-methods'
 import { TERMINAL_DAEMON_METHODS } from './terminal/terminal-daemon'
 import { ACCOUNT_METHODS } from './accounts/accounts'
 import { ANTIGRAVITY_ACCOUNT_METHODS } from './accounts/antigravity-accounts'
@@ -202,6 +204,7 @@ const SERVICE_RPC_METHODS = [
   ...STATS_METHODS,
   ...USAGE_ANALYTICS_METHODS,
   ...DIAGNOSTICS_METHODS,
+  ...GROUP_PHOTO_METHODS, // orca-fork: group photos
   ...TERMINAL_DAEMON_METHODS,
   ...ACCOUNT_METHODS,
   ...ANTIGRAVITY_ACCOUNT_METHODS,

@@ -25000,6 +25000,11 @@
         "terminals": "Terminais",
         "label": "Visão do quadro"
       }
+    },
+    "groupPhoto": {
+      "change": "Alterar foto do grupo…",
+      "remove": "Remover foto do grupo",
+      "changed": "Foto do grupo alterada"
     }
   }
 }
