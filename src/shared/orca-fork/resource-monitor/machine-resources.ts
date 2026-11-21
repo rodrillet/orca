@@ -73,12 +73,17 @@ const AGENT_PROGRAMS: readonly AgentProgram[] = [
 
 const SCRIPT_HOSTS = new Set(['node', 'bun', 'deno', 'python', 'python3', 'npx', 'tsx'])
 
+// Case kept: the CLIs are lower case, the desktop apps (`Claude.app/…/Claude`) are not.
 function programName(token: string): string {
   const base = token.split(/[\\/]/).pop() ?? token
-  return base.toLowerCase().replace(/\.(exe|cmd|bat|js|mjs|cjs)$/u, '')
+  return base.replace(/\.(exe|cmd|bat|js|mjs|cjs)$/iu, '')
 }
 
 function matchProgram(token: string): AgentProgram | null {
+  // A macOS app bundle (the Claude or Codex desktop app and its helpers) is not an agent CLI.
+  if (token.includes('.app/')) {
+    return null
+  }
   const lower = token.toLowerCase()
   if (lower.includes('@anthropic-ai/claude-code')) {
     return AGENT_PROGRAMS[0]
@@ -108,7 +113,7 @@ export function classifyAgentCommand(args: string): Pick<AgentProgram, 'kind' | 
   if (direct) {
     return { kind: direct.kind, label: direct.label }
   }
-  if (second && SCRIPT_HOSTS.has(programName(first))) {
+  if (second && SCRIPT_HOSTS.has(programName(first).toLowerCase())) {
     const script = matchProgram(second)
     return script ? { kind: script.kind, label: script.label } : null
   }

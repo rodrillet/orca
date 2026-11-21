@@ -17,5 +17,9 @@ describe('classifyAgentCommand', () => {
     expect(classifyAgentCommand('vim claude.md')).toBeNull()
     expect(classifyAgentCommand('node server.js claude')).toBeNull()
     expect(classifyAgentCommand('grep codex')).toBeNull()
+    expect(classifyAgentCommand('/Applications/Claude.app/Contents/MacOS/Claude')).toBeNull()
+    expect(
+      classifyAgentCommand('/Applications/Claude.app/Contents/Frameworks/Claude Helper.app/x')
+    ).toBeNull()
   })
 })
