@@ -247,7 +247,7 @@ export function AgentsBoard({
           </span>
           {viewSwitch}
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" size="xs" className="h-7 gap-1.5 text-xs" onClick={openInTasks}>
+            <Button variant="ghost" size="xs" onClick={openInTasks}>
               <ListTodo className="size-3.5" />
               {t('orcaFork.agentsBoard.openInTasks', 'Agents in Tasks')}
             </Button>

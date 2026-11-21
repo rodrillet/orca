@@ -11,11 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import { FilterOptionCount } from '@/components/dashboard/board/FilterOptionCount'
 import { toggleDashboardFilter } from '@/components/dashboard/board/agent-board-filtering'
 import { useTranslate } from '@/i18n/use-translate'
-import { cn } from '@/lib/class-names'
 import {
   activeAgentsBoardFilterCount,
   EMPTY_AGENTS_BOARD_FILTERS,
@@ -68,12 +66,12 @@ export function AgentsBoardToolbar({
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
         <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
+          <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder={t('orcaFork.agentsBoard.search', 'Search tasks, bots or workspaces…')}
             aria-label={t('orcaFork.agentsBoard.searchLabel', 'Search the board')}
-            className="h-7 bg-muted/55 pr-7 pl-7 text-xs"
+            className="h-7 w-full rounded-md border border-input bg-muted/55 pr-7 pl-7 text-xs outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
           />
           {query ? (
             <Button
@@ -81,7 +79,7 @@ export function AgentsBoardToolbar({
               size="icon-xs"
               onClick={() => onQueryChange('')}
               aria-label={t('dashboardPopout.search.clear', 'Clear search')}
-              className="absolute top-1/2 right-0.5 -translate-y-1/2 text-muted-foreground"
+              className="absolute top-1/2 right-0.5 -translate-y-1/2"
             >
               <X className="size-3" />
             </Button>
@@ -94,11 +92,7 @@ export function AgentsBoardToolbar({
         ) : null}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="xs"
-              className={cn('h-7 gap-1.5 px-2 text-xs', activeCount > 0 && 'border-foreground/25')}
-            >
+            <Button variant={activeCount > 0 ? 'outline-strong' : 'outline'} size="xs">
               <Filter className="size-3" />
               {t('dashboardPopout.filters.label', 'Filter')}
               {activeCount > 0 ? (
@@ -109,32 +103,29 @@ export function AgentsBoardToolbar({
               <ChevronDown className="size-3" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="scrollbar-sleek max-h-[70vh] w-64 overflow-y-auto"
-            sideOffset={6}
-          >
-            {sections.map((key) => (
-              <React.Fragment key={key}>
-                <DropdownMenuLabel>{sectionLabel(key)}</DropdownMenuLabel>
-                {options[key].map((option) => (
-                  <DropdownMenuCheckboxItem
-                    key={option.id}
-                    checked={filters[key].includes(option.id)}
-                    onCheckedChange={() => toggle(key, option.id)}
-                    onSelect={(event) => event.preventDefault()}
-                  >
-                    <span className="truncate">{option.label}</span>
-                    <FilterOptionCount count={option.count} />
-                  </DropdownMenuCheckboxItem>
-                ))}
-                <DropdownMenuSeparator />
-              </React.Fragment>
-            ))}
+          <DropdownMenuContent align="end" className="w-64" sideOffset={6}>
+            <div className="scrollbar-sleek max-h-[60vh] overflow-y-auto">
+              {sections.map((key) => (
+                <React.Fragment key={key}>
+                  <DropdownMenuLabel>{sectionLabel(key)}</DropdownMenuLabel>
+                  {options[key].map((option) => (
+                    <DropdownMenuCheckboxItem
+                      key={option.id}
+                      checked={filters[key].includes(option.id)}
+                      onCheckedChange={() => toggle(key, option.id)}
+                      onSelect={(event) => event.preventDefault()}
+                    >
+                      <span className="truncate">{option.label}</span>
+                      <FilterOptionCount count={option.count} />
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                </React.Fragment>
+              ))}
+            </div>
             <DropdownMenuItem
               disabled={activeCount === 0}
               onSelect={() => onFiltersChange(EMPTY_AGENTS_BOARD_FILTERS)}
-              className="text-muted-foreground"
             >
               <X className="size-3.5" />
               {t('dashboardPopout.filters.clearAll', 'Clear all filters')}
@@ -171,10 +162,9 @@ export function AgentsBoardToolbar({
             })
           )}
           <Button
-            variant="link"
-            size="xs"
+            variant="link-muted"
+            size="inlineText"
             onClick={() => onFiltersChange(EMPTY_AGENTS_BOARD_FILTERS)}
-            className="h-[22px] px-1 text-[11px] text-muted-foreground"
           >
             {t('dashboardPopout.filters.clear', 'Clear')}
           </Button>

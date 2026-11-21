@@ -127,6 +127,16 @@ its home (oldest) workspace. Ids and types live in `src/shared/orca-fork/workspa
 every feature that keeps data per workspace keys it by `ForkWorkspaceId`. The sidebar header shows the
 active workspace with a switcher, and everything below filters to it.
 
+### Agents board (Agent Dashboard promoted)
+
+The experimental Agent Dashboard is on by default (`experimentalAgentDashboardPopout` defaults to
+`FORK_FEATURES.agentsBoard`) and opens on a **Bots** Kanban, with upstream's terminals board behind a
+Bots | Terminals switch. Columns A fazer / Em andamento / Precisa de você / Concluído; one card per bot
+item and per worker no item links, with the bot's photo and presence, PR/CI badge, machine and
+workspace. Dragging an item card (or "Move to…") calls `bots.items.owner.status`. Filters: workspace,
+machine, bot, tag (Phase 2 departments/sections), saved per `ForkWorkspaceId`. Linked both ways with the
+Tasks Agents view. Renderer only; stock `orca-server` works. Code: `src/renderer/src/components/orca-fork/agents-board/`.
+
 ### Phase 5 — Shared agent computer (dropped)
 
 Dropped by the owner (2026-11-21): a desktop per machine costs too much RAM/CPU on the VPS. Nothing

@@ -39,7 +39,8 @@ export function AgentsBoardColumnView({
         setOver(true)
       }}
       onDragLeave={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+        const next = event.relatedTarget
+        if (!(next instanceof Node) || !event.currentTarget.contains(next)) {
           setOver(false)
         }
       }}

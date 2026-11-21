@@ -50,7 +50,9 @@ function workerStateWords(t: Translate, card: Card): string | null {
       return t('orcaFork.agentsTasks.worker.stopped', 'Stopped')
     case 'unverifiable':
       return t('orcaFork.agentsTasks.worker.unknown', 'Out of contact')
-    default:
+    case 'working':
+    case 'completed':
+    case null:
       return null
   }
 }
