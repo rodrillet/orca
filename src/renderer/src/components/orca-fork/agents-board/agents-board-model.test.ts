@@ -89,4 +89,60 @@ describe('buildBotBoardCards', () => {
       pr: { number: 41, checks: 'success' }
     })
   })
+
+  it('tells what was done and when: the newest worker report or a worker record, its start and end', () => {
+    const dispatch = (ref: string, startedAt: number, subject: string) => ({
+      kind: 'dispatch' as const,
+      ref,
+      latest: null,
+      title: null,
+      state: 'completed' as const,
+      host: null,
+      startedAt,
+      settledAt: startedAt + 500,
+      report: { subject, body: null },
+      pr: null
+    })
+    const record = {
+      dispatchId: 'ctx_w2',
+      taskId: 't',
+      runId: 'r',
+      title: 'Worker w2',
+      agent: 'claude',
+      state: 'completed' as const,
+      liveness: 'exited' as const,
+      host: 'local' as const,
+      worktreeId: null,
+      paneKey: null,
+      chatSessionId: null,
+      summary: 'Shipped the drawer',
+      startedAt: NOW - 3000,
+      settledAt: NOW - 1000
+    }
+    const cards = buildBotBoardCards(
+      'local/bot-a',
+      [
+        makeTestBotItem(8, {
+          status: 'done',
+          createdAt: NOW - 9000,
+          closedAt: NOW - 100,
+          links: [
+            dispatch('ctx_a', NOW - 5000, 'First pass'),
+            dispatch('ctx_b', NOW - 4000, 'Fixed CI')
+          ]
+        }),
+        makeTestBotItem(9, { status: 'planned', createdAt: NOW - 9000 })
+      ],
+      [worker('w2', { state: 'completed', dispatchId: 'ctx_w2', startedAt: NOW - 3000 })],
+      NOW,
+      new Map([['ctx_w2', record]])
+    )
+    expect(
+      cards.map((card) => [card.summary, card.startedAt, card.finishedAt, card.workerCount])
+    ).toEqual([
+      ['Fixed CI', NOW - 5000, NOW - 100, 2],
+      [null, null, null, 0],
+      ['Shipped the drawer', NOW - 3000, NOW - 1000, 1]
+    ])
+  })
 })

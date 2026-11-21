@@ -1,36 +1,32 @@
-// orca-fork: a bot's presence as the Agents views show it: offline, paused, needs you, working or idle.
-import { useWorktreeActivityStatus } from '@/components/sidebar/workspace-card/activity/use-worktree-activity-status'
+// orca-fork: a bot's presence as the Agents views show it, by the presence dot's rules (green working,
+// yellow idle, red stopped or needs you, grey off) plus what only these views read: its open items
+// waiting on the owner and its workers.
 import { useBotNow } from '@/components/bots/use-bot-now'
+import { useBotActivity } from '@/components/bots/use-bot-activity'
 import { useBotHostOffline } from '@/lib/bot-host-views'
-import { useTranslate } from '@/i18n/use-translate'
-import { foldBotStatus } from '../../../../../shared/bots/bot-row-status'
-import { folderWorkspaceKey } from '../../../../../shared/workspace/identity/workspace-scope'
 import type { Bot } from '../../../../../shared/bot-types'
-import type { WorktreeStatus } from '../../../../../shared/worktree/row-display/worktree-status-rollup'
+import type { BotPresence as Presence } from '../../../../../shared/orca-fork/presence/bot-presence'
+import { useForkBotPresence, usePresenceLabel } from '../presence/ForkBotPresenceDot'
 
-export type BotPresence = { offline: boolean; status: WorktreeStatus; label: string }
+export type BotPresence = { offline: boolean; presence: Presence; label: string }
+
+/** Only rows whose agent is on a turn: an open worker resting after its report is not work. */
+function hasWorkingRow(rows: readonly { dot: string | null }[]): boolean {
+  return rows.some((row) => row.dot === 'working' || row.dot === 'monitoring')
+}
 
 /** `needsYouItems`: open items waiting on the owner, which the bot's own status doesn't count. */
 export function useBotPresence(bot: Bot, needsYouItems: number): BotPresence {
-  const t = useTranslate()
   const offline = useBotHostOffline(bot.hostId)
-  const homeStatus = useWorktreeActivityStatus(folderWorkspaceKey(bot.folderWorkspaceId))
-  const now = useBotNow(offline ? null : bot)
-  const folded = foldBotStatus(homeStatus, bot.paused)
-  const status: WorktreeStatus =
-    now.needsYou > 0 || needsYouItems > 0 || folded === 'permission'
-      ? 'permission'
-      : now.working > 0 || folded === 'working'
+  const read = offline ? null : bot
+  const now = useBotNow(read)
+  const activity = useBotActivity(read)
+  const base = useForkBotPresence(bot, now.needsYou > 0 || needsYouItems > 0) ?? 'off'
+  const presence: Presence =
+    base === 'idle' || (base === 'off' && !offline && !bot.paused)
+      ? hasWorkingRow([...activity.workers, ...activity.inProgress])
         ? 'working'
-        : folded
-  const label = offline
-    ? t('orcaFork.agentsTasks.offline', 'Offline')
-    : bot.paused
-      ? t('orcaFork.agentsTasks.paused', 'Paused')
-      : status === 'permission'
-        ? t('orcaFork.agentsTasks.needsYou', 'Needs you')
-        : status === 'working'
-          ? t('orcaFork.agentsTasks.working', 'Working')
-          : t('orcaFork.agentsTasks.idle', 'Idle')
-  return { offline, status, label }
+        : base
+      : base
+  return { offline, presence, label: usePresenceLabel(presence) }
 }

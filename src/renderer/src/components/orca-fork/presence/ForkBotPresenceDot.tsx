@@ -8,8 +8,7 @@ import { useBotHostOffline } from '@/lib/bot-host-views'
 import type { BotOnHost } from '@/lib/bot-hosts'
 import type { Bot } from '../../../../../shared/bot-types'
 import { cn } from '@/lib/class-names'
-import { useAppStore } from '@/store'
-import { structuredAgentSessionStatusPaneKey } from '../../../../../shared/agent-session/view/structured-agent-session-tab'
+import { useBotChatLiveState } from './use-bot-chat-live-state'
 import type { WorktreeStatus } from '../../../../../shared/worktree/row-display/worktree-status-rollup'
 import {
   botPresence,
@@ -44,12 +43,7 @@ export function useForkBotPresence(bot: PresenceBot, blocked = false): BotPresen
   const sleeping = useBotAvatarBadgeSleeping(workspaceId, status)
   const offline = useBotHostOffline(bot.hostId)
   // Its Chat's own agent state: a turn on the bot's host shows even before its home's panes report.
-  const chatState = useAppStore((s) =>
-    bot.chatSessionId
-      ? (s.agentStatusByPaneKey.get(structuredAgentSessionStatusPaneKey(bot.chatSessionId))
-          ?.state ?? null)
-      : null
-  )
+  const chatState = useBotChatLiveState(bot.chatSessionId)
   if (!bot.folderWorkspaceId) {
     return null
   }

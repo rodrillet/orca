@@ -25184,6 +25184,47 @@
       "moveTo": "Mover para…",
       "dropHere": "Solte aqui",
       "moveFailed": "Não foi possível mover o card",
+      "card": {
+        "result": "O que foi feito",
+        "doneMeans": "Pronto quando",
+        "links": "{{count}} links",
+        "workers": "{{count}} workers"
+      },
+      "duration": {
+        "seconds": "{{count}}s",
+        "minutes": "{{count}} min",
+        "hours": "{{hours}} h {{minutes}} min",
+        "days": "{{days}} d {{hours}} h"
+      },
+      "time": {
+        "ran": "{{start}} → {{end}} · {{duration}}",
+        "started": "iniciado {{start}}",
+        "running": "desde {{start}} · {{duration}}"
+      },
+      "detail": {
+        "state": {
+          "working": "Trabalhando",
+          "completed": "Concluído",
+          "missing": "Registro apagado"
+        },
+        "workers": "Workers",
+        "links": "Links",
+        "noResult": "Nada relatado ainda.",
+        "close": "Fechar",
+        "status": "Status",
+        "started": "Início",
+        "finished": "Fim",
+        "duration": "Duração",
+        "by": "Por",
+        "pr": "PR",
+        "activity": "Atividade",
+        "result": "Resultado",
+        "files": "Drive e Wiki",
+        "openInBot": "Abrir no bot",
+        "driveUnsupported": "O orca-server desta máquina não tem Drive.",
+        "noFiles": "Nenhum arquivo salvo durante este trabalho.",
+        "noPages": "Nenhuma página da wiki escrita durante este trabalho."
+      },
       "openInTasks": "Agentes em Tarefas",
       "search": "Buscar tarefas, bots ou workspaces…",
       "searchLabel": "Buscar no quadro",

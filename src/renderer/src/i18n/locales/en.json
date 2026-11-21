@@ -29846,6 +29846,47 @@
       "moveTo": "Move to…",
       "dropHere": "Drop here",
       "moveFailed": "Couldn't move the card",
+      "card": {
+        "result": "What was done",
+        "doneMeans": "Done means",
+        "links": "{{count}} links",
+        "workers": "{{count}} workers"
+      },
+      "duration": {
+        "seconds": "{{count}}s",
+        "minutes": "{{count}} min",
+        "hours": "{{hours}} h {{minutes}} min",
+        "days": "{{days}} d {{hours}} h"
+      },
+      "time": {
+        "ran": "{{start}} → {{end}} · {{duration}}",
+        "started": "started {{start}}",
+        "running": "since {{start}} · {{duration}}"
+      },
+      "detail": {
+        "state": {
+          "working": "Working",
+          "completed": "Finished",
+          "missing": "Record gone"
+        },
+        "workers": "Workers",
+        "links": "Links",
+        "noResult": "Nothing reported yet.",
+        "close": "Close",
+        "status": "Status",
+        "started": "Started",
+        "finished": "Finished",
+        "duration": "Duration",
+        "by": "By",
+        "pr": "PR",
+        "activity": "Activity",
+        "result": "Result",
+        "files": "Drive & Wiki",
+        "openInBot": "Open in the bot",
+        "driveUnsupported": "This machine's orca-server has no Drive.",
+        "noFiles": "No files saved during this work.",
+        "noPages": "No wiki pages written during this work."
+      },
       "openInTasks": "Agents in Tasks",
       "search": "Search tasks, bots or workspaces…",
       "searchLabel": "Search the board",

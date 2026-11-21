@@ -1,7 +1,6 @@
-// orca-fork: the Wiki page over the main area while open. Going anywhere else (a sidebar row, another
-// page, another workspace) closes it, as switching pages would.
-import React, { Suspense, useEffect, useRef } from 'react'
-import { useAppStore } from '@/store'
+// orca-fork: the Wiki page over the main area while open. Going anywhere else closes it: a sidebar row
+// here, another page or workspace in ../page-switch.
+import React, { Suspense, useEffect } from 'react'
 import { useTranslate } from '@/i18n/use-translate'
 import { RecoverableRenderErrorBoundary } from '@/components/error-boundaries/RecoverableRenderErrorBoundary'
 import { closeWikiPage, useWikiPageOpen } from './wiki-view-state'
@@ -15,18 +14,6 @@ const ACTIONS = 'button, a, [role="button"], [role="treeitem"], [role="option"],
 export function ForkWikiPageMount(): React.JSX.Element | null {
   const t = useTranslate()
   const open = useWikiPageOpen()
-  const activeView = useAppStore((s) => s.activeView)
-  const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
-  const seen = useRef({ activeView, activeWorktreeId })
-
-  useEffect(() => {
-    const before = seen.current
-    seen.current = { activeView, activeWorktreeId }
-    if (before.activeView !== activeView || before.activeWorktreeId !== activeWorktreeId) {
-      closeWikiPage()
-    }
-  }, [activeView, activeWorktreeId])
-
   useEffect(() => {
     if (!open) {
       return

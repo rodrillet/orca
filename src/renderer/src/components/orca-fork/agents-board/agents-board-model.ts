@@ -11,6 +11,7 @@ import {
   type BotItemStatus
 } from '../../../../../shared/bots/bot-items'
 import type { BotWorkerSummary } from '../../../../../shared/bots/bot-work-list'
+import type { OrchestrationSessionWorker } from '../../../../../shared/orchestration-session-workers'
 import type { BotWorkPullRequest } from '../../../../../shared/bots/bot-work-pull-request'
 
 export const AGENTS_BOARD_COLUMNS = ['todo', 'doing', 'needs_you', 'done'] as const
@@ -48,7 +49,24 @@ export type AgentsBoardCard = {
   itemUid: string | null
   agent: string | null
   at: number
+  /** What was done: the item's close note or its newest worker's report; a worker's own result. */
+  summary: string | null
+  /** The item's "done means". */
+  doneMeans: string | null
+  /** When the work began: its first worker, else (once under way) the item's creation. */
+  startedAt: number | null
+  /** When it finished: the item closed or the worker settled; null while open. */
+  finishedAt: number | null
+  /** The item's other links (URLs and files), beside its PR. */
+  linkCount: number
+  /** Workers the item had, one per follow-up chain. */
+  workerCount: number
+  /** The worker's Dispatch (a worker card), or the item's newest. */
+  dispatchId: string | null
 }
+
+/** A worker's own record, as the bot's Activity carries it, by Dispatch. */
+export type AgentsBoardWorkerRecords = ReadonlyMap<string, OrchestrationSessionWorker>
 
 const ITEM_COLUMN: Record<BotItemStatus, AgentsBoardColumn | null> = {
   planned: 'todo',
@@ -135,7 +153,8 @@ export function buildBotBoardCards(
   botKey: string,
   items: readonly BotItem[],
   workers: readonly BotWorkerSummary[],
-  now: number
+  now: number,
+  records: AgentsBoardWorkerRecords = new Map()
 ): AgentsBoardCard[] {
   const cards: AgentsBoardCard[] = []
   const workerByDispatch = new Map(workers.map((worker) => [worker.dispatchId, worker]))
@@ -152,6 +171,18 @@ export function buildBotBoardCards(
         link.kind === 'dispatch' ? workerByDispatch.get(link.latest ?? link.ref) : undefined
       )
       .find((found) => found !== undefined)
+    const chains = botItemLinksOnePerChain(item.links)
+    const dispatches = chains.flatMap((link) => (link.kind === 'dispatch' ? [link] : []))
+    const newest = dispatches.at(-1)
+    const firstStart = dispatches.reduce<number | null>(
+      (min, link) =>
+        link.startedAt !== null && (min === null || link.startedAt < min) ? link.startedAt : min,
+      null
+    )
+    const report = dispatches
+      .toReversed()
+      .map((link) => link.report)
+      .find((found) => found !== null)
     cards.push({
       key: `${botKey}:item:${item.uid}`,
       kind: 'item',
@@ -166,7 +197,15 @@ export function buildBotBoardCards(
       pr: firstItemPr(item) ?? workerPr(worker?.pr ?? null),
       itemUid: item.uid,
       agent: worker?.agent ?? null,
-      at: item.lastActivityAt
+      at: item.lastActivityAt,
+      summary: item.closeNote ?? report?.subject ?? null,
+      doneMeans: item.doneMeans,
+      // A planned item hasn't started; a running or closed one began with its first worker or itself.
+      startedAt: firstStart ?? (column === 'todo' || item.createdAt <= 0 ? null : item.createdAt),
+      finishedAt: item.closedAt,
+      linkCount: chains.filter((link) => link.kind === 'url' || link.kind === 'file').length,
+      workerCount: dispatches.length,
+      dispatchId: newest ? (newest.latest ?? newest.ref) : null
     })
   }
   const linked = linkedDispatches(items)
@@ -175,7 +214,8 @@ export function buildBotBoardCards(
       continue
     }
     const column = workerColumn(worker)
-    const at = worker.startedAt ?? 0
+    const record = records.get(worker.dispatchId)
+    const at = worker.startedAt ?? record?.startedAt ?? 0
     if (column === 'done' && now - at > AGENTS_BOARD_DONE_WINDOW_MS) {
       continue
     }
@@ -193,7 +233,14 @@ export function buildBotBoardCards(
       pr: workerPr(worker.pr),
       itemUid: null,
       agent: worker.agent,
-      at
+      at: record?.settledAt ?? at,
+      summary: record?.summary ?? null,
+      doneMeans: null,
+      startedAt: at > 0 ? at : null,
+      finishedAt: column === 'done' ? (record?.settledAt ?? null) : null,
+      linkCount: 0,
+      workerCount: 1,
+      dispatchId: worker.dispatchId
     })
   }
   return cards
@@ -246,7 +293,14 @@ export function filterAgentsBoardCards(
     if (!needle) {
       return true
     }
-    return [card.title, card.detail, card.workspace, facet.botName, card.number?.toString() ?? null]
+    return [
+      card.title,
+      card.detail,
+      card.summary,
+      card.workspace,
+      facet.botName,
+      card.number?.toString() ?? null
+    ]
       .filter((text): text is string => text !== null)
       .some((text) => text.toLowerCase().includes(needle))
   })

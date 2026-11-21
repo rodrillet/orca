@@ -1,10 +1,18 @@
-// orca-fork: one card on the Agents board: the bot's face and presence, the work, its PR and where it runs.
+// orca-fork: one card on the Agents board: the bot's face and presence, the work and what came of it,
+// when it ran, its PR and links, and where it runs. A click opens its detail drawer.
 import React from 'react'
-import { FolderGit2, MoreHorizontal, Server, Workflow } from 'lucide-react'
+import {
+  CircleCheck,
+  Clock,
+  FolderGit2,
+  Link2,
+  MoreHorizontal,
+  Server,
+  Target,
+  Workflow
+} from 'lucide-react'
 import { AgentQuestionIcon } from '@/components/agent/status/AgentQuestionIcon'
 import { AgentWorkingSpinner } from '@/components/agent/status/AgentWorkingSpinner'
-import { BotAvatar } from '@/components/bots/BotAvatar'
-import StatusIndicator from '@/components/sidebar/workspace-card/surface/StatusIndicator'
 import { formatStartedAgo } from '@/components/dashboard/board/AgentKanbanCard'
 import {
   DropdownMenu,
@@ -24,6 +32,8 @@ import {
   type AgentsBoardColumn
 } from './agents-board-model'
 import type { BotPresence } from './use-bot-presence'
+import { PresenceBotAvatar } from './PresenceBotAvatar'
+import { boardTimeSpan } from './agents-board-time'
 
 export const AGENTS_BOARD_DRAG_TYPE = 'application/x-orca-fork-agents-card'
 
@@ -64,6 +74,7 @@ export function AgentsBoardCard({
   hostLabel,
   now,
   dragging,
+  selected = false,
   onOpen,
   onMove,
   onDragStart,
@@ -75,6 +86,8 @@ export function AgentsBoardCard({
   hostLabel: string
   now: number
   dragging: boolean
+  /** Its detail drawer is open. */
+  selected?: boolean
   onOpen: (card: Card) => void
   onMove: (card: Card, column: AgentsBoardColumn) => void
   onDragStart: (card: Card) => void
@@ -85,6 +98,7 @@ export function AgentsBoardCard({
   const needsYou = card.column === 'needs_you'
   const done = card.column === 'done'
   const stateWords = workerStateWords(t, card)
+  const timeSpan = boardTimeSpan(card.startedAt, card.finishedAt, now, t, done)
 
   return (
     <div
@@ -100,6 +114,7 @@ export function AgentsBoardCard({
         'group relative flex w-full flex-col gap-1.5 overflow-hidden rounded-lg border p-2.5 text-left transition-colors',
         movable && 'cursor-grab active:cursor-grabbing',
         dragging && 'opacity-40',
+        selected && 'ring-2 ring-ring/60',
         needsYou
           ? 'border-agent-question/40 bg-agent-question/[0.06] hover:border-agent-question/60 hover:bg-agent-question/10'
           : done
@@ -108,17 +123,11 @@ export function AgentsBoardCard({
       )}
     >
       <div className="flex w-full min-w-0 items-center gap-1.5">
-        <span className="relative inline-flex shrink-0">
-          <BotAvatar bot={bot} className="size-5 rounded-[5px] text-[10px]" />
-          {presence && !presence.offline ? (
-            <span
-              className="absolute -right-1 -bottom-1 inline-flex rounded-full bg-card p-px"
-              title={presence.label}
-            >
-              <StatusIndicator status={presence.status} showTooltip={false} />
-            </span>
-          ) : null}
-        </span>
+        <PresenceBotAvatar
+          bot={bot}
+          presence={presence?.presence ?? null}
+          className="size-5 shrink-0 rounded-[5px] text-[10px]"
+        />
         <span
           className={cn(
             'min-w-0 truncate text-[11px] text-muted-foreground',
@@ -172,15 +181,34 @@ export function AgentsBoardCard({
       <button
         type="button"
         onClick={() => onOpen(card)}
+        data-agents-board-open=""
         className="flex w-full flex-col gap-1.5 text-left focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
-        <span className="line-clamp-3 w-full text-[12.5px] leading-snug text-foreground">
+        <span className="line-clamp-2 w-full text-[12.5px] font-medium leading-snug text-foreground">
           {card.title}
         </span>
         {card.detail ? (
           <span className="flex w-full items-start gap-1 rounded-md bg-agent-question/15 px-1.5 py-1 text-[11px] text-agent-question-text ring-1 ring-inset ring-agent-question/25">
             <AgentQuestionIcon className="mt-px size-3 shrink-0" />
             <span className="line-clamp-2">{card.detail}</span>
+          </span>
+        ) : null}
+        {card.summary ? (
+          <span
+            className="flex w-full items-start gap-1 text-[11.5px] leading-snug text-foreground/80"
+            title={t('orcaFork.agentsBoard.card.result', 'What was done')}
+          >
+            <CircleCheck className="mt-0.5 size-3 shrink-0 text-muted-foreground" />
+            <span className="line-clamp-3 min-w-0">{card.summary}</span>
+          </span>
+        ) : null}
+        {card.doneMeans && !done ? (
+          <span
+            className="flex w-full items-start gap-1 text-[11px] leading-snug text-muted-foreground"
+            title={t('orcaFork.agentsBoard.card.doneMeans', 'Done means')}
+          >
+            <Target className="mt-0.5 size-3 shrink-0" />
+            <span className="line-clamp-2 min-w-0">{card.doneMeans}</span>
           </span>
         ) : null}
         {stateWords ? (
@@ -195,9 +223,37 @@ export function AgentsBoardCard({
         ) : null}
       </button>
 
-      {card.pr ? (
-        <div className="flex w-full min-w-0 text-[11px]">
-          <AgentPrBadge pr={card.pr} className="-ml-1" />
+      {card.pr || card.linkCount > 0 || card.workerCount > 1 ? (
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+          {card.pr ? <AgentPrBadge pr={card.pr} className="-ml-1" /> : null}
+          {card.linkCount > 0 ? (
+            <span
+              className="inline-flex items-center gap-0.5"
+              title={t('orcaFork.agentsBoard.card.links', '{{count}} links', {
+                count: card.linkCount
+              })}
+            >
+              <Link2 className="size-3" />
+              {card.linkCount}
+            </span>
+          ) : null}
+          {card.workerCount > 1 ? (
+            <span
+              className="inline-flex items-center gap-0.5"
+              title={t('orcaFork.agentsBoard.card.workers', '{{count}} workers', {
+                count: card.workerCount
+              })}
+            >
+              <Workflow className="size-3" />
+              {card.workerCount}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      {timeSpan ? (
+        <div className="flex w-full min-w-0 items-center gap-1 text-[11px] tabular-nums text-muted-foreground">
+          <Clock className="size-3 shrink-0" />
+          <span className="truncate">{timeSpan}</span>
         </div>
       ) : null}
       <div className="flex w-full min-w-0 items-center gap-2 text-[11px] text-muted-foreground">

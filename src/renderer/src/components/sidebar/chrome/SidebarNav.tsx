@@ -97,6 +97,7 @@ const SidebarNav = React.memo(function SidebarNav() {
     <div
       className="flex flex-col gap-0.5 px-2 pt-2 pb-1"
       data-contextual-tour-target="sidebar-navigation"
+      data-fork-page-nav="" // orca-fork: page entries close the Wiki/Agents board over the main area
     >
       <button
         type="button"

@@ -22,7 +22,7 @@ let state: WikiViewState = {
 }
 const listeners = new Set<() => void>()
 
-function subscribe(listener: () => void): () => void {
+export function subscribeWikiView(listener: () => void): () => void {
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
@@ -33,12 +33,16 @@ function update(next: Partial<WikiViewState>): void {
 }
 
 export function useWikiViewState(): WikiViewState {
-  return useSyncExternalStore(subscribe, () => state)
+  return useSyncExternalStore(subscribeWikiView, () => state)
 }
 
 export function useWikiPageOpen(): boolean {
-  const open = useSyncExternalStore(subscribe, () => state.open)
+  const open = useSyncExternalStore(subscribeWikiView, () => state.open)
   return FORK_FEATURES.workspaceWiki && open
+}
+
+export function isWikiPageOpen(): boolean {
+  return state.open
 }
 
 export function openWikiPage(center?: WikiCenter): void {

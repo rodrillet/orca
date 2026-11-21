@@ -25,6 +25,7 @@ import {
 } from './agents-board-model'
 import { AgentsBoardBotFeed, type AgentsBoardBotReport } from './AgentsBoardBotFeed'
 import { AgentsBoardCard } from './AgentsBoardCard'
+import { AgentsBoardDetail } from './AgentsBoardDetail'
 import { AgentsBoardColumnView } from './AgentsBoardColumn'
 import { countOptions, useBotTags, useHostLabels } from './agents-board-facets'
 import { AgentsBoardToolbar, type AgentsBoardFilterOptions } from './AgentsBoardToolbar'
@@ -54,6 +55,7 @@ export function AgentsBoard({
     () => new Map()
   )
   const [dragged, setDragged] = useState<Card | null>(null)
+  const [openKey, setOpenKey] = useState<string | null>(null)
   const [now, setNow] = useState(() => Date.now())
   useEffect(
     () => installWindowVisibilityInterval({ run: () => setNow(Date.now()), intervalMs: 30_000 }),
@@ -190,7 +192,7 @@ export function AgentsBoard({
     [allCards, move]
   )
 
-  const open = useCallback(
+  const openInBot = useCallback(
     (card: Card) => {
       const bot = botsByKey.get(card.botKey)
       if (!bot) {
@@ -207,6 +209,21 @@ export function AgentsBoard({
     },
     [botsByKey, onNavigate]
   )
+  const openChat = useCallback(
+    (card: Card) => {
+      const bot = botsByKey.get(card.botKey)
+      if (bot) {
+        void openBotHomeTab(bot)
+        onNavigate?.()
+      }
+    },
+    [botsByKey, onNavigate]
+  )
+  const open = useCallback((card: Card) => setOpenKey(card.key), [])
+  const closeDetail = useCallback(() => setOpenKey(null), [])
+  const openCard = openKey ? (allCards.find((card) => card.key === openKey) ?? null) : null
+  const openBot = openCard ? (botsByKey.get(openCard.botKey) ?? null) : null
+  const openReport = openCard ? reports.get(openCard.botKey) : undefined
 
   const openInTasks = (): void => {
     useAppStore.getState().openTaskPage()
@@ -223,6 +240,7 @@ export function AgentsBoard({
       hostLabel={hostLabels[bot.hostId] ?? bot.hostId}
       now={now}
       dragging={dragged?.key === card.key}
+      selected={openKey === card.key}
       onOpen={open}
       onMove={move}
       onDragStart={setDragged}
@@ -295,6 +313,22 @@ export function AgentsBoard({
             </div>
           </div>
         )}
+        {openCard && openBot ? (
+          <AgentsBoardDetail
+            card={openCard}
+            bot={openBot}
+            item={openReport?.items.find((item) => item.uid === openCard.itemUid) ?? null}
+            record={
+              openCard.dispatchId ? (openReport?.records.get(openCard.dispatchId) ?? null) : null
+            }
+            presence={openReport?.presence ?? null}
+            hostLabel={hostLabels[openBot.hostId] ?? openBot.hostId}
+            now={now}
+            onOpenInBot={openInBot}
+            onOpenChat={openChat}
+            onClose={closeDetail}
+          />
+        ) : null}
         {loading ? (
           <div className="pointer-events-none absolute right-4 bottom-3 text-[11px] text-muted-foreground">
             {t('orcaFork.agentsTasks.loading', 'Loading…')}
