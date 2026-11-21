@@ -43,6 +43,12 @@ export const ownerProfileStore = createForkDocumentStore<OwnerProfile>({
   bridge: () => undefined
 })
 
+// A named hook, so the React Compiler keeps it out of its memo cache (a bare `ownerProfileStore.use()`
+// in a component reads as a plain call, gets cached, and the hook disappears on re-render).
+export function useOwnerProfile(): OwnerProfile {
+  return ownerProfileStore.use()
+}
+
 export function saveOwnerProfile(patch: Partial<Omit<OwnerProfile, 'revision'>>): void {
   ownerProfileStore.edit((doc) => ({ ...doc, ...patch, revision: doc.revision + 1 }))
 }

@@ -10,7 +10,7 @@ import {
   useOwnerPresenceLabel
 } from '../owner-profile/OwnerAvatar'
 import { openOwnerProfile } from '../owner-profile/owner-profile-open'
-import { ownerProfileStore } from '../owner-profile/owner-profile-store'
+import { useOwnerProfile } from '../owner-profile/owner-profile-store'
 import { useWorkspaceBots } from './use-workspace-bots'
 import { SettingsEmpty, SettingsRow, SettingsSectionTitle } from './workspace-settings-rows'
 
@@ -29,7 +29,7 @@ function initials(name: string): string {
 export function WorkspaceMembersTab(): React.JSX.Element {
   const t = useTranslate()
   const { bots } = useWorkspaceBots()
-  const profile = ownerProfileStore.use()
+  const profile = useOwnerProfile()
   const ownerName = useOwnerDisplayName()
   const presenceLabel = useOwnerPresenceLabel(profile.presence)
   const people = useMemo(() => {
