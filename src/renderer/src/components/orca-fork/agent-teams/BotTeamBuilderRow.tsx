@@ -22,7 +22,7 @@ import {
 } from '../../../../../shared/orca-fork/agent-teams'
 import { SettingsInsetRow } from '../../bots/settings-view/BotSettingsRows'
 
-const CAPS = [1, 2, 3, 5, 10, 20] as const
+const CAPS: readonly number[] = [1, 2, 3, 5, 10, 20]
 
 export function BotTeamBuilderRow({ bot }: { bot: Bot }): React.JSX.Element | null {
   const t = useTranslate()
@@ -59,7 +59,7 @@ export function BotTeamBuilderRow({ bot }: { bot: Bot }): React.JSX.Element | nu
   }
   const title = t('orcaFork.teams.builder', 'Can build a team')
   const capTitle = t('orcaFork.teams.dailyCap', 'Bots it may create a day')
-  const caps: readonly number[] = CAPS.includes(team.dailyCap as (typeof CAPS)[number])
+  const caps = CAPS.includes(team.dailyCap)
     ? CAPS
     : [...CAPS, team.dailyCap].toSorted((left, right) => left - right)
   return (
