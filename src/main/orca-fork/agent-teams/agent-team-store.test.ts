@@ -30,4 +30,13 @@ describe('AgentTeamStore', () => {
     expect(await reopened.mayCreate('lead', 1000 + day)).toBe(true)
     expect(await reopened.mayCreate('other', 3000)).toBe(false)
   })
+  it('lists a team group as autonomous only while its lead may build a team', async () => {
+    const teams = store().make()
+    await teams.setGroup('lead', 'group-1')
+    expect(await teams.autonomousGroups()).toEqual([])
+    await teams.set('lead', { teamBuilder: true })
+    expect(await teams.autonomousGroups()).toEqual([{ groupId: 'group-1', leadId: 'lead' }])
+    await teams.set('lead', { teamBuilder: false })
+    expect(await teams.autonomousGroups()).toEqual([])
+  })
 })

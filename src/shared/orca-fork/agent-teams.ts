@@ -4,6 +4,7 @@ import * as z from 'zod'
 
 export const AGENT_TEAMS_GET_METHOD = 'orcaFork.teams.get'
 export const AGENT_TEAMS_SET_METHOD = 'orcaFork.teams.set'
+export const AGENT_TEAMS_POST_METHOD = 'orcaFork.teams.post'
 
 export const TEAM_DAILY_CAP_DEFAULT = 5
 export const TEAM_DAILY_CAP_MAX = 20
@@ -18,6 +19,13 @@ export const AgentTeamsGet = z.object({ botId: z.string().min(1) })
 export const AgentTeamsSet = AgentTeamsGet.extend({
   teamBuilder: z.boolean(),
   dailyCap: AgentTeamSettingsSchema.shape.dailyCap.optional()
+})
+
+export const AgentTeamsPost = z.object({
+  callerSessionId: z.string().min(1),
+  text: z.string().trim().min(1).max(20_000),
+  /** The team room's name, when the bot is in several. */
+  team: z.string().trim().min(1).max(64).optional()
 })
 
 export type AgentTeamView = AgentTeamSettings & {

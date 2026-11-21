@@ -24,6 +24,8 @@ import { BOT_COMMAND_SPECS } from './bot'
 import { BOT_ITEM_COMMAND_SPECS } from './bot-items'
 import { BOT_GOOGLE_SETUP_COMMAND_SPECS } from './bot-google-setup'
 import { BOT_COMPOSIO_COMMAND_SPECS } from './bot-composio'
+// orca-fork: agent teams
+import { ORCA_FORK_BOT_TEAM_COMMAND_SPECS } from './orca-fork-bot-team'
 import { WEBHOOK_COMMAND_SPECS } from './webhooks'
 import { AGENT_CONVERSATION_COMMAND_SPECS } from './agent-conversations'
 import { DIAGNOSTICS_COMMAND_SPECS } from './diagnostics'
@@ -74,6 +76,7 @@ export const COMMAND_SPECS: CommandSpec[] = [
   ...BOT_ITEM_COMMAND_SPECS,
   ...BOT_GOOGLE_SETUP_COMMAND_SPECS,
   ...BOT_COMPOSIO_COMMAND_SPECS,
+  ...ORCA_FORK_BOT_TEAM_COMMAND_SPECS, // orca-fork: agent teams
   ...WEBHOOK_COMMAND_SPECS,
   ...DIAGNOSTICS_COMMAND_SPECS,
   ...SPEECH_COMMAND_SPECS,

@@ -10,6 +10,7 @@ import type { StructuredMailboxPointerHost } from '../runtime/orchestration/mail
 import { getStructuredAgentSessionHost } from '../native-chat/agent-session-wire/host/structured-agent-session-registry'
 import { requireStructuredHost } from './bot-chat-session'
 import type { BotGroupRuntime } from './bot-group-runtime'
+import { isAutonomousTeamGroup } from '../orca-fork/agent-teams/agent-team-room' // orca-fork
 
 export type GroupPeerScope = NonNullable<Awaited<ReturnType<typeof groupPeerScope>>>
 
@@ -66,7 +67,8 @@ export async function groupPeerScope(
     !original ||
     original.groupId !== group.id ||
     original.threadId !== threadId ||
-    original.author.kind !== 'owner'
+    // orca-fork: an autonomous team's own posts start requests too (agent teams).
+    (original.author.kind !== 'owner' && !(await isAutonomousTeamGroup(group.id)))
   ) {
     throw new Error('The original human group request cannot be verified.')
   }

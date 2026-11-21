@@ -1,12 +1,14 @@
 // orca-fork: the owner's "Can build a team" switch per bot, read and set on the bot's host.
 import {
   AgentTeamsGet,
+  AgentTeamsPost,
   AgentTeamsSet
 } from '../../../shared/rpc-contract/orca-fork-agent-teams-params'
 import { assertBotGroupOwner } from '../../runtime/rpc/methods/bot-groups'
 import { defineMethod, InvalidArgumentError } from '../../runtime/rpc/core'
 import type { OrcaRuntimeService } from '../../runtime/orca-runtime'
-import { agentTeamStore } from './agent-team-offer'
+import { postInTeamRoom } from './agent-team-post'
+import { agentTeamStore } from './agent-team-store'
 
 function assertBot(runtime: OrcaRuntimeService, botId: string): void {
   runtime.bots.assertEnabled()
@@ -35,6 +37,22 @@ export const AGENT_TEAM_METHODS = [
       assertBot(context.runtime, botId)
       await agentTeamStore().set(botId, { teamBuilder, ...(dailyCap ? { dailyCap } : {}) })
       return agentTeamStore().view(botId)
+    }
+  }),
+  defineMethod({
+    name: 'orcaFork.teams.post',
+    permission: 'workspace',
+    params: AgentTeamsPost,
+    handler: async (params, { runtime, pairedDeviceId }) => {
+      // A session id names a chat only on its own host.
+      if (pairedDeviceId !== undefined) {
+        throw new InvalidArgumentError("Run this from a bot's chat.")
+      }
+      const { groupName, messageId } = await postInTeamRoom(runtime, params)
+      return {
+        messageId,
+        message: `Posted in "${groupName}". The teammates you mentioned answer there; your owner sees it in the group.`
+      }
     }
   })
 ]

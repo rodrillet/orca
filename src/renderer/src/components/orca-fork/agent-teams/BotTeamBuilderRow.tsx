@@ -1,6 +1,14 @@
-// orca-fork: Bot settings › "Can build a team". Hidden on a host whose server has no agent teams.
+// orca-fork: Bot settings › "Can build a team" and its daily cap. Hidden on a host whose server has
+// no agent teams.
 import { useCallback, useEffect, useState } from 'react'
-import { UsersRound } from 'lucide-react'
+import { Gauge, UsersRound } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { useTranslate } from '@/i18n/use-translate'
 import { callBotRpc, type BotRef } from '@/lib/bot-hosts'
@@ -9,9 +17,12 @@ import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import {
   AGENT_TEAMS_GET_METHOD,
   AGENT_TEAMS_SET_METHOD,
+  type AgentTeamSettings,
   type AgentTeamView
 } from '../../../../../shared/orca-fork/agent-teams'
 import { SettingsInsetRow } from '../../bots/settings-view/BotSettingsRows'
+
+const CAPS = [1, 2, 3, 5, 10, 20] as const
 
 export function BotTeamBuilderRow({ bot }: { bot: Bot }): React.JSX.Element | null {
   const t = useTranslate()
@@ -28,18 +39,18 @@ export function BotTeamBuilderRow({ bot }: { bot: Bot }): React.JSX.Element | nu
       live = false
     }
   }, [id, hostId])
-  const toggle = useCallback(
-    (teamBuilder: boolean) => {
+  const save = useCallback(
+    (previous: AgentTeamView, changes: Partial<AgentTeamSettings>) => {
       const ref: BotRef = { id, hostId }
-      setTeam((previous) => (previous ? { ...previous, teamBuilder } : previous))
+      const next = { ...previous, ...changes }
+      setTeam(next)
       void callBotRpc<AgentTeamView>(ref, AGENT_TEAMS_SET_METHOD, {
         botId: id,
-        teamBuilder
+        teamBuilder: next.teamBuilder,
+        dailyCap: next.dailyCap
       })
         .then(setTeam)
-        .catch(() =>
-          setTeam((previous) => (previous ? { ...previous, teamBuilder: !teamBuilder } : previous))
-        )
+        .catch(() => setTeam(previous))
     },
     [id, hostId]
   )
@@ -47,17 +58,54 @@ export function BotTeamBuilderRow({ bot }: { bot: Bot }): React.JSX.Element | nu
     return null
   }
   const title = t('orcaFork.teams.builder', 'Can build a team')
+  const capTitle = t('orcaFork.teams.dailyCap', 'Bots it may create a day')
+  const caps: readonly number[] = CAPS.includes(team.dailyCap as (typeof CAPS)[number])
+    ? CAPS
+    : [...CAPS, team.dailyCap].toSorted((left, right) => left - right)
   return (
-    <SettingsInsetRow
-      icon={<UsersRound />}
-      title={title}
-      detail={t(
-        'orcaFork.teams.builderDetail',
-        'Creates the bots it proposes without asking you (up to {{cap}} a day) and shares a group with them. They hand work to each other without your approval.',
-        { cap: team.dailyCap }
-      )}
-      wrapDetail
-      end={<Switch checked={team.teamBuilder} aria-label={title} onCheckedChange={toggle} />}
-    />
+    <>
+      <SettingsInsetRow
+        icon={<UsersRound />}
+        title={title}
+        detail={t(
+          'orcaFork.teams.builderDetail',
+          'Creates the bots it proposes without asking you and shares a group with them, where the team hands work to each other without your approval.'
+        )}
+        wrapDetail
+        end={
+          <Switch
+            checked={team.teamBuilder}
+            aria-label={title}
+            onCheckedChange={(teamBuilder) => save(team, { teamBuilder })}
+          />
+        }
+      />
+      {team.teamBuilder ? (
+        <SettingsInsetRow
+          icon={<Gauge />}
+          title={capTitle}
+          detail={t('orcaFork.teams.createdToday', 'Created in the last 24 hours: {{created}}', {
+            created: team.createdToday
+          })}
+          end={
+            <Select
+              value={String(team.dailyCap)}
+              onValueChange={(value) => save(team, { dailyCap: Number(value) })}
+            >
+              <SelectTrigger size="sm" aria-label={capTitle} className="w-[72px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {caps.map((cap) => (
+                  <SelectItem key={cap} value={String(cap)}>
+                    {cap}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          }
+        />
+      ) : null}
+    </>
   )
 }

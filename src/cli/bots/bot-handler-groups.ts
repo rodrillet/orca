@@ -6,6 +6,12 @@ export const BOT_HANDLER_GROUPS: HandlerGroup[] = [
     keys: ['bot list', 'bot chats', 'bot new-chat', 'bot memory forget'],
     load: async () => (await import('./bot.js')).BOT_HANDLERS
   },
+  // orca-fork: agent teams
+  {
+    name: 'orca-fork-bot-team',
+    keys: ['bot team post'],
+    load: async () => (await import('../orca-fork/bot-team.js')).BOT_TEAM_HANDLERS
+  },
   {
     name: 'bot-create',
     keys: ['bot create'],
