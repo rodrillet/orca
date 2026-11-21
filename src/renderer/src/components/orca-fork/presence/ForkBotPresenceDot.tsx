@@ -4,7 +4,6 @@ import React from 'react'
 import { useBotAvatarBadgeSleeping } from '@/components/bots/bot-avatar-status-badge'
 import { useWorktreeActivityStatus } from '@/components/sidebar/workspace-card/activity/use-worktree-activity-status'
 import { useTranslate } from '@/i18n/use-translate'
-import { useBots } from '@/lib/bot-catalog'
 import { useBotHostOffline } from '@/lib/bot-host-views'
 import type { BotOnHost } from '@/lib/bot-hosts'
 import { cn } from '@/lib/class-names'
@@ -34,11 +33,24 @@ function withChatState(status: WorktreeStatus, chatState: string | null): Worktr
   return status
 }
 
-export function useForkBotPresence(
-  ref: { id: string } & BotOnHost,
-  blocked = false
-): BotPresence | null {
-  const bot = useBots().find((b) => b.id === ref.id && b.hostId === ref.hostId) ?? null
+type PresenceFields = { folderWorkspaceId: string; paused: boolean; chatSessionId: string | null }
+
+/** What a listed bot carries for its presence; null for a bot as a message or card carried it. */
+function presenceFields(bot: object): PresenceFields | null {
+  if (!('folderWorkspaceId' in bot) || typeof bot.folderWorkspaceId !== 'string') {
+    return null
+  }
+  return {
+    folderWorkspaceId: bot.folderWorkspaceId,
+    paused: 'paused' in bot && bot.paused === true,
+    chatSessionId:
+      'chatSessionId' in bot && typeof bot.chatSessionId === 'string' ? bot.chatSessionId : null
+  }
+}
+
+/** Read from the picture's own bot (a listed `Bot`), never a catalog, so any picture can carry it. */
+export function useForkBotPresence(ref: object & BotOnHost, blocked = false): BotPresence | null {
+  const bot = presenceFields(ref)
   const workspaceId = bot ? folderWorkspaceKey(bot.folderWorkspaceId) : ''
   const status = useWorktreeActivityStatus(workspaceId)
   const sleeping = useBotAvatarBadgeSleeping(workspaceId, status)
@@ -105,7 +117,7 @@ export function ForkBotPresenceDot({
   bot,
   blocked
 }: {
-  bot: { id: string } & BotOnHost
+  bot: object & BotOnHost
   blocked: boolean
 }): React.JSX.Element | null {
   const presence = useForkBotPresence(bot, blocked)
