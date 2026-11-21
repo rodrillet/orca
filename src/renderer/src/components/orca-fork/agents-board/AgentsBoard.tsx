@@ -29,6 +29,7 @@ import { AgentsBoardColumnView } from './AgentsBoardColumn'
 import { countOptions, useBotTags, useHostLabels } from './agents-board-facets'
 import { AgentsBoardToolbar, type AgentsBoardFilterOptions } from './AgentsBoardToolbar'
 import { updateAgentsBoardPrefs, useAgentsBoardPrefs } from './agents-board-prefs'
+import { useForkWorkspaceOwners } from '../workspaces/use-fork-workspace-scope'
 
 type Reports = ReadonlyMap<string, AgentsBoardBotReport>
 
@@ -45,7 +46,7 @@ export function AgentsBoard({
   onNavigate?: () => void
 }): React.JSX.Element {
   const t = useTranslate()
-  const bots = useBots()
+  const bots = useForkWorkspaceOwners(useBots())
   const prefs = useAgentsBoardPrefs()
   const [query, setQuery] = useState('')
   const [reports, setReports] = useState<Reports>(() => new Map())

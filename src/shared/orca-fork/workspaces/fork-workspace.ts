@@ -32,7 +32,7 @@ export type ForkWorkspace = {
   repoIds: string[]
   /** Bots and bot groups (sidebar key `hostId/id`) placed here; same home rule as repos. */
   botKeys: string[]
-  /** Departments (Bots sidebar organization) made in this workspace; unclaimed ones show in every workspace. */
+  /** Bots-sidebar departments (and their sections) of this workspace; unclaimed ones move to a workspace on load. */
   departmentIds?: string[]
   createdAt: number
 }
@@ -202,7 +202,7 @@ export function forkWorkspaceRepoFilter(
   return ids.length > 0 ? ids : [FORK_WORKSPACE_NO_REPOS]
 }
 
-/** Whether a Bots-sidebar department shows in a workspace: it was made there, or in none. */
+/** Whether a Bots-sidebar department shows in a workspace: it is held there, or nowhere yet. */
 export function forkWorkspaceShowsDepartment(
   doc: ForkWorkspacesDocument,
   workspaceId: ForkWorkspaceId,
@@ -233,4 +233,44 @@ export function forkWorkspaceProjectsToClaim(
       hostOf.get(id) === ws.hostId &&
       forkWorkspaceOfItem(doc, ws.hostId, { repoId: id })?.id === home.id
   )
+}
+
+/**
+ * Departments no workspace holds (made before Workspaces, or left by a deleted workspace), each with
+ * the workspace it moves to: the one holding most of its bots, else this computer's home workspace.
+ */
+export function forkWorkspaceUnclaimedDepartments(
+  doc: ForkWorkspacesDocument,
+  departmentIds: readonly string[],
+  placements: Readonly<Record<string, { departmentId: string }>>
+): Map<ForkWorkspaceId, string[]> {
+  const claimed = new Set(doc.workspaces.flatMap((ws) => ws.departmentIds ?? []))
+  const fallback = forkWorkspaceHomeOf(doc, LOCAL_EXECUTION_HOST_ID) ?? doc.workspaces[0]!
+  const moves = new Map<ForkWorkspaceId, string[]>()
+  for (const departmentId of departmentIds) {
+    if (claimed.has(departmentId)) {
+      continue
+    }
+    const votes = new Map<ForkWorkspaceId, number>()
+    for (const [botKey, placement] of Object.entries(placements)) {
+      const host = parseExecutionHostId(botKey.slice(0, botKey.indexOf('/')))
+      const ws =
+        placement.departmentId === departmentId && host
+          ? forkWorkspaceOfItem(doc, host.id, { botKey })
+          : null
+      if (ws) {
+        votes.set(ws.id, (votes.get(ws.id) ?? 0) + 1)
+      }
+    }
+    let target = fallback.id
+    let best = 0
+    for (const [id, count] of votes) {
+      if (count > best) {
+        target = id
+        best = count
+      }
+    }
+    moves.set(target, [...(moves.get(target) ?? []), departmentId])
+  }
+  return moves
 }

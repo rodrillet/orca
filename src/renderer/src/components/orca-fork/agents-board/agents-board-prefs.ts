@@ -1,9 +1,10 @@
-// orca-fork: the Agents board's view and filters, kept per fork workspace in this window's storage.
+// orca-fork: the Agents board's view and filters, kept per active fork workspace in this window's storage.
 import { useSyncExternalStore } from 'react'
+import type { ForkWorkspaceId } from '../../../../../shared/orca-fork/workspaces/fork-workspace'
 import {
-  DEFAULT_FORK_WORKSPACE_ID,
-  type ForkWorkspaceId
-} from '../../../../../shared/orca-fork/workspaces/fork-workspace'
+  getActiveForkWorkspaceId,
+  useActiveForkWorkspaceId
+} from '../workspaces/fork-workspaces-store'
 import { EMPTY_AGENTS_BOARD_FILTERS, type AgentsBoardFilters } from './agents-board-model'
 
 export type AgentsBoardView = 'bots' | 'terminals'
@@ -60,7 +61,7 @@ function subscribe(listener: () => void): () => void {
 
 export function updateAgentsBoardPrefs(
   patch: Partial<AgentsBoardPrefs>,
-  workspaceId: ForkWorkspaceId = DEFAULT_FORK_WORKSPACE_ID
+  workspaceId: ForkWorkspaceId = getActiveForkWorkspaceId()
 ): void {
   const next = { ...prefsFor(workspaceId), ...patch }
   cache.set(workspaceId, next)
@@ -72,8 +73,8 @@ export function updateAgentsBoardPrefs(
   listeners.forEach((listener) => listener())
 }
 
-export function useAgentsBoardPrefs(
-  workspaceId: ForkWorkspaceId = DEFAULT_FORK_WORKSPACE_ID
-): AgentsBoardPrefs {
-  return useSyncExternalStore(subscribe, () => prefsFor(workspaceId))
+export function useAgentsBoardPrefs(workspaceId?: ForkWorkspaceId): AgentsBoardPrefs {
+  const active = useActiveForkWorkspaceId()
+  const id = workspaceId ?? active
+  return useSyncExternalStore(subscribe, () => prefsFor(id))
 }
