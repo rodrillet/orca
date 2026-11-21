@@ -10,6 +10,7 @@ import { readBotHomeFile, writeBotHomeFile, type BotHome } from '../../settings/
 import { getDiskBaselineSignature } from '../../../../../shared/file-write/disk-baseline-signature'
 import { isConfirmedFileNotFoundError } from '../../../../../shared/file-write/file-write-disk-precondition'
 import type { Bot } from '../../../../../shared/bot-types'
+import { getRepoExecutionHostId } from '../../../../../shared/execution-host/execution-host'
 import type { BotOrganization } from '../../../../../shared/orca-fork/organization/bot-organization'
 import {
   departmentApplyJobs,
@@ -102,6 +103,22 @@ async function applyJob(job: DepartmentApplyJob, bot: Bot, doc: BotOrganization)
     await updateBot(bot, { agent: agent.agent, launch: agent.launch })
     changed = true
   }
+  const skills = defaults?.skillProjects
+  if (
+    job.fields.includes('skillProjects') &&
+    skills &&
+    inheritsDepartmentDefault(doc, job.entryKey, 'skillProjects')
+  ) {
+    // Only the projects on the bot's own machine: a repo id names a project on one computer.
+    const repos = useAppStore.getState().repos
+    const wanted = skills.filter((id) =>
+      repos.some((repo) => repo.id === id && getRepoExecutionHostId(repo) === bot.hostId)
+    )
+    if (JSON.stringify(wanted) !== JSON.stringify(bot.skillProjects ?? [])) {
+      await updateBot(bot, { skillProjects: wanted })
+      changed = true
+    }
+  }
   return changed
 }
 
@@ -153,7 +170,7 @@ function report({ changed, failed }: { changed: number; failed: string[] }): voi
   }
 }
 
-const REAPPLIED: DepartmentApplyJob['fields'] = ['instructions', 'agent']
+const REAPPLIED: DepartmentApplyJob['fields'] = ['instructions', 'agent', 'skillProjects']
 const SOUL_ONLY: DepartmentApplyJob['fields'] = ['instructions']
 
 /** Every inheriting bot of a department takes all its defaults again ("Apply to all"). */

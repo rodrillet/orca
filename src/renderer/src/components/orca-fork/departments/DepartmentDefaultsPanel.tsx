@@ -29,6 +29,7 @@ import {
 import { editBotOrganization } from '../organization/bot-organization-store'
 import { reapplyDepartmentDefaults } from './department-apply'
 import { DepartmentMemberFace } from './DepartmentMemberChip'
+import { DepartmentSkillsField } from './DepartmentSkillsField'
 import { memberName, type DepartmentWorld } from './use-department-world'
 
 type Dept = DepartmentWorld['departments'][number]
@@ -75,6 +76,7 @@ export function DepartmentDefaultsPanel({
   const fields: { field: DepartmentDefaultField; label: string }[] = [
     { field: 'instructions', label: t('orcaFork.departments.instructions', 'Instructions') },
     { field: 'agent', label: t('orcaFork.departments.agent', 'Agent and model') },
+    { field: 'skillProjects', label: t('orcaFork.departments.skills', 'Skills') },
     { field: 'tokenSaving', label: t('orcaFork.departments.tokenSaving', 'Token saving') }
   ]
 
@@ -128,6 +130,18 @@ export function DepartmentDefaultsPanel({
               }
             />
           </div>
+        </Field>
+        <Field
+          title={t('orcaFork.departments.skills', 'Skills')}
+          hint={t(
+            'orcaFork.departments.skillsHint',
+            'Projects whose skills these bots load when a chat starts. Each bot gets the ones on its own machine.'
+          )}
+        >
+          <DepartmentSkillsField
+            value={draft.skillProjects}
+            onChange={(skillProjects) => setDraft({ ...draft, skillProjects })}
+          />
         </Field>
         <Field
           title={t('orcaFork.departments.tokenSaving', 'Token saving')}
@@ -197,7 +211,7 @@ export function DepartmentDefaultsPanel({
             <div className="flex items-center gap-3 border-b border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground">
               <span className="flex-1">{t('orcaFork.departments.member', 'Bot')}</span>
               {fields.map(({ field, label }) => (
-                <span key={field} className="w-32 text-center">
+                <span key={field} className="w-24 text-center">
                   {label}
                 </span>
               ))}
@@ -226,7 +240,7 @@ export function DepartmentDefaultsPanel({
                     </span>
                   </span>
                   {fields.map(({ field, label }) => (
-                    <span key={field} className="flex w-32 justify-center">
+                    <span key={field} className="flex w-24 justify-center">
                       <Switch
                         aria-label={`${label}: ${memberName(member)}`}
                         checked={inheritsDepartmentDefault(world.doc, member.key, field)}
