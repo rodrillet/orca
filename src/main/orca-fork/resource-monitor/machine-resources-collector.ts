@@ -1,5 +1,5 @@
 // orca-fork: this host's resources for the resource monitor, the same on the desktop and on orca-server.
-import { statfs } from 'node:fs/promises'
+import { readFile, statfs } from 'node:fs/promises'
 import os from 'node:os'
 import type { MemorySnapshot } from '../../../shared/diagnostics/process-stats-types'
 import {
@@ -7,7 +7,8 @@ import {
   shortFolder,
   type MachineAgentProcess,
   type MachineOtherProcess,
-  type MachineResources
+  type MachineResources,
+  type MachineSystem
 } from '../../../shared/orca-fork/resource-monitor/machine-resources'
 import { enumerateHostProcesses } from '../../memory/host-process-index'
 import { getLocalDaemonPid } from '../../memory/local-daemon-pid'
@@ -46,6 +47,51 @@ function cpuUsagePercent(): number | null {
   }
   const busy = 1 - (now.idle - previous.idle) / (now.total - previous.total)
   return Math.min(100, Math.max(0, busy * 100))
+}
+
+let osName: Promise<string> | null = null
+
+async function readOsName(): Promise<string> {
+  if (process.platform === 'darwin') {
+    // os.version() is the Darwin kernel's banner; the product version is what people know.
+    return `macOS ${os.release()}`
+  }
+  if (process.platform === 'win32') {
+    return os.version()
+  }
+  try {
+    const release = await readFile('/etc/os-release', 'utf8')
+    const pretty = /^PRETTY_NAME="?([^"\n]+)"?$/mu.exec(release)?.[1]
+    return pretty ?? `${os.type()} ${os.release()}`
+  } catch {
+    return `${os.type()} ${os.release()}`
+  }
+}
+
+function readAddresses(): string[] {
+  const v4: string[] = []
+  const v6: string[] = []
+  for (const entries of Object.values(os.networkInterfaces())) {
+    for (const entry of entries ?? []) {
+      if (entry.internal || (entry.family === 'IPv6' && entry.address.startsWith('fe80'))) {
+        continue
+      }
+      ;(entry.family === 'IPv4' ? v4 : v6).push(entry.address)
+    }
+  }
+  return [...v4, ...v6]
+}
+
+async function readSystem(): Promise<MachineSystem> {
+  osName ??= readOsName()
+  return {
+    os: await osName,
+    kernel: os.release(),
+    arch: os.arch(),
+    cpuModel: os.cpus()[0]?.model.trim() || null,
+    uptimeSeconds: Math.round(os.uptime()),
+    addresses: readAddresses()
+  }
 }
 
 async function readDisk(): Promise<MachineResources['disk']> {
@@ -125,10 +171,11 @@ function findAgentRoots(index: ProcIndex, args: ReadonlyMap<number, string>): Ag
 export async function collectMachineResources(
   sources: MachineResourcesSources
 ): Promise<MachineResources> {
-  const [snapshot, index, disk] = await Promise.all([
+  const [snapshot, index, disk, system] = await Promise.all([
     sources.memorySnapshot(),
     enumerateHostProcesses({ withNames: true }),
-    readDisk()
+    readDisk(),
+    readSystem()
   ])
   const args = await readProcessArgs(index)
   const roots = findAgentRoots(index, args)
@@ -199,6 +246,7 @@ export async function collectMachineResources(
       usagePercent: cpuUsagePercent(),
       loadAverage1m: snapshot.host.loadAverage1m
     },
+    system,
     disk,
     orca: { cpu: snapshot.app.cpu, memory: snapshot.app.memory },
     agents: agents.sort((a, b) => b.memory - a.memory),

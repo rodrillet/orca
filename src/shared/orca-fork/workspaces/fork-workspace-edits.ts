@@ -42,7 +42,10 @@ export const forkWorkspaceEdits = {
         activeWorkspaceId: activate ? ws.id : doc.activeWorkspaceId
       }),
   update:
-    (id: ForkWorkspaceId, patch: Partial<Pick<ForkWorkspace, 'name' | 'photo'>>): Edit =>
+    (
+      id: ForkWorkspaceId,
+      patch: Partial<Pick<ForkWorkspace, 'name' | 'photo' | 'description'>>
+    ): Edit =>
     (doc) =>
       bump({
         ...doc,

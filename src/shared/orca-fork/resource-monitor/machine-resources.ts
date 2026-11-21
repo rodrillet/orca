@@ -42,12 +42,25 @@ export type MachineResources = {
     usagePercent: number | null
     loadAverage1m: number
   }
+  /** What the machine is: absent from fork servers built before workspace settings' Machine tab. */
+  system?: MachineSystem
   /** The disk holding the home folder; null when it can't be read. */
   disk: { path: string; total: number; free: number } | null
   orca: MachineUsage
   agents: MachineAgentProcess[]
   /** The heaviest processes that are neither Orca nor an agent. */
   others: MachineOtherProcess[]
+}
+
+export type MachineSystem = {
+  /** "Ubuntu 24.04.1 LTS", "macOS 15.2"… */
+  os: string
+  kernel: string
+  arch: string
+  cpuModel: string | null
+  uptimeSeconds: number
+  /** Its non-loopback addresses, IPv4 first. */
+  addresses: string[]
 }
 
 export type MachineResourcesStopResult = { stopped: boolean; reason?: 'not_agent' | 'gone' }

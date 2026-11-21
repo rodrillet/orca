@@ -25195,6 +25195,9 @@
       "lastOnMachine": "O único workspace de uma máquina não pode ser excluído.",
       "machine": "Roda em",
       "machineHint": "Este computador, um servidor pareado ou outro workspace na mesma máquina.",
+      "pairServer": "Parear um servidor novo…",
+      "noWorkspaceYet": "sem workspace ainda",
+      "switch": "Trocar de workspace",
       "machineOffline": "Máquina não pareada",
       "menuOf": "Menu do workspace {{name}}",
       "name": "Nome",
@@ -25209,6 +25212,104 @@
       "settingsTitle": "Configurações do workspace",
       "yourWorkspaces": "Seus workspaces",
       "moveTo": "Mover para workspace"
+    },
+    "workspaceSettings": {
+      "photo": "Foto",
+      "pastePhoto": "Colar",
+      "photoHint": "Escolha uma imagem, solte aqui ou cole (⌘V / Ctrl+V).",
+      "description": "Descrição",
+      "descriptionPlaceholder": "Para que serve este workspace, para quem os agentes trabalham…",
+      "seeMachine": "Ver máquina",
+      "deleteHint": "Os projetos e bots dele voltam para o primeiro workspace da máquina.",
+      "confirmDelete": "Excluir de vez",
+      "machine": {
+        "uptimeDays": "{{days}}d {{hours}}h",
+        "uptimeHours": "{{hours}}h {{minutes}}min",
+        "unreachable": "Sem conexão agora",
+        "loading": "Lendo a máquina…",
+        "address": "IP / host",
+        "os": "Sistema",
+        "cpu": "CPU",
+        "cpuValue": "{{model}} · {{cores}} núcleos",
+        "cores": "{{cores}} núcleos",
+        "uptime": "Ligada há",
+        "memory": "RAM total · usada · livre",
+        "disk": "Disco total · livre",
+        "stockServer": "O orca-server desta máquina ainda não informa tudo: instale o orca-server do fork nela para ver sistema e agentes.",
+        "agents": "Agentes rodando aqui",
+        "agentsMemory": "{{memory}} de RAM no total",
+        "noAgents": "Nenhum agente deste workspace está rodando na máquina agora."
+      },
+      "newHint": "Neste computador, em qualquer servidor pareado ou em um que você parear agora.",
+      "tabs": {
+        "general": "Geral",
+        "members": "Membros",
+        "connectors": "Conectores",
+        "agents": "Agentes",
+        "access": "Acesso",
+        "machine": "Máquina"
+      },
+      "close": "Fechar",
+      "agentCount": "Agentes: {{count}}",
+      "connectors": {
+        "noBots": "Conectores pertencem aos bots: crie um neste workspace para conectar Slack, Linear, GitHub ou Google.",
+        "botCount": "Bots: {{count}}",
+        "none": "Não conectado",
+        "manage": "Gerenciar",
+        "add": "Conectar um bot",
+        "connect": "Conectores…"
+      },
+      "members": {
+        "owner": "Dono",
+        "editProfile": "Editar perfil",
+        "people": "Pessoas que seus agentes atendem",
+        "empty": "Só você por enquanto. Pessoas entram quando um bot deixa que perguntem pelo Slack ou Linear (Acesso › Quem pode pedir).",
+        "canAsk": "Pelo {{source}} · pede a {{bots}}"
+      },
+      "access": {
+        "title": "O que cada agente pode fazer",
+        "hint": "As permissões decidem o que um bot faz sem te perguntar; as pessoas que ele atende vêm dos conectores.",
+        "empty": "Ainda não há bots neste workspace.",
+        "whoCanAsk": "Podem pedir: {{count}}",
+        "permissions": "Permissões",
+        "people": "Quem pode pedir"
+      },
+      "agents": {
+        "title": "Agentes neste workspace",
+        "new": "Novo bot",
+        "empty": "Ainda não há bots aqui. Novo bot cria um na máquina deste workspace.",
+        "paused": "Pausado",
+        "openChat": "Abrir chat",
+        "settings": "Configurações do bot",
+        "groups": "Grupos",
+        "groupMembers": "Membros: {{count}}"
+      },
+      "openOf": "Configurações do workspace {{name}}"
+    },
+    "sidebarRail": {
+      "expand": "Expandir barra lateral",
+      "label": "Barra lateral compacta",
+      "search": "Buscar",
+      "tasks": "Tarefas",
+      "wiki": "Wiki",
+      "notificationsCount": "Notificações · {{count}} aguardando você",
+      "notifications": "Notificações",
+      "profile": "{{name}} · perfil e status",
+      "compact": "Barra lateral compacta"
+    },
+    "ownerProfile": {
+      "you": "Você",
+      "available": "Disponível",
+      "busy": "Ocupado",
+      "away": "Ausente",
+      "title": "Seu perfil",
+      "description": "Sua foto e status na barra lateral e nos membros de cada workspace.",
+      "photoHint": "Ou cole uma imagem aqui (⌘V / Ctrl+V).",
+      "name": "Nome",
+      "namePlaceholder": "Como agentes e pessoas te veem",
+      "presence": "Status",
+      "customStatus": "Status personalizado",
+      "statusPlaceholder": "Em reunião até 15h…"
     },
     "agentsBoard": {
       "column": {

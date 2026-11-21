@@ -32,6 +32,7 @@ import { useWindowBackdropActive } from '@/app-shell/appearance/window-backdrop'
 import { EditorRevealFlash } from './editor-reveal/EditorRevealFlash'
 import { SplitPaneLanding } from './landing/SplitPaneLanding'
 import { isSplitLandingGroup } from '@/store/slices/tabs/split-landing-groups'
+import { useForkSidebarRail } from '@/components/orca-fork/sidebar-rail/sidebar-mode-store' // orca-fork:
 
 const EditorPanel = lazy(() => import('../editor/EditorPanel'))
 const EMPTY_GROUPS: readonly TabGroup[] = []
@@ -80,7 +81,8 @@ export default function TabGroupPanel({
 }): React.JSX.Element {
   const t = useTranslate()
   const rightSidebarOpen = useAppStore((state) => state.rightSidebarOpen)
-  const sidebarOpen = useAppStore((state) => state.sidebarOpen)
+  const forkRail = useForkSidebarRail() // orca-fork: the rail floats the titlebar header as a closed sidebar
+  const sidebarOpen = useAppStore((state) => state.sidebarOpen) && !forkRail
   const reserveRightTitlebarSpace = reserveClosedExplorerToggleSpace && !rightSidebarOpen
   const model = useTabGroupWorkspaceModel({ groupId, worktreeId })
   // A bot's page chrome sits in the top-right strip, the one that spacing flag marks, so splits show it once.

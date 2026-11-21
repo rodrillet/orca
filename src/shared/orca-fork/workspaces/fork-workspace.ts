@@ -23,6 +23,8 @@ export type ForkWorkspace = {
   name: string
   /** Square picture as a `data:image/…` URL (kept small, ≤256 px), or null for the initials mark. */
   photo: string | null
+  /** What it is for, a few lines shown in its settings (agentes.chat's workspace description). */
+  description?: string
   /**
    * Where the workspace runs: `local` (this computer) or a paired machine (`runtime:<env>` for a paired
    * orca-server, `ssh:<target>`). Several workspaces may share one machine ("separate local workspace").
@@ -121,6 +123,7 @@ function readStrings(value: unknown): string[] {
 const ID_PATTERN = /^[\w:%.@|-]{1,160}$/
 const PHOTO_PATTERN = /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/
 const MAX_PHOTO_LENGTH = 512 * 1024
+export const FORK_WORKSPACE_DESCRIPTION_MAX = 500
 
 /** Reads a stored or received document, dropping anything malformed instead of failing. */
 export function normalizeForkWorkspaces(
@@ -149,6 +152,9 @@ export function normalizeForkWorkspaces(
       id,
       name,
       photo,
+      ...(typeof ws.description === 'string' && ws.description.trim()
+        ? { description: ws.description.slice(0, FORK_WORKSPACE_DESCRIPTION_MAX) }
+        : {}),
       hostId: host.id,
       repoIds: readStrings(ws.repoIds),
       botKeys: readStrings(ws.botKeys),

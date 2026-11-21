@@ -29,6 +29,10 @@ export const FORK_FEATURES = {
   botMoveToMenu: true,
   /** agentes.chat-style Workspaces at the top of the sidebar; data is keyed by workspace id. */
   workspaces: true,
+  /** Clicking the workspace's name opens its settings over a blurred app: General, Members, Connectors, Agents, Access, Machine. */
+  workspaceManagement: true,
+  /** The sidebar's compact mode: an icon rail with the workspace, my profile, tools, groups and agents. */
+  sidebarRail: true,
   /** The Agent Dashboard on by default, opening on a Kanban of every bot's items and workers. */
   agentsBoard: true,
   /** A bot group's own photo in the sidebar and its header, instead of its members' faces. */

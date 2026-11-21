@@ -13,6 +13,13 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { useSidebarResize } from '@/hooks/useSidebarResize'
 import SidebarHeader from './chrome/SidebarHeader'
 import { ForkWorkspaceSwitcher } from '@/components/orca-fork/workspaces/ForkWorkspaceSwitcher' // orca-fork:
+import { ForkSidebarRail } from '@/components/orca-fork/sidebar-rail/ForkSidebarRail' // orca-fork:
+import {
+  FORK_SIDEBAR_RAIL_WIDTH,
+  useForkSidebarRail
+} from '@/components/orca-fork/sidebar-rail/sidebar-mode-store' // orca-fork:
+import { useForkSidebarModeShortcut } from '@/components/orca-fork/sidebar-rail/use-fork-sidebar-mode-shortcut' // orca-fork:
+import { ForkWorkspaceOverlays } from '@/components/orca-fork/workspace-settings/ForkWorkspaceOverlays' // orca-fork:
 import SidebarNav from './chrome/SidebarNav'
 import { setSidebarLiveWidth } from './chrome/sidebar-live-width'
 import SetupScriptPromptCard from './setup-script-prompts/SetupScriptPromptCard'
@@ -102,6 +109,8 @@ function Sidebar({
   worktreeScrollAnchorRef
 }: SidebarProps): React.JSX.Element {
   const sidebarOpen = useAppStore((s) => s.sidebarOpen)
+  const forkRail = useForkSidebarRail() && sidebarOpen // orca-fork: compact icon rail
+  useForkSidebarModeShortcut() // orca-fork:
   const sidebarWidth = useAppStore((s) => s.sidebarWidth)
   const setSidebarWidth = useAppStore((s) => s.setSidebarWidth)
   const repos = useAppStore((s) => s.repos)
@@ -187,7 +196,7 @@ function Sidebar({
 
   const { containerRef, onResizeStart, isResizing } = useSidebarResize<HTMLDivElement>({
     isOpen: sidebarOpen,
-    width: sidebarWidth,
+    width: forkRail ? FORK_SIDEBAR_RAIL_WIDTH : sidebarWidth, // orca-fork: the rail's fixed width
     minWidth: MIN_WIDTH,
     maxWidth: MAX_WIDTH,
     deltaSign: 1,
@@ -296,7 +305,8 @@ function Sidebar({
           style={leftSidebarStyle}
           {...dropHandlers}
         >
-          {sidebarOpen && (
+          {forkRail ? <ForkSidebarRail /> : null /* orca-fork: compact mode */}
+          {sidebarOpen && !forkRail && (
             <>
               <DndContext
                 sensors={sidebarSectionDragSensors}
@@ -349,7 +359,7 @@ function Sidebar({
           ) : null}
         </div>
 
-        {sidebarOpen && (
+        {sidebarOpen && !forkRail /* orca-fork: the rail doesn't resize */ && (
           <>
             <div
               data-sidebar-resize-handle=""
@@ -369,7 +379,7 @@ function Sidebar({
           </>
         )}
       </div>
-
+      <ForkWorkspaceOverlays /> {/* orca-fork: workspace settings, owner profile */}
       {/* Render dialogs outside the sidebar to avoid clipping; mount each flow only while its modal is active. */}
       <React.Suspense fallback={null}>
         {activeModal === 'edit-meta' ? <WorktreeMetaDialog /> : null}
