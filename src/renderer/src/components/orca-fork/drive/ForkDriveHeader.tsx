@@ -75,7 +75,7 @@ export function ForkDriveHeader({
             ? t('orcaFork.drive.trashSubtitle', 'Restore a file, or delete it for good.')
             : t(
                 'orcaFork.drive.subtitle',
-                'Everything you and your agents uploaded or made, on every computer.'
+                'Everything you and your agents uploaded or made in this workspace.'
               )}
         </p>
       </div>

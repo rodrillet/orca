@@ -29675,7 +29675,7 @@
       "moveHere": "Move here",
       "trash": "Trash",
       "trashSubtitle": "Restore a file, or delete it for good.",
-      "subtitle": "Everything you and your agents uploaded or made, on every computer.",
+      "subtitle": "Everything you and your agents uploaded or made in this workspace.",
       "upload": "Upload",
       "uploadTo": "To {{name}}",
       "trail": "Folder",

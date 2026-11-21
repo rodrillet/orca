@@ -16,6 +16,8 @@ import type { InstalledRuntime } from './structured-agent-session-runtime-teardo
 import { AgentSessionRecoveryCapsule } from '../records/agent-session-recovery-capsule'
 import type { OpenedAgentSessionRecordStore } from '../records/agent-session-record-store-slot'
 import { installAgentSessionAttachments } from './structured-agent-session-attachment-wiring'
+import { FORK_FEATURES } from '../../../../shared/orca-fork/fork-features' // orca-fork:
+import { captureScratchFilesInDrive } from '../../../orca-fork/drive/drive-scratch-capture' // orca-fork:
 import {
   createStructuredAgentSessionOwnerProbe,
   createStructuredAgentSessionOwnerProbes
@@ -123,6 +125,18 @@ export async function installOnJournal(
         delivery.deliver(event, installed.readStatusSummary(sessionId))
       },
       onState: delivery.reconcile
+    })
+  }
+  // orca-fork: what an agent writes in its chat's scratch folder goes to the Drive at turn end
+  if (FORK_FEATURES.drive) {
+    const installed = host
+    installed.subscribeTurnCompletions({
+      id: 'orca-fork-drive',
+      emit: (event) => {
+        if (event.type === 'completion') {
+          void captureScratchFilesInDrive(deps.stateDirectory, event.completion.sessionId)
+        }
+      }
     })
   }
   const turnEnded = deps.turnContext?.turnEnded
