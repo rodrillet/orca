@@ -27,6 +27,7 @@ import {
   type BotWorkspaceLiveCounts
 } from '../../../../shared/bots/bot-sidebar-workspaces'
 import { BotAvatar } from './BotAvatar'
+import { FORK_FEATURES } from '../../../../shared/orca-fork/fork-features'
 import { FOLD_TOGGLE_CLASS } from './BotChatRowControls'
 import { useBotSoulDescription } from './bot-soul-description'
 import {
@@ -115,12 +116,21 @@ export function BotRow({
 
   return (
     <BotSidebarRow
-      avatar={<BotAvatar bot={bot} className="size-9 rounded-md text-sm" />}
+      avatar={
+        <BotAvatar
+          bot={bot}
+          className="size-9 rounded-md text-sm"
+          presenceBlocked={Boolean(limit)}
+        />
+      }
       name={bot.name}
       workspaceId={workspaceId}
       hostId={bot.hostId}
-      status={offline ? null : status}
-      stopTip={!offline && limit ? usageLimitStopTip(t, limit.stop) : null}
+      // orca-fork: the picture's presence dot replaces the status badge
+      status={offline || FORK_FEATURES.botPresence ? null : status}
+      stopTip={
+        !offline && limit && !FORK_FEATURES.botPresence ? usageLimitStopTip(t, limit.stop) : null
+      }
       isUnread={isUnread}
       isActive={isActive}
       expanded={fold ? !fold.folded : undefined}

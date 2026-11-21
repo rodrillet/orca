@@ -23,6 +23,7 @@ import {
   useBotAvatarBadgeSleeping
 } from './bot-avatar-status-badge'
 import { BotAvatar } from './BotAvatar'
+import { FORK_FEATURES } from '../../../../shared/orca-fork/fork-features'
 import { BotGroupFaces } from './BotGroupFaces'
 
 export type BotSearchEntry =
@@ -148,7 +149,8 @@ function BotResultPicture({ bot, home }: { bot: Bot; home: FolderWorkspace }): R
   const offline = useBotHostOffline(bot.hostId)
   const status = foldBotStatus(useWorktreeActivityStatus(folderWorkspaceKey(home.id)), bot.paused)
   const badge = {
-    status: offline || status === 'inactive' ? null : status,
+    // orca-fork: the picture's presence dot replaces the status badge
+    status: offline || status === 'inactive' || FORK_FEATURES.botPresence ? null : status,
     sleeping: useBotAvatarBadgeSleeping(folderWorkspaceKey(home.id), status)
   }
   return (
