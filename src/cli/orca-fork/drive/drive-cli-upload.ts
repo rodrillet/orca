@@ -68,16 +68,3 @@ export async function saveLocalFileInDrive(
   }
   return client.call<DriveFile>('orcaFork.drive.uploadCommit', { uploadId: started.uploadId })
 }
-
-/** `orca bot reply --file`: what a bot attaches also lands in the Drive; never fails the reply. */
-export async function keepRepliedFilesInDrive(
-  client: HandlerContext['client'],
-  paths: readonly string[],
-  note: string | undefined
-): Promise<void> {
-  for (const path of paths) {
-    await saveLocalFileInDrive(client, path, note ? { note: note.slice(0, 2000) } : {}).catch(
-      () => undefined
-    )
-  }
-}
