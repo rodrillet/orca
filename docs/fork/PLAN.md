@@ -292,10 +292,10 @@ Every Claude Code / Codex agent Orca launches saves tokens by default, with
 - **Codex** gets the voice and the MCP only: its threads are bound to their model provider, so moving
   one to the proxy could strand its history.
 - **Proxy per machine**: Orca finds Caveman in `~/.caveman/bin` (`CAVEMAN_HOME`), starts
-  `caveman-proxy serve` detached with `CAVEMAN_MODE=compress|record` when it is down, keeps it up with a
-  one-minute watchdog, and makes `~/.caveman` private (a group-writable home drops the proxy to
+  `caveman-proxy serve` detached with `CAVEMAN_MODE=compress|record` when it is down (again at the next
+  agent launch, at most once a minute, if it died), and makes `~/.caveman` private (a group-writable home drops the proxy to
   record-only). It only stops a proxy it started.
-- **Savings**: read from the proxy's own `caveman.db` (`requests`, grouped by slug), shown in Machines →
+- **Savings**: read from the proxy's own `caveman.db` (`requests`, grouped by slug) in a worker thread, shown in Machines →
   Token saving (per bot and per department), on the bot's Tasks card and in its settings.
 - **Server**: all of it runs in `orca-server` too (same main code); a stock server answers
   `method_not_found` and the panel says so.
