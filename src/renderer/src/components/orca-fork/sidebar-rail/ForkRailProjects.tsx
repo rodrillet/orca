@@ -2,6 +2,7 @@
 // project's initials in its color; a click opens its most recently used worktree.
 import React, { useMemo } from 'react'
 import { useAppStore } from '@/store'
+import { selectWorktreesByRepo } from '@/store/workspaces/catalog/workspace-record-fields'
 import { activateAndRevealWorktree } from '@/lib/workspace/activation/worktree-activation'
 import { getRepoExecutionHostId } from '../../../../../shared/execution-host/execution-host'
 import { forkWorkspaceOfItem } from '../../../../../shared/orca-fork/workspaces/fork-workspace'
@@ -26,7 +27,7 @@ export type ForkRailTile = {
 export function useForkRailProjects(): ForkRailTile[] {
   const doc = useForkWorkspaces()
   const repos = useAppStore((s) => s.repos)
-  const worktreesByRepo = useAppStore((s) => s.worktreesByRepo)
+  const worktreesByRepo = useAppStore(selectWorktreesByRepo)
   const activeRepoId = useAppStore((s) =>
     s.activeView === 'terminal' && s.activeWorktreeId
       ? (s.getKnownWorktreeById(s.activeWorktreeId)?.repoId ?? null)
