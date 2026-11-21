@@ -9,6 +9,7 @@ import { AgentTaskCard } from '../agents-tasks/AgentTaskCard'
 import { useHostLabels } from '../agents-board/agents-board-facets'
 import { departmentRoomOf } from './department-room'
 import { openDepartmentMember } from './DepartmentMemberChip'
+import { DepartmentUsagePanel } from './DepartmentUsagePanel'
 import type { DepartmentWorld } from './use-department-world'
 
 type Dept = DepartmentWorld['departments'][number]
@@ -84,6 +85,7 @@ export function DepartmentDashboard({
           ))}
         </div>
       ) : null}
+      {bots.length > 0 ? <DepartmentUsagePanel bots={bots} /> : null}
       {bots.length === 0 ? (
         <p className="rounded-md border border-dashed border-border p-4 text-sm text-muted-foreground">
           {t('orcaFork.departments.noBots', 'No bots in this department yet.')}

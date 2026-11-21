@@ -105,10 +105,13 @@ mark, mission, leader and bots; drag bots between cards) and one page per depart
   leave the sidebar (their bots list under No department until restored).
 - **Bot defaults**, inherited unless a bot opts out (Who inherits): standing instructions (kept as a
   marked `## Department: <name>` block at the end of each bot's SOUL.md, so the bot reads them on its next
-  turn), agent + model/effort (`bots.update`), token saving (read by Caveman through
+  turn), agent + model/effort (`bots.update`), skills (projects whose skills the bots load; each bot gets
+  the ones on its own machine, `bots.update` `skillProjects`), token saving (read by Caveman through
   `forkDepartmentTokenSaving(botEntryKey)`). Defaults are applied once per change (a move, a new default,
   an override cleared), never re-imposed on a bot changed by hand.
-- **Dashboard**: one Agents card per bot (now line, open items, workers and PRs), filterable by section.
+- **Dashboard**: one Agents card per bot (now line, open items, workers and PRs), filterable by section,
+  and token use over 7/30 days (input, output, cache, estimated cost; per bot), from each machine's usage
+  analytics (`usage.call` per-project breakdown matched to the bots' home folders).
 - **Department chat**: a bot group made on first open, kept to the department's bots on the machine most
   of them run on, placed in the department.
 - Data: `profiles` (by department id) and `overrides` (by bot key) inside the same versioned
