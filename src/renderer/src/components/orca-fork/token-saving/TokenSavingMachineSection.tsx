@@ -20,7 +20,7 @@ import type {
 import { getRuntimeTargetHostId } from '@/runtime/rpc/targets/runtime-client-target'
 import { useForkWorkspaces } from '../workspaces/fork-workspaces-store'
 import { useBotOrganization } from '../organization/bot-organization-store'
-import { formatTokenCount, SELECTED_ITEM, TokenSavingChoiceToggle } from './TokenSavingChoiceToggle'
+import { formatTokenCount, TokenSavingChoiceToggle } from './TokenSavingChoiceToggle'
 import { runTokenSavingProxy, useTokenSavingHost } from './token-saving-host'
 import { tokenSavingEdits, useTokenSavingSettings } from './token-saving-store'
 
@@ -47,8 +47,8 @@ function ProxyStateDot({ state }: { state: TokenSavingProxyState }): React.JSX.E
       aria-hidden
       className={cn(
         'inline-block size-2 shrink-0 rounded-full',
-        state === 'running' && 'bg-emerald-500',
-        state === 'unhealthy' && 'bg-amber-500',
+        state === 'running' && 'bg-status-success',
+        state === 'unhealthy' && 'bg-status-warning',
         (state === 'stopped' || state === 'not_installed') && 'bg-muted-foreground/40'
       )}
     />
@@ -65,7 +65,7 @@ function useProxyStateLabel(): (state: TokenSavingProxyState) => string {
         return t('orcaFork.tokenSaving.proxy.stopped', 'Proxy stopped')
       case 'unhealthy':
         return t('orcaFork.tokenSaving.proxy.unhealthy', 'Proxy not answering properly')
-      default:
+      case 'not_installed':
         return t('orcaFork.tokenSaving.proxy.notInstalled', 'Caveman not installed')
     }
   }
@@ -269,10 +269,10 @@ export function TokenSavingMachineSection({
             }
           }}
         >
-          <ToggleGroupItem value="compress" className={SELECTED_ITEM}>
+          <ToggleGroupItem value="compress">
             {t('orcaFork.tokenSaving.modeCompress', 'Compress')}
           </ToggleGroupItem>
-          <ToggleGroupItem value="record" className={SELECTED_ITEM}>
+          <ToggleGroupItem value="record">
             {t('orcaFork.tokenSaving.modeRecord', 'Measure only')}
           </ToggleGroupItem>
         </ToggleGroup>
