@@ -1,3 +1,4 @@
+import type { ForkAppearanceGlobalSettings } from '../orca-fork/appearance/fork-appearance' // orca-fork:
 import type { AntigravityChatAuthSettings } from '../agent-accounts/antigravity/antigravity-chat-auth-config'
 import type { EmulatorOpeningSettings } from '../emulator/emulator-opening-preferences'
 import type { BrowserExtensionGlobalSettings } from '../browser/extensions/browser-extension-settings'
@@ -33,6 +34,7 @@ import type { UiLanguageSettings } from '../i18n/ui-language-settings'
 
 /** Settings groups owned by their feature modules and composed into GlobalSettings. */
 export type GlobalSettingsBase = AntigravityChatAuthSettings &
+  ForkAppearanceGlobalSettings & // orca-fork: Settings › Appearance › Customization
   EmulatorOpeningSettings &
   SshRemoteControlSettings &
   ClaudeAgentViewSettings &

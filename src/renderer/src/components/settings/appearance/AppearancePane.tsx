@@ -38,6 +38,7 @@ import { getRendererAppPlatform } from '@/app-shell/platform/renderer-app-platfo
 import { isWebClientLocation } from '@/app-shell/platform/web-client-location'
 import { SHOW_UI_LANGUAGE_SETTING } from '@/i18n/supported-languages'
 import { useTranslate } from '@/i18n/use-translate'
+import { ForkAppearanceGroup } from '../../orca-fork/appearance/ForkAppearanceSection' // orca-fork:
 
 type AppearancePaneProps = {
   settings: GlobalSettings
@@ -141,6 +142,7 @@ export function AppearancePane({
 
   return (
     <>
+      <ForkAppearanceGroup settings={settings} updateSettings={updateSettings} /> {/* orca-fork: */}
       {interfaceMatches ? (
         <SettingsGroup title={interfaceTitle}>
           <AppearanceInterfaceSection
@@ -155,7 +157,6 @@ export function AppearancePane({
           />
         </SettingsGroup>
       ) : null}
-
       {terminalMatches ? (
         <SettingsGroup title={terminalTitle}>
           <TerminalAppearanceSection
@@ -170,7 +171,6 @@ export function AppearancePane({
           />
         </SettingsGroup>
       ) : null}
-
       {windowMatches ? (
         <SettingsGroup title={windowSidebarTitle}>
           <AppearanceWindowSidebarSection
@@ -180,7 +180,6 @@ export function AppearancePane({
           />
         </SettingsGroup>
       ) : null}
-
       {/* Keep the App Icon easter egg at the bottom instead of inside Interface advanced. */}
       {appIconMatches ? (
         <SettingsGroup>

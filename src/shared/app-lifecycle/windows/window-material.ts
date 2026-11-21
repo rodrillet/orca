@@ -1,3 +1,5 @@
+import { forkSurfacesShowWindowMaterial } from '../../orca-fork/appearance/fork-appearance' // orca-fork:
+
 /** What sits behind the main window's translucent surfaces: nothing, the desktop, or the blurred desktop. */
 export type WindowMaterial = 'off' | 'translucent' | 'blur'
 
@@ -12,7 +14,11 @@ export type WindowMaterialSettings = {
   reduceVisualEffects?: boolean
 }
 
-type WindowMaterialInputs = WindowMaterialSettings & { terminalBackgroundOpacity?: number }
+// orca-fork: translucent app surfaces show the material too, so they keep it on with opaque terminals.
+type WindowMaterialInputs = WindowMaterialSettings & {
+  terminalBackgroundOpacity?: number
+  orcaForkAppearance?: unknown
+}
 
 function isWindowMaterial(value: unknown): value is WindowMaterial {
   return value === 'off' || value === 'translucent' || value === 'blur'
@@ -74,7 +80,8 @@ export function resolveWindowMaterial(
     return 'off'
   }
   const opacity = settings.terminalBackgroundOpacity
-  if (opacity === undefined || !(opacity < 1)) {
+  const forkSurfaces = forkSurfacesShowWindowMaterial(settings.orcaForkAppearance) // orca-fork:
+  if (!forkSurfaces && (opacity === undefined || !(opacity < 1))) {
     return 'off'
   }
   return hostWindowMaterial(windowMaterialPreference(settings, host.platform), host)

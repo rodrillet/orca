@@ -24878,6 +24878,41 @@
     "sendReport": "Enviar relatório"
   },
   "orcaFork": {
+    "appearance": {
+      "title": "Personalização",
+      "description": "Tema de cores, destaque, densidade, estilo da barra lateral, opacidade da janela e transparência neste computador.",
+      "palette": {
+        "orca": "Orca",
+        "agentes": "Agentes",
+        "paper": "Papel",
+        "ocean": "Oceano",
+        "forest": "Floresta",
+        "plum": "Ameixa",
+        "rose": "Rosé",
+        "graphite": "Grafite"
+      },
+      "colorTheme": "Tema de cores",
+      "colorThemeHint": "Tinge a barra lateral e as páginas com um tom, como no agentes.chat. Funciona no claro e no escuro.",
+      "accent": "Cor de destaque",
+      "accentHint": "Botões, links, foco e marcas de seleção. Os tons dos agentes do agentes.chat, ou a sua cor.",
+      "accentDefault": "Padrão do tema",
+      "accentCustom": "Sua cor",
+      "density": "Densidade",
+      "densityHint": "Quanto espaço linhas, botões e painéis ocupam.",
+      "compact": "Compacta",
+      "standard": "Padrão",
+      "comfortable": "Confortável",
+      "sidebarStyle": "Estilo da barra lateral",
+      "sidebarStyleHint": "Em destaque coloca a área de trabalho como uma folha sobre o papel da barra lateral, como no agentes.chat.",
+      "flat": "Integrada",
+      "inset": "Em destaque",
+      "windowOpacity": "Opacidade da janela",
+      "windowOpacityHint": "Veja a área de trabalho através da janela inteira.",
+      "windowOpacityLinux": "Disponível no macOS e no Windows.",
+      "translucency": "Interface translúcida",
+      "translucencyNeedsMaterial": "Deixa o material da janela (desfoque no macOS) aparecer através da barra lateral e das páginas. Escolha Desfocado ou Translúcido acima e reinicie.",
+      "translucencyHint": "Quanto do material da janela aparece através da barra lateral e das páginas."
+    },
     "wiki": {
       "aboutPage": "Sobre a página",
       "aChat": "um chat",

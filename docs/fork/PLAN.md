@@ -166,6 +166,25 @@ its consultation log, where it is mentioned, history).
   `task_title`); pages, versions and reads stay. A paired server without the new methods still shows the
   pages; the Consultations/Agents views say to install the fork's latest `orca-server` there.
 
+### Interface customization (Settings › Appearance › Customization)
+
+A group at the top of Settings › Appearance, kept in this computer's settings (`orcaForkAppearance`):
+
+- **Color theme**: Orca, Agentes, Papel, Oceano, Floresta, Ameixa, Rosé, Grafite. One hue tints the
+  sidebar and the pages (agentes.chat's sky paper), in light and dark (`data-fork-palette`).
+- **Accent**: agentes.chat's agent tones (sky, indigo, violet, rose, amber, green, teal) or any color.
+  It paints buttons, links, focus rings and selected marks.
+- **Density**: Compact, Standard, Comfortable, through Tailwind's `--spacing`.
+- **Sidebar style**: Flat, or Inset (the work area as a rounded sheet on the sidebar's paper).
+- **Window opacity**: 50–100% (`BrowserWindow.setOpacity`, macOS and Windows).
+- **Window material** (upstream's setting) plus **Translucent interface**: 0–80%, how much of the
+  material (macOS vibrancy) shows through the sidebar and pages. A value above 0 keeps the material on with
+  opaque terminals (`resolveWindowMaterial`); turning it on needs a restart.
+
+Code: `src/shared/orca-fork/appearance/`, `src/renderer/src/components/orca-fork/appearance/`,
+`src/main/orca-fork/appearance/`. Plugin themes paint their tokens inline, so fork choices use
+`!important`; with "Orca" and the theme-default accent, nothing is overridden.
+
 ### Phase 5 — Shared agent computer (dropped)
 
 Dropped by the owner (2026-11-21): a desktop per machine costs too much RAM/CPU on the VPS. Nothing

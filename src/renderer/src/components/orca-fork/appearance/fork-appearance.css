@@ -1,0 +1,96 @@
+/* orca-fork: Settings › Appearance › Customization, painted on <html> by ForkAppearanceRuntime.
+   !important: plugin app themes paint their tokens inline on <html>; a fork choice is made on purpose. */
+
+/* Color themes: one hue (--fork-tint) tints the surfaces, as agentes.chat's sky paper. */
+:root[data-fork-palette]:not(.dark) {
+  --background: color-mix(in srgb, var(--fork-tint) 1.5%, #ffffff) !important;
+  --editor-surface: color-mix(in srgb, var(--fork-tint) 1.5%, #ffffff) !important;
+  --card: color-mix(in srgb, var(--fork-tint) 1%, #ffffff) !important;
+  --sidebar: color-mix(in srgb, var(--fork-tint) 4%, #fafaf9) !important;
+  --worktree-sidebar: color-mix(in srgb, var(--fork-tint) 5%, #f7f7f6) !important;
+  --worktree-sidebar-accent: color-mix(in srgb, var(--fork-tint) 11%, #ebebe9) !important;
+  --sidebar-accent: color-mix(in srgb, var(--fork-tint) 9%, #f1f1ef) !important;
+  --secondary: color-mix(in srgb, var(--fork-tint) 6%, #f4f4f2) !important;
+  --muted: color-mix(in srgb, var(--fork-tint) 6%, #f4f4f2) !important;
+  --accent: color-mix(in srgb, var(--fork-tint) 8%, #f1f1ef) !important;
+  --border: color-mix(in srgb, var(--fork-tint) 9%, #e5e5e2) !important;
+  --input: color-mix(in srgb, var(--fork-tint) 9%, #e5e5e2) !important;
+  --sidebar-border: color-mix(in srgb, var(--fork-tint) 9%, #e5e5e2) !important;
+  --worktree-sidebar-border: color-mix(in srgb, var(--fork-tint) 9%, #e5e5e2) !important;
+}
+:root.dark[data-fork-palette] {
+  --background: color-mix(in srgb, var(--fork-tint) 4%, #131312) !important;
+  --editor-surface: color-mix(in srgb, var(--fork-tint) 4%, #161615) !important;
+  --card: color-mix(in srgb, var(--fork-tint) 5%, #1a1a19) !important;
+  --sidebar: color-mix(in srgb, var(--fork-tint) 6%, #0d0e10) !important;
+  --worktree-sidebar: color-mix(in srgb, var(--fork-tint) 6%, #0d0e10) !important;
+  --worktree-sidebar-accent: color-mix(in srgb, var(--fork-tint) 14%, #222326) !important;
+  --sidebar-accent: color-mix(in srgb, var(--fork-tint) 12%, #1f2022) !important;
+  --secondary: color-mix(in srgb, var(--fork-tint) 8%, #232322) !important;
+  --muted: color-mix(in srgb, var(--fork-tint) 8%, #232322) !important;
+  --accent: color-mix(in srgb, var(--fork-tint) 12%, #2c2c2a) !important;
+}
+
+/* Accent: buttons, focus rings, links and the sidebar's chosen marks. */
+:root[data-fork-accent] {
+  --primary: var(--fork-accent) !important;
+  --primary-foreground: var(--fork-on-accent) !important;
+  --ring: color-mix(in srgb, var(--fork-accent) 70%, transparent) !important;
+  --sidebar-primary: var(--fork-accent) !important;
+  --sidebar-primary-foreground: var(--fork-on-accent) !important;
+  --sidebar-ring: var(--fork-accent) !important;
+  --worktree-sidebar-ring: var(--fork-accent) !important;
+  --text-link: var(--fork-accent) !important;
+  --chat-focus-ring: var(--fork-accent) !important;
+}
+
+/* Density: Tailwind spaces every padding, gap and margin from --spacing. */
+:root[data-fork-density='compact'] {
+  --spacing: 0.215rem;
+}
+:root[data-fork-density='comfortable'] {
+  --spacing: 0.285rem;
+}
+
+/* Inset: the work area as a raised sheet on the sidebar's paper, as agentes.chat's shell. */
+:root[data-fork-sidebar='inset'] :has(> [data-orca-fork-main]) {
+  background: var(--worktree-sidebar);
+}
+:root[data-fork-sidebar='inset'] [data-orca-fork-main] {
+  margin: 0 6px 6px 0;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 1.4);
+  background: var(--background);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+/* Translucent surfaces: the window material (vibrancy) shows through the app, not only terminals.
+   The base colors are read on <html> and mixed on <body>, so a token never refers to itself. */
+:root[data-window-material][data-fork-translucent] {
+  --fork-base-background: var(--background);
+  --fork-base-sidebar: var(--sidebar);
+  --fork-base-worktree-sidebar: var(--worktree-sidebar);
+  --fork-base-editor-surface: var(--editor-surface);
+}
+:root[data-window-material][data-fork-translucent] body {
+  --background: color-mix(
+    in srgb,
+    var(--fork-base-background) calc(100% - var(--fork-surface-clear)),
+    transparent
+  );
+  --sidebar: color-mix(
+    in srgb,
+    var(--fork-base-sidebar) calc(100% - var(--fork-surface-clear)),
+    transparent
+  );
+  --worktree-sidebar: color-mix(
+    in srgb,
+    var(--fork-base-worktree-sidebar) calc(100% - var(--fork-surface-clear)),
+    transparent
+  );
+  --editor-surface: color-mix(
+    in srgb,
+    var(--fork-base-editor-surface) calc(100% - var(--fork-surface-clear)),
+    transparent
+  );
+}
