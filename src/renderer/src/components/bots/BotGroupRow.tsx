@@ -21,6 +21,8 @@ import { BotSidebarRow } from './BotSidebarRow'
 import { botErrorMessage } from './bot-presentation'
 import { botGroupFaces } from '../../../../shared/bots/bot-group-face-layout'
 import { BotGroupFaces } from './BotGroupFaces'
+import { ForkBotMoveToMenu } from '../orca-fork/organization/ForkBotMoveToMenu' // orca-fork:
+import { botSidebarEntryKey } from './bot-sidebar-entry-keys' // orca-fork:
 
 /** A group in the Bots section: its members' faces, then the room's newest post. */
 export function BotGroupRow({
@@ -97,10 +99,14 @@ export function BotGroupRow({
         />
       )}
       menuItems={
-        <ContextMenuItem onSelect={onManageMembers}>
-          <Users className="size-3.5" />
-          {t('bots.groups.manageMembersMenu', 'Manage members…')}
-        </ContextMenuItem>
+        <>
+          <ContextMenuItem onSelect={onManageMembers}>
+            <Users className="size-3.5" />
+            {t('bots.groups.manageMembersMenu', 'Manage members…')}
+          </ContextMenuItem>
+          {/* orca-fork: department/section from the row */}
+          <ForkBotMoveToMenu entryKey={botSidebarEntryKey(group)} />
+        </>
       }
       menuFooter={
         <>

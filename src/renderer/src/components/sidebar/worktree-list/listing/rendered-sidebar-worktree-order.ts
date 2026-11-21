@@ -38,6 +38,7 @@ import {
 } from '../../../../../../shared/sidebar-list/hosts/host-filtering'
 import { selectWorkspaceBoardStatuses } from '@/store/workspaces/status/host-workspace-status-columns'
 import { indexHiddenProjects } from '../../../../../../shared/project/catalog/hidden-projects'
+import { readWorkspacesByMachine } from '@/components/orca-fork/organization/workspaces-by-machine' // orca-fork:
 
 const EMPTY_REPO_ID_SET: ReadonlySet<string> = Object.freeze(new Set<string>())
 const EMPTY_IMPORTED_BY_REPO: ReadonlyMap<string, ImportedWorktreesCardCandidate> = new Map()
@@ -112,8 +113,11 @@ export function computeRenderedSidebarRows(
   }).render(state.collapsedGroups)
 
   // Build the host registry only when sections may affect order; zero/one-host cases still safely no-op.
+  const byMachine = readWorkspacesByMachine() // orca-fork: Group by Machine
   const needsHostSections =
-    state.workspaceHostScope !== ALL_EXECUTION_HOSTS_SCOPE || state.visibleWorkspaceHostIds != null
+    byMachine ||
+    state.workspaceHostScope !== ALL_EXECUTION_HOSTS_SCOPE ||
+    state.visibleWorkspaceHostIds != null
   return needsHostSections
     ? addHostSectionRows({
         rows,
@@ -135,7 +139,7 @@ export function computeRenderedSidebarRows(
         localHostLabel: getLocalExecutionHostLabel(),
         collapsedHostKeys: state.collapsedGroups,
         forceCollapseHosts: false,
-        preferProjectGrouping: true
+        preferProjectGrouping: !byMachine
       })
     : rows
 }

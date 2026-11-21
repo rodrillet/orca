@@ -24943,7 +24943,13 @@
       "groupMachineDescription": "Este Mac e cada servidor pareado.",
       "groupOrganization": "Departamentos",
       "groupOrganizationDescription": "Departamentos e seções. Arraste bots entre eles.",
-      "groupBy": "Agrupar por"
+      "groupBy": "Agrupar por",
+      "moveTo": "Mover para…",
+      "moveToNewDepartment": "Novo departamento"
+    },
+    "workspaces": {
+      "groupByMachine": "Agrupar por máquina",
+      "groupByMachineAria": "Listar os workspaces sob este Mac e cada servidor pareado"
     }
   }
 }

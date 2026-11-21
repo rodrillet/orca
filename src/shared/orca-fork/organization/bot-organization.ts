@@ -20,7 +20,8 @@ export type BotOrganization = {
   departments: BotOrganizationDepartment[]
   /** Keyed by the sidebar entry key `hostId/id`. */
   placements: Record<string, BotOrganizationPlacement>
-  view: { groupBy: BotSidebarGroupBy; collapsed: string[] }
+  /** workspacesByMachine: the workspace sidebar lists one section per machine (Group by Machine). */
+  view: { groupBy: BotSidebarGroupBy; collapsed: string[]; workspacesByMachine: boolean }
 }
 
 export function emptyBotOrganization(): BotOrganization {
@@ -29,7 +30,7 @@ export function emptyBotOrganization(): BotOrganization {
     revision: 0,
     departments: [],
     placements: {},
-    view: { groupBy: 'none', collapsed: [] }
+    view: { groupBy: 'none', collapsed: [], workspacesByMachine: false }
   }
 }
 
@@ -91,6 +92,7 @@ export function normalizeBotOrganization(raw: unknown): BotOrganization {
   }
   const view = readRecord(input.view)
   doc.view.groupBy = readGroupBy(view.groupBy)
+  doc.view.workspacesByMachine = view.workspacesByMachine === true
   doc.view.collapsed = Array.isArray(view.collapsed)
     ? view.collapsed.filter((key): key is string => typeof key === 'string')
     : []
@@ -108,6 +110,10 @@ export const botOrganizationEdits = {
     (groupBy: BotSidebarGroupBy): Edit =>
     (doc) =>
       bump({ ...doc, view: { ...doc.view, groupBy } }),
+  setWorkspacesByMachine:
+    (workspacesByMachine: boolean): Edit =>
+    (doc) =>
+      bump({ ...doc, view: { ...doc.view, workspacesByMachine } }),
   toggleCollapsed:
     (headerKey: string): Edit =>
     (doc) =>

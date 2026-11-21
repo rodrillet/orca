@@ -29604,11 +29604,17 @@
       "groupMachineDescription": "This Mac and each paired server.",
       "groupOrganization": "Departments",
       "groupOrganizationDescription": "Departments and sections. Drag bots between them.",
-      "groupBy": "Group by"
+      "groupBy": "Group by",
+      "moveTo": "Move to…",
+      "moveToNewDepartment": "New department"
     },
     "teams": {
       "builder": "Can build a team",
       "builderDetail": "Creates the bots it proposes without asking you (up to {{cap}} a day) and shares a group with them. They hand work to each other without your approval."
+    },
+    "workspaces": {
+      "groupByMachine": "Group by machine",
+      "groupByMachineAria": "List workspaces under this Mac and each paired server"
     }
   }
 }

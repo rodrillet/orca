@@ -55,6 +55,7 @@ import { useEffectiveCollapsedGroups } from './use-collapsed-groups'
 import { useSidebarExternalWorktreeCards } from './use-external-worktree-cards'
 import { useOrderHeldWhileEngaged, useProjectRecencyHeldWhileEngaged } from './use-order-hold'
 import { useReusedArrayIdentity } from './use-reused-array-identity'
+import { useWorkspacesByMachine } from '@/components/orca-fork/organization/workspaces-by-machine' // orca-fork:
 
 // The window renders its own collapse, so planning never re-runs on a toggle.
 const PLANNED_UNCOLLAPSED: ReadonlySet<string> = new Set()
@@ -90,6 +91,7 @@ export function useMainSidebarListModel(args: SidebarListModelArgs): SidebarList
     useShallow((s) => selectPendingWorktreeCreationKeys(s.pendingWorktreeCreations, 'hidden'))
   )
   const workspaceHostOrder = useAppStore((s) => s.workspaceHostOrder)
+  const byMachine = useWorkspacesByMachine() // orca-fork: Group by Machine
   const setWorkspaceHostOrder = useAppStore((s) => s.setWorkspaceHostOrder)
   const domains = useMemo(
     () =>
@@ -134,7 +136,8 @@ export function useMainSidebarListModel(args: SidebarListModelArgs): SidebarList
       defaultHostId,
       hostLabelOverrides: getHostDisplayLabelOverrides(settings),
       localHostLabel: getLocalExecutionHostLabel(),
-      workspaceHostOrder
+      workspaceHostOrder,
+      preferProjectGrouping: !byMachine
     }),
     [
       groupBy,
@@ -145,7 +148,8 @@ export function useMainSidebarListModel(args: SidebarListModelArgs): SidebarList
       args.pinnedDisplayPolicy,
       defaultHostId,
       settings,
-      workspaceHostOrder
+      workspaceHostOrder,
+      byMachine
     ]
   )
   const liveIndex = useMemo(() => indexSidebarFeed(domains, repos), [domains, repos])
