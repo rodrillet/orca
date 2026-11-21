@@ -17,6 +17,8 @@ export const FORK_FEATURES = {
   botOrganization: true,
   /** Per-workspace Drive: chat uploads and agents' files on every machine, `orca files save`. */
   drive: true,
+  /** Workspace wiki: agents write what they learn, the owner reads and curates it (Wiki page). */
+  workspaceWiki: true,
   /** Phase 4: a bot the owner lets build a team creates bots from its own offers. */
   agentTeams: true,
   /** Group by Machine in the workspace sidebar: one section per machine, projects inside. */

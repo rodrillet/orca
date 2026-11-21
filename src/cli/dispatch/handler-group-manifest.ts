@@ -237,6 +237,24 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
     keys: ['files save', 'files list'],
     load: async () => (await import('../orca-fork/drive/drive-commands.js')).DRIVE_HANDLERS
   },
+  // orca-fork: workspace wiki
+  {
+    name: 'orca-fork-wiki',
+    keys: [
+      'wiki search',
+      'wiki list',
+      'wiki show',
+      'wiki create',
+      'wiki update',
+      'wiki tag',
+      'wiki link',
+      'wiki mention',
+      'wiki history',
+      'wiki delete',
+      'wiki restore'
+    ],
+    load: async () => (await import('../orca-fork/wiki/wiki-commands.js')).FORK_WIKI_HANDLERS
+  },
   {
     name: 'profile-state',
     keys: ['profile state exports', 'profile state rollback'],

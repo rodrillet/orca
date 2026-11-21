@@ -17,6 +17,7 @@ import { TitlebarLeftControls } from './chrome/TitlebarLeftControls'
 import { RightSidebarToggle } from './chrome/RightSidebarToggle'
 import { TitlebarMainStrip } from './chrome/TitlebarMainStrip'
 import type { AppChromeLayout } from './chrome/use-app-chrome-layout'
+import { ForkWikiPageMount } from '../components/orca-fork/wiki/ForkWikiPageMount' // orca-fork: workspace wiki
 import type { FloatingWorkspacePanelState } from '../components/floating-terminal/workspace/use-floating-workspace-panel'
 import { ForkArtifactsSlot } from '../components/orca-fork/drive/ForkArtifactsSlot' // orca-fork:
 
@@ -298,6 +299,7 @@ export function AppWorkspaceShell(props: {
                     </RecoverableRenderErrorBoundary>
                   </Suspense>
                 </div>
+                <ForkWikiPageMount /> {/* orca-fork: workspace wiki */}
                 {floatingWorkspace.showToggleButton && !capturingPluginShot ? (
                   <MemoFloatingTerminalToggleButton
                     open={floatingWorkspace.open}

@@ -21,6 +21,7 @@ import { useTranslate } from '@/i18n/use-translate'
 import { lazyWithRetry } from '@/app-shell/startup/lazy-with-retry'
 import type { GlobalSettings } from '../../../../../shared/settings/global-settings-types'
 import { useBotsEnabled } from '@/lib/bot-catalog'
+import { ForkWikiNavButton } from '../../orca-fork/wiki/ForkWikiNavButton' // orca-fork: workspace wiki
 
 export function shouldShowMobileButton(
   settings: Partial<Pick<GlobalSettings, 'showMobileButton'>> | null | undefined
@@ -133,6 +134,7 @@ const SidebarNav = React.memo(function SidebarNav() {
       <SetupGuideSidebarEntry />
       <SidebarTaskNavButton />
       <ForkDriveNavButton /> {/* orca-fork: Drive */}
+      <ForkWikiNavButton /> {/* orca-fork: workspace wiki */}
       {showArtifactsButton ? (
         <ContextMenu>
           <ContextMenuTrigger asChild>
