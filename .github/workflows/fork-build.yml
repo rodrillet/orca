@@ -54,23 +54,6 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=v$version-fork.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
 
-  # A merge can bring new upstream workflows; they stay off in the fork, as the ones before them.
-  upstream-workflows-off:
-    if: github.repository == 'rodrillet/orca' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
-    runs-on: ubuntu-24.04-arm
-    timeout-minutes: 5
-    permissions:
-      actions: write
-    steps:
-      - env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api --paginate "repos/$GITHUB_REPOSITORY/actions/workflows" \
-            -q '.workflows[] | select(.state == "active") | select(.path | test("/fork-[^/]+\\.yml$") | not) | .id' |
-            while read -r id; do
-              gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/$id/disable"
-            done
-
   # The desktop bundles the server template for SSH hosts; the tarball ships its exact bytes.
   template:
     needs: resolve
