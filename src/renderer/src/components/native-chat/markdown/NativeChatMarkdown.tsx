@@ -37,6 +37,7 @@ import { useNativeChatLinkClick } from '../links/actions/native-chat-link-click-
 import './native-chat-markdown.css'
 // orca-fork: #group chips
 import { withForkGroupMentions } from '../../orca-fork/group-mentions/fork-group-mention-markdown'
+import { forkWikiChatContent, useForkWikiLinkClick } from '../../orca-fork/wiki/wiki-chat-links' // orca-fork: [[Page]] in chat
 
 /** Existing words stay opaque when a reply first starts growing. */
 function useWordFadeArmed(fadeWords: boolean): boolean {
@@ -200,6 +201,7 @@ export function NativeChatMarkdown({
   ...props
 }: NativeChatMarkdownProps): React.JSX.Element {
   const onLinkClick = useNativeChatLinkClick()
+  const wikiLinkClick = useForkWikiLinkClick(onLinkClick) // orca-fork: [[Page]] opens the wiki
   const wordFadeArmed = useWordFadeArmed(fadeWords)
   const visualExtension = useNativeChatVisualMarkdownExtension(visualMessageId)
   const mentionNames = withBoundBotMentions(useContext(NativeChatMentionNamesContext), content)
@@ -234,13 +236,13 @@ export function NativeChatMarkdown({
         growing={growing || streaming}
         // Only the document variant's links can peek; bare #123 links follow it.
         githubRepo={variant === 'document' ? githubRepo?.referenceRepo : undefined}
-        onLinkClick={onLinkClick}
+        onLinkClick={wikiLinkClick}
         allowFileUriLinks={onLinkClick !== undefined}
-        content={
+        content={forkWikiChatContent(
           visualExtension && streaming
             ? withoutPendingNativeChatVisualDirectiveTail(content)
             : content
-        }
+        )}
         math
         extension={extension}
         fileLinkExists={fileLinkExists}
