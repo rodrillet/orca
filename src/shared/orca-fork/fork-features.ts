@@ -26,5 +26,7 @@ export const FORK_FEATURES = {
   /** The Agent Dashboard on by default, opening on a Kanban of every bot's items and workers. */
   agentsBoard: true,
   /** A bot group's own photo in the sidebar and its header, instead of its members' faces. */
-  groupPhotos: true
+  groupPhotos: true,
+  /** Status-bar "Machines": memory, CPU, disk and agent processes of this computer and each paired server. */
+  resourceMonitor: true
 } as const
