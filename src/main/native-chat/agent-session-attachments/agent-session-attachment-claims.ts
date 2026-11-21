@@ -15,6 +15,7 @@ import {
   agentSessionAttachmentReferences,
   agentSessionAttachmentStoreRoot
 } from './agent-session-attachment-references'
+import { notifyDriveOfClaim } from '../../orca-fork/drive/drive-claim-hook' // orca-fork:
 
 const CLAIM_SAVEPOINT = 'agent_session_attachment_claims'
 
@@ -95,6 +96,8 @@ export type AgentSessionAttachmentClaim = {
   /** Existing references remain best effort when replacing a message. */
   previous?: AgentJournalMessageItem
   now: number
+  /** orca-fork: the journal item the message is, so the Drive can link back to it. */
+  itemId?: string
 }
 
 /** Share the message transaction so missing required uploads roll back the entire send. */
@@ -124,6 +127,13 @@ export function claimAgentSessionAttachmentsInTransaction(
     )
   }
   const inserted = insertClaims(db, required, claim.sessionId, claim.now)
+  // orca-fork: the Drive keeps a copy of every claimed chat attachment
+  notifyDriveOfClaim({
+    attachmentRoot: root,
+    sessionId: claim.sessionId,
+    body: claim.body,
+    ...(claim.itemId ? { itemId: claim.itemId } : {})
+  })
   const bestEffort = [...uploadIds].filter((id) => !required.includes(id))
   if (bestEffort.length === 0) {
     return { referenced: uploadIds, inserted }

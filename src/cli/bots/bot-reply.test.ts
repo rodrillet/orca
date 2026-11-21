@@ -189,11 +189,19 @@ describe('orca bot reply', () => {
       vi.unstubAllGlobals()
       rmSync(dir, { recursive: true, force: true })
     }
-    const args = call.mock.calls.map(
-      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: connector.act params, as the handler sends them.
-      (entry) => entry[1] as { verb: string; args: Record<string, unknown> }
-    )
+    // orca-fork: the Drive's own calls follow the post; only the connector's are this test's.
+    const args = call.mock.calls
+      .filter((entry) => entry[0] === 'connector.act')
+      .map(
+        // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: connector.act params, as the handler sends them.
+        (entry) => entry[1] as { verb: string; args: Record<string, unknown> }
+      )
     expect(args.map((entry) => entry.verb)).toEqual(['reply', 'reply'])
+    // orca-fork: the attached file is also saved in the owner's Drive.
+    expect(call).toHaveBeenCalledWith(
+      'orcaFork.drive.uploadStart',
+      expect.objectContaining({ name: 'build.bin' })
+    )
     expect(args[0]?.args).toEqual({
       upload: { name: 'build.bin', size: bytes.length },
       stage: true,
@@ -257,10 +265,13 @@ describe('orca bot reply', () => {
           })
     )
     await replyWithTwoFiles(call)
-    const args = call.mock.calls.map(
-      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: connector.act params, as the handler sends them.
-      (entry) => (entry[1] as { args: Record<string, unknown> }).args
-    )
+    // orca-fork: the Drive's own calls follow the post; only the connector's are this test's.
+    const args = call.mock.calls
+      .filter((entry) => entry[0] === 'connector.act')
+      .map(
+        // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: connector.act params, as the handler sends them.
+        (entry) => (entry[1] as { args: Record<string, unknown> }).args
+      )
     expect(args).toEqual([
       { upload: { name: 'a.png', size: 1 }, stage: true, postId: expect.any(String) },
       { upload: { name: 'b.png', size: 1 }, stage: true, postId: expect.any(String) },

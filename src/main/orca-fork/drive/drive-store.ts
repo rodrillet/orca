@@ -246,6 +246,21 @@ export class DriveStore {
     return (await this.load()).files.some((file) => file.originKey === originKey)
   }
 
+  /** Names the chat message a captured file came from, once the message is written. */
+  async linkOriginToMessage(originKey: string, messageId: string): Promise<void> {
+    const file = (await this.load()).files.find((entry) => entry.originKey === originKey)
+    if (!file || file.source.kind !== 'chat-attachment' || file.source.messageId) {
+      return
+    }
+    await this.mutate((index) => {
+      for (const entry of index.files) {
+        if (entry.originKey === originKey && entry.source.kind === 'chat-attachment') {
+          entry.source = { ...entry.source, messageId }
+        }
+      }
+    })
+  }
+
   /** The version a captured source was last kept at; null when it was never kept. */
   async originStampOf(originKey: string): Promise<string | null> {
     const file = (await this.load()).files.find((entry) => entry.originKey === originKey)

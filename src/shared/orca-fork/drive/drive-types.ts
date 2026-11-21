@@ -20,6 +20,8 @@ export type DriveFileSource =
       botName?: string
       /** The message's first words. */
       excerpt?: string
+      /** The message's journal item, which Open the chat scrolls to. */
+      messageId?: string
     }
   | {
       kind: 'agent'

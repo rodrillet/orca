@@ -149,11 +149,13 @@ Every file the owner sends in a chat and every file agents make lands in a per-w
 
 - **Storage**: on the host that runs the bots (`userData/orca-fork/drive/<workspace>/index.json` +
   `blobs/<id>`), so a paired server keeps its own bots' files; the page merges every host's Drive.
-- **Ingestion**: (1) chat uploads are copied when the host claims them for the chat
-  (`structured-agent-session-attachment-wiring.ts`), so they outlive the attachment sweep; (2) at each
-  turn end, new or changed files in the chat's scratch folder (`ORCA_CHAT_SCRATCH_DIR`, where agents put
-  what they show in chat) are kept; (3) agents run `orca files save <file> [--note] [--folder]` (taught in
-  the bot preamble), linked to their chat; (4) the owner uploads on the page (button or drag & drop).
+- **Ingestion**: (1) chat uploads are copied when the host claims them for the message (every claim passes
+  `claimAgentSessionAttachmentsInTransaction`, which tells the Drive with the message's journal item id),
+  so they outlive the attachment sweep and Open the chat scrolls to that message; (2) at each turn end, new
+  or changed files in the chat's scratch folder (`ORCA_CHAT_SCRATCH_DIR`, where agents put what they show
+  in chat) are kept, a rewrite updating the same file; (3) agents run `orca files save <file> [--note]
+  [--folder]` (taught in the bot preamble), linked to their chat; files they attach with `orca bot reply
+  --file` or `orca slack attach` are saved too; (4) the owner uploads on the page (button or drag & drop).
 - **Page**: grid/list, folders, search, filters (who, type, agent, computer, chat), preview (images, PDF,
   Markdown, text, code, video, audio), download, rename, move, trash/restore/delete forever, and "where it
   came from" (the bot, its note or the message's words, Open the chat).

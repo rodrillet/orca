@@ -10,6 +10,7 @@ import {
   agentSessionAttachmentReferences
 } from '../../native-chat/agent-session-attachments/agent-session-attachment-references'
 import { getDriveStore } from './drive-store-registry'
+import type { DriveClaimedAttachments } from './drive-claim-hook'
 
 const EXCERPT_MAX = 160
 
@@ -39,24 +40,25 @@ async function storedFileOf(root: string, uploadId: string): Promise<string | nu
 }
 
 /** Best effort: a failed copy never fails the chat's send. */
-export async function captureChatAttachmentsInDrive(
-  attachmentRoot: string,
-  sessionId: string,
-  body: AgentJournalMessageItem
-): Promise<void> {
+export async function captureChatAttachmentsInDrive(claim: DriveClaimedAttachments): Promise<void> {
   if (!FORK_FEATURES.drive) {
     return
   }
-  const uploadIds = agentSessionAttachmentReferences(attachmentRoot, body)
-  if (uploadIds.size === 0) {
-    return
-  }
-  const store = getDriveStore()
-  const excerpt = chatMessageExcerpt(body)
-  for (const uploadId of uploadIds) {
-    try {
+  const { attachmentRoot, sessionId, body, itemId } = claim
+  try {
+    const uploadIds = agentSessionAttachmentReferences(attachmentRoot, body)
+    if (uploadIds.size === 0) {
+      return
+    }
+    const store = getDriveStore()
+    const excerpt = chatMessageExcerpt(body)
+    for (const uploadId of uploadIds) {
       const originKey = `chat-attachment:${uploadId}`
+      // The send claims before the message is written; the write names its item.
       if (await store.hasOrigin(originKey)) {
+        if (itemId) {
+          await store.linkOriginToMessage(originKey, itemId)
+        }
         continue
       }
       const name = await storedFileOf(attachmentRoot, uploadId)
@@ -66,10 +68,15 @@ export async function captureChatAttachmentsInDrive(
       await store.addFromPath(join(attachmentRoot, uploadId, name), {
         name,
         originKey,
-        source: { kind: 'chat-attachment', sessionId, ...(excerpt ? { excerpt } : {}) }
+        source: {
+          kind: 'chat-attachment',
+          sessionId,
+          ...(excerpt ? { excerpt } : {}),
+          ...(itemId ? { messageId: itemId } : {})
+        }
       })
-    } catch (error) {
-      console.warn('[orca-fork drive] could not keep a chat attachment', error)
     }
+  } catch (error) {
+    console.warn('[orca-fork drive] could not keep a chat attachment', error)
   }
 }
