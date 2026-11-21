@@ -25150,7 +25150,8 @@
       "children_many": "+{{count}} processos filhos"
     },
     "groupMentions": {
-      "option": "{{name}} · {{count}} bots"
+      "option": "{{name}} · {{count}} bots",
+      "pillLabel": "Grupo mencionado: {{name}}"
     },
     "presence": {
       "working": "Trabalhando",

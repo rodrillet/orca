@@ -9,6 +9,7 @@ import { useForkBotGroups } from './use-fork-bot-groups'
 import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import {
   groupMentionQuery,
+  groupMentionToken,
   groupOptions,
   groupSlug
 } from '../../../../../shared/orca-fork/group-mentions/group-mentions'
@@ -61,7 +62,7 @@ export function useForkGroupMentions(
     (value: string) => {
       const group = options.find((g) => `${VALUE_PREFIX}${g.id}` === value)
       if (group && from !== null) {
-        completeMention(value, `#${groupSlug(group.name)}`, from)
+        completeMention(value, groupMentionToken(group), from)
         return
       }
       mentions.chooseMention(value)
