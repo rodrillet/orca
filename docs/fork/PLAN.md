@@ -118,6 +118,15 @@ Gaps to close:
 - Client-driven in the desktop first (works with a stock server while the Mac is open). Running it with
   the Mac closed needs the same logic inside `orca-server` → fork server build (capability-gated).
 
+### Workspaces (top level, like agentes.chat)
+
+A **workspace** (name, photo) is the fork's top level and is bound to where it runs: this computer or a
+paired machine (`ExecutionHostId`), several may share one machine. It holds that machine's projects, bots
+(with their departments/sections), wiki, drive and chats; a machine's items no workspace claims belong to
+its home (oldest) workspace. Ids and types live in `src/shared/orca-fork/workspaces/fork-workspace.ts`;
+every feature that keeps data per workspace keys it by `ForkWorkspaceId`. The sidebar header shows the
+active workspace with a switcher, and everything below filters to it.
+
 ### Phase 5 — Shared agent computer (dropped)
 
 Dropped by the owner (2026-11-21): a desktop per machine costs too much RAM/CPU on the VPS. Nothing

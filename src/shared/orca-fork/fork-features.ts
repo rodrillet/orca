@@ -20,5 +20,7 @@ export const FORK_FEATURES = {
   /** Group by Machine in the workspace sidebar: one section per machine, projects inside. */
   workspacesGroupByMachine: true,
   /** "Move to…" in a bot row's menu, listing departments and sections. */
-  botMoveToMenu: true
+  botMoveToMenu: true,
+  /** agentes.chat-style Workspaces at the top of the sidebar; data is keyed by workspace id. */
+  workspaces: true
 } as const
