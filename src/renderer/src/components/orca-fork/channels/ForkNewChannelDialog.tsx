@@ -127,17 +127,16 @@ export function ForkNewChannelDialog({
             )}
           </DialogDescription>
         </DialogHeader>
-        <div className="relative">
+        <div className="flex items-center gap-2">
           <Label htmlFor="fork-channel-name" className="sr-only">
             {t('orcaFork.chatStructure.channelName', 'Channel name')}
           </Label>
-          <Hash className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Hash className="size-4 shrink-0 text-muted-foreground" />
           <Input
             id="fork-channel-name"
             autoFocus
             autoComplete="off"
             spellCheck={false}
-            className="pl-8"
             value={name}
             maxLength={BOT_GROUP_NAME_MAX_LENGTH}
             placeholder={t('orcaFork.chatStructure.channelNamePlaceholder', 'e.g. launch-plan')}

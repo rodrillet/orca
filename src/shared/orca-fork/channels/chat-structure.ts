@@ -240,11 +240,7 @@ export type ChatStructureHeader = {
 }
 
 export function isChatStructureHeader(row: unknown): row is ChatStructureHeader {
-  return (
-    typeof row === 'object' &&
-    row !== null &&
-    (row as { kind?: unknown }).kind === 'fork-chat-header'
-  )
+  return typeof row === 'object' && row !== null && 'kind' in row && row.kind === 'fork-chat-header'
 }
 
 /** The categories one workspace shows, in order. */

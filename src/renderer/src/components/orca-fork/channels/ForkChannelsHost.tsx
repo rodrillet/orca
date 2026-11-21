@@ -31,7 +31,9 @@ export function ForkChannelsHost({ onOpen }: { onOpen: () => void }): React.JSX.
     | null
   >(null)
   const opened = useRef(onOpen)
-  opened.current = onOpen
+  useEffect(() => {
+    opened.current = onOpen
+  })
   useEffect(
     () =>
       registerForkSidebarDialogs({

@@ -91,8 +91,9 @@ function fixtureFor(
         'bots.upNext.unseen': { unseen: {} },
         'bots.chatTree': { chats: [], workspaceChats: {} }
       }
+      const runtime: unknown = window.api.runtime
       Reflect.set(window.api, 'runtime', {
-        ...(window.api.runtime as object),
+        ...(typeof runtime === 'object' ? runtime : {}),
         call: async ({ method }: { method: string }) =>
           method in results
             ? { ok: true, result: results[method] }

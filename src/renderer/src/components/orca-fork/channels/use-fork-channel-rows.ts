@@ -31,7 +31,10 @@ export type ForkChatHeaderListRow = ChatStructureHeader & {
 export type ForkChatRow = ForkChatHeaderListRow | ForkChannelRow
 
 export function isForkChatRow(row: unknown): row is ForkChatRow {
-  return isChatStructureHeader(row) || (row as { kind?: unknown } | null)?.kind === 'fork-channel'
+  return (
+    isChatStructureHeader(row) ||
+    (typeof row === 'object' && row !== null && 'kind' in row && row.kind === 'fork-channel')
+  )
 }
 
 /** The saved entries in the Bots list's order, channels taken out into their own rows. */
@@ -76,7 +79,10 @@ export function useForkChannelRows(savedEntries: readonly Entry[]): {
         rows.push(header)
         continue
       }
-      const entry = row as GroupEntry
+      if (row.kind !== 'group') {
+        continue
+      }
+      const entry: GroupEntry = row
       const channel: ForkChannelRow = {
         kind: 'fork-channel',
         id: entry.id,
