@@ -1,9 +1,9 @@
 // orca-fork: the Agents board's view and filters, kept per fork workspace in this window's storage.
 import { useSyncExternalStore } from 'react'
 import {
-  AGENTS_BOARD_DEFAULT_WORKSPACE_ID,
-  type AgentsBoardWorkspaceId
-} from '../../../../../shared/orca-fork/agents-board/agents-board-workspace'
+  DEFAULT_FORK_WORKSPACE_ID,
+  type ForkWorkspaceId
+} from '../../../../../shared/orca-fork/workspaces/fork-workspace'
 import { EMPTY_AGENTS_BOARD_FILTERS, type AgentsBoardFilters } from './agents-board-model'
 
 export type AgentsBoardView = 'bots' | 'terminals'
@@ -12,14 +12,13 @@ export type AgentsBoardPrefs = { view: AgentsBoardView; filters: AgentsBoardFilt
 
 const DEFAULT_PREFS: AgentsBoardPrefs = { view: 'bots', filters: EMPTY_AGENTS_BOARD_FILTERS }
 
-const storageKey = (workspaceId: AgentsBoardWorkspaceId): string =>
-  `orca-fork:agents-board:${workspaceId}`
+const storageKey = (workspaceId: ForkWorkspaceId): string => `orca-fork:agents-board:${workspaceId}`
 
 function readStrings(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((entry) => typeof entry === 'string') : []
 }
 
-function readPrefs(workspaceId: AgentsBoardWorkspaceId): AgentsBoardPrefs {
+function readPrefs(workspaceId: ForkWorkspaceId): AgentsBoardPrefs {
   try {
     const raw: unknown = JSON.parse(localStorage.getItem(storageKey(workspaceId)) ?? 'null')
     if (!raw || typeof raw !== 'object') {
@@ -42,10 +41,10 @@ function readPrefs(workspaceId: AgentsBoardWorkspaceId): AgentsBoardPrefs {
   }
 }
 
-const cache = new Map<AgentsBoardWorkspaceId, AgentsBoardPrefs>()
+const cache = new Map<ForkWorkspaceId, AgentsBoardPrefs>()
 const listeners = new Set<() => void>()
 
-function prefsFor(workspaceId: AgentsBoardWorkspaceId): AgentsBoardPrefs {
+function prefsFor(workspaceId: ForkWorkspaceId): AgentsBoardPrefs {
   let prefs = cache.get(workspaceId)
   if (!prefs) {
     prefs = readPrefs(workspaceId)
@@ -61,7 +60,7 @@ function subscribe(listener: () => void): () => void {
 
 export function updateAgentsBoardPrefs(
   patch: Partial<AgentsBoardPrefs>,
-  workspaceId: AgentsBoardWorkspaceId = AGENTS_BOARD_DEFAULT_WORKSPACE_ID
+  workspaceId: ForkWorkspaceId = DEFAULT_FORK_WORKSPACE_ID
 ): void {
   const next = { ...prefsFor(workspaceId), ...patch }
   cache.set(workspaceId, next)
@@ -74,7 +73,7 @@ export function updateAgentsBoardPrefs(
 }
 
 export function useAgentsBoardPrefs(
-  workspaceId: AgentsBoardWorkspaceId = AGENTS_BOARD_DEFAULT_WORKSPACE_ID
+  workspaceId: ForkWorkspaceId = DEFAULT_FORK_WORKSPACE_ID
 ): AgentsBoardPrefs {
   return useSyncExternalStore(subscribe, () => prefsFor(workspaceId))
 }
