@@ -25200,6 +25200,11 @@
       "copied": "Caminho copiado",
       "copy": "Copiar caminho"
     },
+    "chatSounds": {
+      "label": "Sons do chat",
+      "description": "Um clique suave enquanto você digita num chat, um bipe ao enviar e um toque quando um bot ou canal tem mensagem nova. Canais silenciados ficam quietos.",
+      "volume": "Volume dos sons do chat"
+    },
     "bots": {
       "unreadChats_one": "{{count}} conversa não lida",
       "unreadChats_other": "{{count}} conversas não lidas",
