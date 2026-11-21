@@ -248,6 +248,8 @@ Every file the owner sends in a chat and every file agents make lands in a per-w
 - **Menus**: right click on the list's empty space, the Channels header, a category, a channel, a
   group or a bot offers New channel / category / group / department / bot, plus the row's own
   rename, move, mute, mark read, photo and delete entries.
+  The workspace header's right click switches workspace, makes a new one, opens its settings and
+  offers the same New entries; bot rows carry New ▸ through `ForkBotRowMenuItems`.
 - **Path badges**: a file or folder path in a chat message (a file link, or `/abs/path` / `~/path` in
   backticks) draws as a badge (icon + short name). Its menu: Open in Orca, Show in Orca files (the
   paired server's files when the chat runs there), Reveal in Finder (this Mac only), Open a terminal

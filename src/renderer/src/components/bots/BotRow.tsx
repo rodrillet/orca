@@ -38,7 +38,7 @@ import {
 } from './BotRowActivityLine'
 import { BotSidebarRow } from './BotSidebarRow'
 import { ForkBotUnreadChatCount } from '../orca-fork/sidebar/ForkBotUnreadChatCount'
-import { ForkChangePhotoMenuItem } from '../orca-fork/sidebar/ForkChangePhotoMenuItem'
+import { ForkBotRowMenuItems } from '../orca-fork/sidebar/ForkBotRowMenuItems'
 import { ForkBotMoveToMenu } from '../orca-fork/organization/ForkBotMoveToMenu' // orca-fork:
 import { ForkMoveToWorkspaceMenu } from '../orca-fork/workspaces/ForkMoveToWorkspaceMenu' // orca-fork:
 import { withForkBotResources } from '../orca-fork/bot-resources/ForkBotResources' // orca-fork:
@@ -203,8 +203,8 @@ export function BotRow({
             <Settings className="size-3.5" />
             {t('bots.row.settings', 'Bot settings…')}
           </ContextMenuItem>
-          {/* orca-fork: change the bot's photo from its row */}
-          <ForkChangePhotoMenuItem bot={bot} disabled={offline} />
+          {/* orca-fork: Change photo… and New ▸ from the row */}
+          <ForkBotRowMenuItems bot={bot} offline={offline} />
           {/* orca-fork: department/section from the row */}
           <ForkBotMoveToMenu entryKey={botSidebarEntryKey(bot)} />
           <ForkMoveToWorkspaceMenu

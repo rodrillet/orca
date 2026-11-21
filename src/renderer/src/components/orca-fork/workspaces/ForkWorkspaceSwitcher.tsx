@@ -41,6 +41,7 @@ import { useForkWorkspaceDepartmentMigration } from './fork-workspace-department
 import { openWorkspaceSettings } from '../workspace-settings/workspace-settings-open'
 import { setForkSidebarMode } from '../sidebar-rail/sidebar-mode-store'
 import { FORK_SIDEBAR_MODE_SHORTCUT_LABEL } from '../sidebar-rail/use-fork-sidebar-mode-shortcut'
+import { ForkWorkspaceContextMenu } from '../channels/ForkWorkspaceContextMenu'
 
 function MachineIcon({ hostId, className }: { hostId: ExecutionHostId; className?: string }) {
   const Icon = hostId === LOCAL_EXECUTION_HOST_ID ? Laptop : Server
@@ -83,112 +84,119 @@ function ForkWorkspaceSwitcherRow(): React.JSX.Element {
     'flex min-w-0 items-center gap-2.5 rounded-md px-1.5 py-1.5 text-left outline-none hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-sidebar-accent'
 
   return (
-    <div
-      className="flex shrink-0 items-center gap-0.5 px-2 pt-2 pb-1"
-      data-fork-workspace-switcher=""
+    <ForkWorkspaceContextMenu
+      onNewWorkspace={() => setDialog({ mode: 'create' })}
+      onSettings={() =>
+        managed ? openWorkspaceSettings('general') : setDialog({ mode: 'edit', workspace: active })
+      }
     >
-      {managed ? (
-        <button
-          type="button"
-          className={cn(rowButton, 'flex-1')}
-          aria-haspopup="dialog"
-          aria-label={t('orcaFork.workspaceSettings.openOf', '{{name}} workspace settings', {
-            name: active.name
-          })}
-          onClick={(event) => openWorkspaceSettings('general', event.currentTarget)}
-        >
-          {identity}
-        </button>
-      ) : null}
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          {managed ? (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0"
-              aria-label={t('orcaFork.workspaces.switch', 'Switch workspace')}
-              title={t('orcaFork.workspaces.switch', 'Switch workspace')}
-            >
-              <ChevronsUpDown className="size-4" aria-hidden="true" />
-            </Button>
-          ) : (
-            <button
-              type="button"
-              className={cn(rowButton, 'w-full')}
-              aria-label={t('orcaFork.workspaces.menuOf', '{{name}} workspace menu', {
-                name: active.name
-              })}
-            >
-              {identity}
-              <ChevronsUpDown
-                className="size-4 shrink-0 text-muted-foreground"
-                aria-hidden="true"
-              />
-            </button>
-          )}
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" sideOffset={4} className="min-w-64">
-          <DropdownMenuLabel>
-            {t('orcaFork.workspaces.yourWorkspaces', 'Your workspaces')}
-          </DropdownMenuLabel>
-          {doc.workspaces.map((ws) => {
-            const current = ws.id === active.id
-            return (
-              <DropdownMenuItem
-                key={ws.id}
-                data-current={current ? 'true' : undefined}
-                onSelect={() => forkWorkspacesStore.edit(forkWorkspaceEdits.setActive(ws.id))}
-              >
-                <ForkWorkspaceMark workspace={ws} size={24} />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate">{ws.name}</span>
-                  <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
-                    <MachineIcon hostId={ws.hostId} />
-                    <span className="truncate">{machineLabel(ws)}</span>
-                  </span>
-                </span>
-                {current ? <Check className="size-4 shrink-0" aria-hidden="true" /> : null}
-              </DropdownMenuItem>
-            )
-          })}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => setDialog({ mode: 'create' })}>
-            <Plus className="size-4" />
-            {t('orcaFork.workspaces.new', 'New workspace…')}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onSelect={() =>
-              managed
-                ? openWorkspaceSettings('general')
-                : setDialog({ mode: 'edit', workspace: active })
-            }
+      <div
+        className="flex shrink-0 items-center gap-0.5 px-2 pt-2 pb-1"
+        data-fork-workspace-switcher=""
+      >
+        {managed ? (
+          <button
+            type="button"
+            className={cn(rowButton, 'flex-1')}
+            aria-haspopup="dialog"
+            aria-label={t('orcaFork.workspaceSettings.openOf', '{{name}} workspace settings', {
+              name: active.name
+            })}
+            onClick={(event) => openWorkspaceSettings('general', event.currentTarget)}
           >
-            <Settings className="size-4" />
-            {t('orcaFork.workspaces.settings', 'Workspace settings…')}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {FORK_FEATURES.sidebarRail ? (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="shrink-0"
-              aria-label={t('orcaFork.sidebarRail.compact', 'Compact sidebar')}
-              onClick={() => setForkSidebarMode('compact')}
+            {identity}
+          </button>
+        ) : null}
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            {managed ? (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="shrink-0"
+                aria-label={t('orcaFork.workspaces.switch', 'Switch workspace')}
+                title={t('orcaFork.workspaces.switch', 'Switch workspace')}
+              >
+                <ChevronsUpDown className="size-4" aria-hidden="true" />
+              </Button>
+            ) : (
+              <button
+                type="button"
+                className={cn(rowButton, 'w-full')}
+                aria-label={t('orcaFork.workspaces.menuOf', '{{name}} workspace menu', {
+                  name: active.name
+                })}
+              >
+                {identity}
+                <ChevronsUpDown
+                  className="size-4 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
+              </button>
+            )}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" sideOffset={4} className="min-w-64">
+            <DropdownMenuLabel>
+              {t('orcaFork.workspaces.yourWorkspaces', 'Your workspaces')}
+            </DropdownMenuLabel>
+            {doc.workspaces.map((ws) => {
+              const current = ws.id === active.id
+              return (
+                <DropdownMenuItem
+                  key={ws.id}
+                  data-current={current ? 'true' : undefined}
+                  onSelect={() => forkWorkspacesStore.edit(forkWorkspaceEdits.setActive(ws.id))}
+                >
+                  <ForkWorkspaceMark workspace={ws} size={24} />
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate">{ws.name}</span>
+                    <span className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+                      <MachineIcon hostId={ws.hostId} />
+                      <span className="truncate">{machineLabel(ws)}</span>
+                    </span>
+                  </span>
+                  {current ? <Check className="size-4 shrink-0" aria-hidden="true" /> : null}
+                </DropdownMenuItem>
+              )
+            })}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => setDialog({ mode: 'create' })}>
+              <Plus className="size-4" />
+              {t('orcaFork.workspaces.new', 'New workspace…')}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() =>
+                managed
+                  ? openWorkspaceSettings('general')
+                  : setDialog({ mode: 'edit', workspace: active })
+              }
             >
-              <PanelLeftDashed className="size-4" aria-hidden="true" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {t('orcaFork.sidebarRail.compact', 'Compact sidebar')} (
-            {FORK_SIDEBAR_MODE_SHORTCUT_LABEL})
-          </TooltipContent>
-        </Tooltip>
-      ) : null}
-      <ForkWorkspaceDialog target={dialog} onClose={() => setDialog(null)} />
-    </div>
+              <Settings className="size-4" />
+              {t('orcaFork.workspaces.settings', 'Workspace settings…')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {FORK_FEATURES.sidebarRail ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="shrink-0"
+                aria-label={t('orcaFork.sidebarRail.compact', 'Compact sidebar')}
+                onClick={() => setForkSidebarMode('compact')}
+              >
+                <PanelLeftDashed className="size-4" aria-hidden="true" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              {t('orcaFork.sidebarRail.compact', 'Compact sidebar')} (
+              {FORK_SIDEBAR_MODE_SHORTCUT_LABEL})
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
+        <ForkWorkspaceDialog target={dialog} onClose={() => setDialog(null)} />
+      </div>
+    </ForkWorkspaceContextMenu>
   )
 }
