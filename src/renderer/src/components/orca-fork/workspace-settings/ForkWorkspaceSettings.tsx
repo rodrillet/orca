@@ -1,7 +1,7 @@
 // orca-fork: the active workspace's settings over the whole app, as agentes.chat's workspace menu: the app
 // blurs behind, a large header with its photo and name, then tabs General · Members · Connectors · Agents ·
 // Access · Machine.
-import React, { useLayoutEffect } from 'react'
+import React, { useLayoutEffect, useRef } from 'react'
 import * as DialogPrimitive from 'radix-ui/dialog'
 import { Laptop, Server, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,6 +15,7 @@ import { useForkWorkspaceMachines } from '../workspaces/use-fork-workspace-machi
 import {
   closeWorkspaceSettings,
   openWorkspaceSettings,
+  takeWorkspaceSettingsAnchor,
   useWorkspaceSettingsTab,
   WORKSPACE_SETTINGS_TABS,
   type WorkspaceSettingsTab
@@ -74,6 +75,47 @@ function ForkWorkspaceSettingsOverlay({ tab }: { tab: WorkspaceSettingsTab }): R
     }
   }, [])
 
+  // The header grows out of the card that opened it (FLIP), as agentes.chat's MenuOverlay.
+  const header = useRef<HTMLElement>(null)
+  useLayoutEffect(() => {
+    const from = takeWorkspaceSettingsAnchor()
+    const to = header.current?.getBoundingClientRect()
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (!from || !to || to.width === 0 || reduced || !header.current?.animate) {
+      return
+    }
+    header.current.animate(
+      [
+        {
+          transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`,
+          transformOrigin: '0 0',
+          opacity: 0.3
+        },
+        { transform: 'none', transformOrigin: '0 0', opacity: 1 }
+      ],
+      { duration: 600, easing: 'cubic-bezier(.3,1.2,.4,1)' }
+    )
+  }, [])
+
+  // 1–6 open a tab, as the menu's digits do, unless typing.
+  const onKeyDown = (event: React.KeyboardEvent): void => {
+    const target = event.target
+    if (
+      event.metaKey ||
+      event.ctrlKey ||
+      event.altKey ||
+      (target instanceof HTMLElement &&
+        (target.isContentEditable || target.closest('input, textarea, select') !== null))
+    ) {
+      return
+    }
+    const next = WORKSPACE_SETTINGS_TABS[Number(event.key) - 1]
+    if (/^[1-6]$/.test(event.key) && next) {
+      event.preventDefault()
+      openWorkspaceSettings(next)
+    }
+  }
+
   return (
     <DialogPrimitive.Root open onOpenChange={(open) => !open && closeWorkspaceSettings()}>
       <DialogPrimitive.Portal>
@@ -81,6 +123,7 @@ function ForkWorkspaceSettingsOverlay({ tab }: { tab: WorkspaceSettingsTab }): R
         <DialogPrimitive.Content
           aria-describedby={undefined}
           data-fork-workspace-settings=""
+          onKeyDown={onKeyDown}
           className="scrollbar-sleek fixed inset-0 z-50 overflow-y-auto px-4 pt-16 pb-14 outline-none sm:px-6 sm:pt-[88px]"
           onPointerDown={(event) => {
             // A click on the empty stage closes it, like the scrim.
@@ -100,7 +143,7 @@ function ForkWorkspaceSettingsOverlay({ tab }: { tab: WorkspaceSettingsTab }): R
             </Button>
           </DialogPrimitive.Close>
           <div className="mx-auto flex max-w-[720px] flex-col gap-6 animate-in fade-in-0 slide-in-from-bottom-2 duration-300">
-            <header className="flex min-w-0 items-center gap-4">
+            <header ref={header} className="flex min-w-0 items-center gap-4">
               <ForkWorkspaceMark workspace={workspace} size={82} className="rounded-2xl" />
               <div className="flex min-w-0 flex-col gap-1.5">
                 <DialogPrimitive.Title className="truncate text-5xl leading-[52px] font-light tracking-tight text-foreground">
@@ -144,8 +187,13 @@ function ForkWorkspaceSettingsOverlay({ tab }: { tab: WorkspaceSettingsTab }): R
               }}
             >
               <TabsList variant="line" className="w-full justify-start overflow-x-auto">
-                {WORKSPACE_SETTINGS_TABS.map((id) => (
-                  <TabsTrigger key={id} value={id} className="flex-none">
+                {WORKSPACE_SETTINGS_TABS.map((id, index) => (
+                  <TabsTrigger
+                    key={id}
+                    value={id}
+                    className="flex-none"
+                    title={`${tabLabel(id)} (${index + 1})`}
+                  >
                     {tabLabel(id)}
                   </TabsTrigger>
                 ))}
