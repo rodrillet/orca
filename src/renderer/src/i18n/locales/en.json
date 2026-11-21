@@ -29700,6 +29700,9 @@
       "stopRefused": "That process is no longer an agent.",
       "stopFailed": "Could not stop it: {{error}}",
       "otherProcess": "{{name}} · pid {{pid}}"
+    },
+    "groupMentions": {
+      "option": "{{name}} · {{count}} bots"
     }
   }
 }

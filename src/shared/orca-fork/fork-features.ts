@@ -28,5 +28,7 @@ export const FORK_FEATURES = {
   /** A bot group's own photo in the sidebar and its header, instead of its members' faces. */
   groupPhotos: true,
   /** Status-bar "Machines": memory, CPU, disk and agent processes of this computer and each paired server. */
-  resourceMonitor: true
+  resourceMonitor: true,
+  /** `#group` in any chat: `#` lists the bot groups, and a sent `#name` opens its group. */
+  groupMentions: true
 } as const

@@ -28,6 +28,7 @@ import { useNativeChatComposerAppMenuSelection } from './focus/use-native-chat-c
 import { useNativeChatComposerSubmit } from './submit/use-native-chat-composer-submit'
 import { useNativeChatComposerCommandPicker } from './pickers/use-native-chat-composer-command-picker'
 import type * as C from './native-chat-composer-types'
+import { useForkGroupMentions } from '../../orca-fork/group-mentions/use-fork-group-mentions' // orca-fork
 
 type ComposerHandle = C.NativeChatComposerHandle
 
@@ -124,12 +125,13 @@ export const NativeChatComposerPane = forwardRef<ComposerHandle, C.NativeChatCom
     })
     const { classifySend, clearSkillOrigin, completeItem, dismiss, handleDraftOrCaretChange } =
       picker
-    const mentions = useNativeChatComposerMentions(room, draft, picker, {
+    const roomMentions = useNativeChatComposerMentions(room, draft, picker, {
       terminalTabId,
       structuredWorktreeId: structuredTransport?.worktreeId,
       caret,
       notices
     })
+    const mentions = useForkGroupMentions(roomMentions, draft, caret, picker) // orca-fork
     const { autocomplete } = mentions
 
     const resolveTarget = useCallback(
