@@ -1,6 +1,7 @@
 // orca-fork: polls this computer and every paired server while the resource monitor is open.
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppStore } from '@/store'
+import { installWindowVisibilityInterval } from '@/lib/window-activity/window-visibility-interval'
 import type { RuntimeClientTarget } from '../../../../../shared/remote-runtime/host-catalog/runtime-client-target'
 import { readMachineResources, type MachineResourcesResult } from './machine-resources-read'
 
@@ -20,17 +21,17 @@ export function useMachineResources(open: boolean): {
   refresh: () => void
 } {
   const environments = useAppStore((s) => s.runtimeEnvironments)
-  const targets = useMemo(
-    () => [
-      { key: LOCAL_MACHINE_KEY, name: null, target: { kind: 'local' } as RuntimeClientTarget },
-      ...environments.map((environment) => ({
+  const targets = useMemo((): Omit<MachineEntry, 'result'>[] => {
+    const local: RuntimeClientTarget = { kind: 'local' }
+    return [
+      { key: LOCAL_MACHINE_KEY, name: null, target: local },
+      ...environments.map((environment): Omit<MachineEntry, 'result'> => ({
         key: environment.id,
         name: environment.name || environment.id,
-        target: { kind: 'environment', environmentId: environment.id } as RuntimeClientTarget
+        target: { kind: 'environment', environmentId: environment.id }
       }))
-    ],
-    [environments]
-  )
+    ]
+  }, [environments])
   const [results, setResults] = useState<Record<string, MachineResourcesResult>>({})
   const [tick, setTick] = useState(0)
   const refresh = useCallback(() => setTick((n) => n + 1), [])
@@ -57,10 +58,11 @@ export function useMachineResources(open: boolean): {
       }
     }
     poll()
-    const timer = window.setInterval(poll, POLL_MS)
+    // Only while the panel is open, and paused with the window hidden.
+    const stop = installWindowVisibilityInterval({ run: poll, intervalMs: POLL_MS })
     return () => {
       cancelled = true
-      window.clearInterval(timer)
+      stop()
     }
   }, [open, targets, tick])
 

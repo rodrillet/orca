@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress'
 import { AgentIcon } from '@/components/agent/icons/AgentIcon'
 import { BotAvatar } from '@/components/bots/BotAvatar'
 import { cn } from '@/lib/class-names'
-import { useTranslate } from '@/i18n/use-translate'
+import { useTranslate, type Translate } from '@/i18n/use-translate'
 import type { Bot } from '../../../../../shared/bot-types'
 import type {
   MachineAgentProcess,
@@ -109,6 +109,29 @@ function UsageCells({ cpu, memory }: { cpu: number; memory: number }): React.JSX
   )
 }
 
+async function stopAgent(
+  machine: MachineEntry,
+  agent: MachineAgentProcess,
+  t: Translate
+): Promise<void> {
+  try {
+    const result = await stopMachineProcess(machine.target, agent.pid)
+    if (result.stopped) {
+      toast.success(
+        t('orcaFork.resourceMonitor.stopped', 'Stopped {{name}}', { name: agent.label })
+      )
+    } else {
+      toast.error(t('orcaFork.resourceMonitor.stopRefused', 'That process is no longer an agent.'))
+    }
+  } catch (error) {
+    toast.error(
+      t('orcaFork.resourceMonitor.stopFailed', 'Could not stop it: {{error}}', {
+        error: error instanceof Error ? error.message : String(error)
+      })
+    )
+  }
+}
+
 function StopButton({
   machine,
   agent
@@ -126,29 +149,12 @@ function StopButton({
     const timer = window.setTimeout(() => setConfirming(false), STOP_CONFIRM_MS)
     return () => window.clearTimeout(timer)
   }, [confirming])
-  const stop = async (): Promise<void> => {
+  const stop = (): void => {
     setBusy(true)
-    try {
-      const result = await stopMachineProcess(machine.target, agent.pid)
-      if (result.stopped) {
-        toast.success(
-          t('orcaFork.resourceMonitor.stopped', 'Stopped {{name}}', { name: agent.label })
-        )
-      } else {
-        toast.error(
-          t('orcaFork.resourceMonitor.stopRefused', 'That process is no longer an agent.')
-        )
-      }
-    } catch (error) {
-      toast.error(
-        t('orcaFork.resourceMonitor.stopFailed', 'Could not stop it: {{error}}', {
-          error: error instanceof Error ? error.message : String(error)
-        })
-      )
-    } finally {
+    void stopAgent(machine, agent, t).then(() => {
       setBusy(false)
       setConfirming(false)
-    }
+    })
   }
   const label = t('orcaFork.resourceMonitor.stopAgent', 'Stop {{name}} (pid {{pid}})', {
     name: agent.label,
@@ -161,7 +167,7 @@ function StopButton({
       disabled={busy}
       aria-label={label}
       title={label}
-      onClick={() => (confirming ? void stop() : setConfirming(true))}
+      onClick={() => (confirming ? stop() : setConfirming(true))}
     >
       <CircleStop />
       {confirming ? t('orcaFork.resourceMonitor.confirmStop', 'Stop?') : null}
@@ -310,7 +316,10 @@ export function MachineResourcesCard({
                 {data.others.map((other) => (
                   <li key={other.pid} className="flex items-center gap-2 px-3 py-1">
                     <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-                      {other.name} <span className="text-[11px]">· pid {other.pid}</span>
+                      {t('orcaFork.resourceMonitor.otherProcess', '{{name}} · pid {{pid}}', {
+                        name: other.name,
+                        pid: other.pid
+                      })}
                     </span>
                     <UsageCells cpu={other.cpu} memory={other.memory} />
                     <span className="w-14 shrink-0" />

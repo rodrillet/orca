@@ -25031,7 +25031,9 @@
       "confirmStop": "Parar?",
       "stopped": "{{name}} parado",
       "stopRefused": "Esse processo não é mais um agente.",
-      "stopFailed": "Não foi possível parar: {{error}}"
+      "stopFailed": "Não foi possível parar: {{error}}",
+      "otherProcess": "{{name}} · pid {{pid}}",
+      "children_many": "+{{count}} processos filhos"
     }
   }
 }

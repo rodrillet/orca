@@ -24,11 +24,11 @@ function ResourceMonitorPopover({ iconOnly }: { iconOnly: boolean }): React.JSX.
   const t = useTranslate()
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState(LOCAL_MACHINE_KEY)
-  const { machines, refresh } = useMachineResources(open)
+  const { machines: panels, refresh } = useMachineResources(open)
   const bots = useBots(open)
   const title = t('orcaFork.resourceMonitor.title', 'Machines')
   const thisComputer = t('orcaFork.resourceMonitor.thisComputer', 'This computer')
-  const current = machines.some((m) => m.key === selected) ? selected : LOCAL_MACHINE_KEY
+  const current = panels.some((m) => m.key === selected) ? selected : LOCAL_MACHINE_KEY
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
@@ -74,20 +74,20 @@ function ResourceMonitorPopover({ iconOnly }: { iconOnly: boolean }): React.JSX.
         <Tabs value={current} onValueChange={setSelected} className="min-h-0 flex-1 gap-0">
           <div className="shrink-0 overflow-x-auto px-3 pt-1 scrollbar-none">
             <TabsList variant="line" size="sm">
-              {machines.map((machine) => (
-                <TabsTrigger key={machine.key} value={machine.key}>
-                  {machineLabel(machine, thisComputer)}
+              {panels.map((panel) => (
+                <TabsTrigger key={panel.key} value={panel.key}>
+                  {machineLabel(panel, thisComputer)}
                 </TabsTrigger>
               ))}
             </TabsList>
           </div>
-          {machines.map((machine) => (
+          {panels.map((panel) => (
             <TabsContent
-              key={machine.key}
-              value={machine.key}
+              key={panel.key}
+              value={panel.key}
               className="min-h-0 flex-1 overflow-y-auto scrollbar-sleek"
             >
-              <MachineResourcesCard machine={machine} bots={bots} />
+              <MachineResourcesCard machine={panel} bots={bots} />
             </TabsContent>
           ))}
         </Tabs>

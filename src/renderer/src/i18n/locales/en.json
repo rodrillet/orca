@@ -29698,7 +29698,8 @@
       "confirmStop": "Stop?",
       "stopped": "Stopped {{name}}",
       "stopRefused": "That process is no longer an agent.",
-      "stopFailed": "Could not stop it: {{error}}"
+      "stopFailed": "Could not stop it: {{error}}",
+      "otherProcess": "{{name}} · pid {{pid}}"
     }
   }
 }
