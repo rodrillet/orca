@@ -34,7 +34,7 @@ describe('captureScratchFilesInDrive', () => {
     expect(await captureScratchFilesInDrive(root, 'session-1')).toBe(0)
 
     await writeFile(join(folder, 'charts', 'funnel.png'), 'png-version-2')
-    await utimes(join(folder, 'charts', 'funnel.png'), new Date(), new Date(Date.now() + 5000))
+    await utimes(join(folder, 'charts', 'funnel.png'), 1_700_000_000, 1_700_000_100)
     expect(await captureScratchFilesInDrive(root, 'session-1')).toBe(1)
 
     const { files } = await store.list()
