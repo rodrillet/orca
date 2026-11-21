@@ -112,30 +112,52 @@ export function buildAgentsMap(
 export type MapPoint = { x: number; y: number }
 
 /**
- * Rooms on an inner ring, bots on an outer ring next to their first room, the owner in the middle.
- * Positions are fractions of the canvas (0..1), so the view scales them to any size.
+ * Rooms on an inner ring, each room's bots on the outer ring around the room's own angle, the owner
+ * in the middle. Positions are fractions of the canvas (0..1), so the view scales them to any size.
  */
 export function layoutAgentsMap(
   bots: readonly MapBot[],
   rooms: readonly MapRoom[]
 ): Map<string, MapPoint> {
   const points = new Map<string, MapPoint>([[OWNER_NODE, { x: 0.5, y: 0.5 }]])
-  const ring = (index: number, count: number, radius: number, turn = 0): MapPoint => {
-    const angle = (index / Math.max(count, 1)) * 2 * Math.PI - Math.PI / 2 + turn
-    return { x: 0.5 + Math.cos(angle) * radius, y: 0.5 + Math.sin(angle) * radius }
-  }
-  rooms.forEach((room, index) => points.set(roomNode(room.id), ring(index, rooms.length, 0.2)))
-  // Bots sorted by their first room, so a room's bots sit together around its side of the ring.
-  const firstRoom = (bot: MapBot): number => {
+  const at = (angle: number, radius: number): MapPoint => ({
+    x: 0.5 + Math.cos(angle) * radius,
+    y: 0.5 + Math.sin(angle) * radius
+  })
+  const roomAngle = (index: number): number =>
+    (index / Math.max(rooms.length, 1)) * 2 * Math.PI - Math.PI / 2
+  rooms.forEach((room, index) => points.set(roomNode(room.id), at(roomAngle(index), 0.2)))
+  const byRoom = new Map<number, MapBot[]>()
+  for (const bot of [...bots].sort((a, b) => a.name.localeCompare(b.name))) {
     const index = rooms.findIndex((room) => room.botIds.includes(bot.id))
-    return index === -1 ? rooms.length : index
+    const key = index === -1 ? rooms.length : index
+    byRoom.set(key, [...(byRoom.get(key) ?? []), bot])
   }
-  const ordered = [...bots].sort(
-    (a, b) => firstRoom(a) - firstRoom(b) || a.name.localeCompare(b.name)
-  )
-  const turn = rooms.length > 0 ? -Math.PI / Math.max(ordered.length, 1) : 0
-  ordered.forEach((bot, index) =>
-    points.set(botNode(bot.id), ring(index, ordered.length, 0.42, turn))
-  )
+  // One slot per bot around the circle; a room's bots take the slots nearest its angle.
+  const step = (2 * Math.PI) / Math.max(bots.length, 1)
+  const taken = new Set<number>()
+  const slotNear = (angle: number): number => {
+    let best = 0
+    let bestDistance = Infinity
+    for (let slot = 0; slot < bots.length; slot += 1) {
+      if (taken.has(slot)) {
+        continue
+      }
+      const raw = Math.abs(slot * step - Math.PI / 2 - angle) % (2 * Math.PI)
+      const distance = Math.min(raw, 2 * Math.PI - raw)
+      if (distance < bestDistance) {
+        best = slot
+        bestDistance = distance
+      }
+    }
+    taken.add(best)
+    return best
+  }
+  for (const [index, members] of [...byRoom.entries()].sort(([a], [b]) => a - b)) {
+    const angle = index < rooms.length ? roomAngle(index) : Math.PI / 2
+    for (const bot of members) {
+      points.set(botNode(bot.id), at(slotNear(angle) * step - Math.PI / 2, 0.42))
+    }
+  }
   return points
 }

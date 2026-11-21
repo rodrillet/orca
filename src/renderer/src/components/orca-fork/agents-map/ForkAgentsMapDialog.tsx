@@ -143,9 +143,9 @@ function ForkAgentsMapDialog({ onClose }: { onClose: () => void }): React.JSX.El
                     key={edge.id}
                     d={`M ${a.x} ${a.y} Q ${mx} ${my} ${b.x} ${b.y}`}
                     fill="none"
-                    stroke={glowing ? 'var(--primary)' : style.stroke}
-                    strokeWidth={Math.min(1 + Math.log2(1 + edge.count), 4)}
-                    strokeDasharray={glowing ? '6 6' : style.dash}
+                    stroke={glowing ? 'var(--status-success)' : style.stroke}
+                    strokeWidth={Math.min(1 + Math.log2(1 + edge.count), 4) + (glowing ? 1 : 0)}
+                    strokeDasharray={glowing ? '8 5' : style.dash}
                     strokeOpacity={edge.kind === 'member' && !glowing ? 0.8 : 0.9}
                     markerEnd={edge.kind === 'handoff' ? 'url(#fork-map-arrow)' : undefined}
                     className={glowing ? 'fork-agents-map-live' : undefined}
@@ -160,7 +160,7 @@ function ForkAgentsMapDialog({ onClose }: { onClose: () => void }): React.JSX.El
                 )
               })}
             </svg>
-            <style>{`.fork-agents-map-live{animation:fork-agents-map-flow 0.8s linear infinite}@keyframes fork-agents-map-flow{to{stroke-dashoffset:-12}}@media (prefers-reduced-motion:reduce){.fork-agents-map-live{animation:none}}`}</style>
+            <style>{`.fork-agents-map-live{animation:fork-agents-map-flow 0.8s linear infinite;filter:drop-shadow(0 0 3px var(--status-success))}@keyframes fork-agents-map-flow{to{stroke-dashoffset:-13}}@media (prefers-reduced-motion:reduce){.fork-agents-map-live{animation:none}}`}</style>
             <MapNode point={points.get(OWNER_NODE)} label={t('orcaFork.agentsMap.you', 'You')}>
               <span className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <User className="size-4" />
