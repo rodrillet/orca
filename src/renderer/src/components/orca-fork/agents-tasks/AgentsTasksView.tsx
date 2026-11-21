@@ -1,6 +1,6 @@
 // orca-fork: the Tasks page's Agents view: every bot on every paired machine, grouped by machine.
 import React, { useMemo } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { KanbanSquare, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useBotHostLabel } from '@/components/bots/use-bot-host-label'
 import { isHome, useBotHomeWorkspaces, useBots } from '@/lib/bot-catalog'
@@ -14,6 +14,8 @@ import { sortBotsBySidebarOrder } from '../../../../../shared/bots/bot-homes'
 import type { FolderWorkspace } from '../../../../../shared/folder-workspaces/folder-workspace-types'
 import { AgentTaskCard } from './AgentTaskCard'
 import { botWorkListRead } from './use-bot-work-list'
+import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
+import { openAgentsBoard } from '../agents-board/open-agents-board'
 
 const NO_GROUPS: readonly Bot[] = []
 
@@ -64,14 +66,22 @@ export function AgentsTasksView(): React.JSX.Element {
     <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <h1 className="text-sm font-semibold">{t('orcaFork.agentsTasks.title', 'Agents')}</h1>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => bots.forEach((bot) => botWorkListRead.request(bot))}
-        >
-          <RefreshCw className="size-3.5" />
-          {t('orcaFork.agentsTasks.refresh', 'Refresh')}
-        </Button>
+        <div className="flex items-center gap-1">
+          {FORK_FEATURES.agentsBoard ? (
+            <Button variant="ghost" size="sm" onClick={openAgentsBoard}>
+              <KanbanSquare className="size-3.5" />
+              {t('orcaFork.agentsTasks.openBoard', 'Board')}
+            </Button>
+          ) : null}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => bots.forEach((bot) => botWorkListRead.request(bot))}
+          >
+            <RefreshCw className="size-3.5" />
+            {t('orcaFork.agentsTasks.refresh', 'Refresh')}
+          </Button>
+        </div>
       </div>
       <div className="scrollbar-sleek min-h-0 flex-1 overflow-y-auto">
         {bots.length === 0 ? (

@@ -1,4 +1,5 @@
 import type { GlobalSettings } from './global-settings-types'
+import { FORK_FEATURES } from '../orca-fork/fork-features' // orca-fork:
 import type { NotificationSettings } from '../notifications/notification-settings-types'
 import type { VoiceSettings } from '../speech/speech-types'
 import { DEFAULT_TERMINAL_FONT_WEIGHT_BOLD } from '../terminal/appearance/terminal-fonts'
@@ -304,6 +305,8 @@ export function buildDefaultSettings(args: {
     experimentalEphemeralVms: false,
     experimentalWslHosts: false,
     experimentalOrchestrationPanel: false,
+    // orca-fork: the Agent Dashboard (bots board) is on by default in the fork
+    experimentalAgentDashboardPopout: FORK_FEATURES.agentsBoard,
     compactWorktreeCards: false,
     // Why: local desktop stays the default until the user picks a saved runtime environment.
     activeRuntimeEnvironmentId: null,

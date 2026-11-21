@@ -23,7 +23,8 @@ import { useTranslate, type Translate } from '@/i18n/use-translate'
 import { DashboardHostBadge } from './DashboardHostBadge'
 import { AgentCardLastMessages, hasAgentCardLastMessages } from './AgentCardLastMessages'
 
-function formatStartedAgo(startedAt: number, now: number, t: Translate = translate): string {
+// orca-fork: exported for the Agents board's card ages
+export function formatStartedAgo(startedAt: number, now: number, t: Translate = translate): string {
   const seconds = Math.max(0, Math.floor((now - startedAt) / 1000))
   if (seconds < 60) {
     return t('dashboardPopout.card.time.justNow', 'just now')

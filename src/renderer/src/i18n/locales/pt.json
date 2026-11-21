@@ -24926,7 +24926,8 @@
         "working": "Trabalhando"
       },
       "workers": "Workers",
-      "working": "Trabalhando"
+      "working": "Trabalhando",
+      "openBoard": "Quadro"
     },
     "botOrganization": {
       "unassigned": "Sem departamento",
@@ -24950,6 +24951,32 @@
     "workspaces": {
       "groupByMachine": "Agrupar por máquina",
       "groupByMachineAria": "Listar os workspaces sob este Mac e cada servidor pareado"
+    },
+    "agentsBoard": {
+      "column": {
+        "todo": "A fazer",
+        "doing": "Em andamento",
+        "needsYou": "Precisa de você",
+        "done": "Concluído"
+      },
+      "worker": "Worker",
+      "moveTo": "Mover para…",
+      "dropHere": "Solte aqui",
+      "moveFailed": "Não foi possível mover o card",
+      "openInTasks": "Agentes em Tarefas",
+      "search": "Buscar tarefas, bots ou workspaces…",
+      "searchLabel": "Buscar no quadro",
+      "filter": {
+        "workspace": "Workspace",
+        "machine": "Máquina",
+        "bot": "Bot",
+        "tag": "Tag"
+      },
+      "view": {
+        "bots": "Bots",
+        "terminals": "Terminais",
+        "label": "Visão do quadro"
+      }
     }
   }
 }
