@@ -31,7 +31,8 @@ export function claimJournalSqlItemInputs(
       sessionId: target.sessionId,
       body: operation.body,
       required: true,
-      now: command.savedAt ?? Date.now()
+      now: command.savedAt ?? Date.now(),
+      itemId // orca-fork: the Drive links back to this message
     })
     goals.acquired(
       claim.referenced,
@@ -54,7 +55,8 @@ export function claimJournalSqlItemInputs(
         sessionId: target.sessionId,
         body: item.body,
         required: false,
-        now: command.savedAt ?? Date.now()
+        now: command.savedAt ?? Date.now(),
+        itemId: item.itemId // orca-fork: the Drive links back to this message
       })
       goals.acquired(claim.referenced, claim.inserted)
       referencedUploads.push(...claim.referenced)

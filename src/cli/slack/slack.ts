@@ -8,6 +8,7 @@ import { printResult } from '../output/command-result-output'
 import { formatActionResult, formatSaved, type ActionResult } from './slack-action-format'
 import { RuntimeClientError } from '../runtime/connection/types'
 import { actionArgs, readMessageText, type SlackVerb } from './slack-action-args'
+import { keepSentFilesInDrive } from '../orca-fork/drive/drive-cli-upload' // orca-fork:
 
 // The host retries an unavailable cloud itself, waiting out Retry-After.
 const ACT_TIMEOUT_MS = 180_000
@@ -120,6 +121,7 @@ const attach: CommandHandler = async ({ flags, client, json, cwd }) => {
     ref: place,
     args: { files: [stageId], ...(text ? { text } : {}), postId: newPostId() }
   })
+  await keepSentFilesInDrive(client, [file.path], text) // orca-fork: attachments land in the Drive
   printResult(posted, json, (value) => formatActionResult('attach', value))
 }
 

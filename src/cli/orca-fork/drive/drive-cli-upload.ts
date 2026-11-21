@@ -6,6 +6,7 @@ import type { RuntimeRpcSuccess } from '../../../shared/remote-runtime/rpc/runti
 import type { HandlerContext } from '../../dispatch/dispatch'
 import { RuntimeClientError } from '../../runtime/connection/types'
 import { callerChat } from '../../automations/automation-caller-chat'
+import { FORK_FEATURES } from '../../../shared/orca-fork/fork-features'
 import {
   DRIVE_CHUNK_BYTES,
   DRIVE_FILE_MAX_BYTES,
@@ -67,4 +68,21 @@ export async function saveLocalFileInDrive(
     await handle.close()
   }
   return client.call<DriveFile>('orcaFork.drive.uploadCommit', { uploadId: started.uploadId })
+}
+
+/** What a bot attaches to a post (`orca bot reply --file`, `orca slack attach`) also lands in its
+ *  owner's Drive, after the post; a failed save never fails the post. */
+export async function keepSentFilesInDrive(
+  client: HandlerContext['client'],
+  paths: readonly string[],
+  note: string | undefined
+): Promise<void> {
+  if (!FORK_FEATURES.drive) {
+    return
+  }
+  for (const path of paths) {
+    await saveLocalFileInDrive(client, path, note ? { note: note.slice(0, 2000) } : {}).catch(
+      () => undefined
+    )
+  }
 }

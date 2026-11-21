@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type MouseEvent } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useConfirmationDialog } from '@/components/dismiss/confirmation/confirmation-dialog-context'
 import { openBotSession } from '@/components/bots/bot-session-open'
+import { targetBotLinkItem } from '@/lib/agent-session/open/bot-link-item-target'
 import { useBots } from '@/lib/bot-catalog'
 import { useTranslate } from '@/i18n/use-translate'
 import {
@@ -128,6 +129,7 @@ export default function ForkDrivePage(): React.JSX.Element {
   const fileHandlers = (file: DriveEntry): DriveItemHandlers => {
     const bot = findDriveFileBot(bots, file)
     const sessionId = file.source.kind === 'upload' ? undefined : file.source.sessionId
+    const messageId = file.source.kind === 'chat-attachment' ? file.source.messageId : undefined
     if (trash) {
       return {
         onOpen: () => setPreviewing(file),
@@ -145,6 +147,10 @@ export default function ForkDrivePage(): React.JSX.Element {
             onOpenChat: () => {
               setPreviewing(null)
               openBotSession(bot, sessionId)
+              // After the open, which aims an already open chat at its newest message.
+              if (messageId) {
+                targetBotLinkItem(sessionId, messageId)
+              }
             }
           }
         : {}),

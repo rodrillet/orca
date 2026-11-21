@@ -21,6 +21,7 @@ import {
 } from '../slack/slack-action-files'
 import { readMessageText } from '../slack/slack-action-args'
 import type { ActionResult } from '../slack/slack-action-format'
+import { keepSentFilesInDrive } from '../orca-fork/drive/drive-cli-upload' // orca-fork:
 
 // The host retries an unavailable cloud itself, waiting out Retry-After, so the call can take a while.
 const REPLY_TIMEOUT_MS = 180_000
@@ -231,6 +232,14 @@ export const BOT_REPLY_HANDLERS: Record<string, CommandHandler> = {
       files.length > 0 && sessionId
         ? await replyWithFiles(client, sessionId, files, text)
         : undefined
+    if (attached) {
+      // orca-fork: what a bot attaches also lands in its owner's Drive
+      await keepSentFilesInDrive(
+        client,
+        files.map((file) => file.path),
+        text
+      )
+    }
     const replied =
       text && files.length === 0
         ? await client
