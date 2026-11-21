@@ -15,6 +15,17 @@ import type {
 import { formatCpu, formatMemory } from '../../status-bar/resources/popover/resource-usage-metrics'
 import { stopMachineProcess } from './machine-resources-read'
 import type { MachineEntry } from './use-machine-resources'
+import {
+  LOCAL_EXECUTION_HOST_ID,
+  toRuntimeExecutionHostId,
+  type ExecutionHostId
+} from '../../../../../shared/execution-host/execution-host'
+import { ForkWorkspaceMark } from '../workspaces/ForkWorkspaceMark'
+import { useForkWorkspaces } from '../workspaces/fork-workspaces-store'
+import {
+  forkWorkspaceOfItem,
+  type ForkWorkspace
+} from '../../../../../shared/orca-fork/workspaces/fork-workspace'
 
 const STOP_CONFIRM_MS = 4_000
 
@@ -183,11 +194,14 @@ function AgentRow({
   machine,
   agent,
   bot,
+  workspace,
   canStop
 }: {
   machine: MachineEntry
   agent: MachineAgentProcess
   bot: Bot | null
+  /** Its fork workspace, where the owner keeps more than one. */
+  workspace: ForkWorkspace | null
   canStop: boolean
 }): React.JSX.Element {
   const t = useTranslate()
@@ -206,7 +220,13 @@ function AgentRow({
           {agent.label}
           {owner ? <span className="text-muted-foreground"> · {owner}</span> : null}
         </span>
-        <span className="truncate text-[11px] text-muted-foreground">
+        <span className="flex min-w-0 items-center gap-1 truncate text-[11px] text-muted-foreground">
+          {workspace ? (
+            <span className="flex shrink-0 items-center gap-1 text-foreground/80">
+              <ForkWorkspaceMark workspace={workspace} size={12} />
+              {workspace.name} ·
+            </span>
+          ) : null}
           {[
             agent.botName && agent.worktreeName ? agent.worktreeName : null,
             `pid ${agent.pid}`,
@@ -245,6 +265,7 @@ export function MachineResourcesCard({
   bots: readonly Bot[]
 }): React.JSX.Element {
   const t = useTranslate()
+  const workspaces = useForkWorkspaces()
   const result = machine.result
   if (!result) {
     return (
@@ -261,11 +282,22 @@ export function MachineResourcesCard({
     )
   }
   const { data } = result
-  const hostId =
-    machine.target.kind === 'local' ? 'local' : `runtime:${machine.target.environmentId}`
+  const hostId: ExecutionHostId =
+    machine.target.kind === 'local'
+      ? LOCAL_EXECUTION_HOST_ID
+      : toRuntimeExecutionHostId(machine.target.environmentId)
   const botOf = (agent: MachineAgentProcess): Bot | null =>
     agent.botId ? (bots.find((b) => b.id === agent.botId && b.hostId === hostId) ?? null) : null
   const canStop = result.status === 'ok'
+  const workspaceOf = (agent: MachineAgentProcess): ForkWorkspace | null => {
+    if (workspaces.workspaces.length < 2) {
+      return null
+    }
+    if (agent.botId) {
+      return forkWorkspaceOfItem(workspaces, hostId, { botKey: `${hostId}/${agent.botId}` })
+    }
+    return agent.repoId ? forkWorkspaceOfItem(workspaces, hostId, { repoId: agent.repoId }) : null
+  }
   return (
     <div className="flex flex-col">
       <div className="px-3 py-3">
@@ -306,6 +338,7 @@ export function MachineResourcesCard({
                   machine={machine}
                   agent={agent}
                   bot={botOf(agent)}
+                  workspace={workspaceOf(agent)}
                   canStop={canStop}
                 />
               ))}
