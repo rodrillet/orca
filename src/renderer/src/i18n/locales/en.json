@@ -29540,6 +29540,41 @@
     }
   },
   "orcaFork": {
+    "appearance": {
+      "palette": {
+        "orca": "Orca",
+        "agentes": "Agentes",
+        "paper": "Paper",
+        "ocean": "Ocean",
+        "forest": "Forest",
+        "plum": "Plum",
+        "rose": "Rosé",
+        "graphite": "Graphite"
+      },
+      "colorTheme": "Color theme",
+      "colorThemeHint": "Tints the sidebar and pages with one hue, as agentes.chat. Works with light and dark.",
+      "accent": "Accent color",
+      "accentHint": "Buttons, links, focus and selected marks. agentes.chat’s agent tones, or your own.",
+      "accentDefault": "Theme default",
+      "accentCustom": "Your own color",
+      "density": "Density",
+      "densityHint": "How much room rows, buttons and panels take.",
+      "compact": "Compact",
+      "standard": "Standard",
+      "comfortable": "Comfortable",
+      "sidebarStyle": "Sidebar style",
+      "sidebarStyleHint": "Inset sets the work area as a sheet on the sidebar’s paper, as agentes.chat.",
+      "flat": "Flat",
+      "inset": "Inset",
+      "windowOpacity": "Window opacity",
+      "windowOpacityHint": "See the desktop through the whole window.",
+      "windowOpacityLinux": "Available on macOS and Windows.",
+      "translucency": "Translucent interface",
+      "translucencyNeedsMaterial": "Lets the window material (blur on macOS) show through the sidebar and pages. Pick Blurred or Translucent above and restart.",
+      "translucencyHint": "How much of the window material shows through the sidebar and pages.",
+      "title": "Customization",
+      "description": "Color theme, accent, density, sidebar style, window opacity and translucency on this computer."
+    },
     "wiki": {
       "aboutPage": "About the page",
       "aChat": "a chat",

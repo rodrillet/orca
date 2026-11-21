@@ -18,6 +18,7 @@ import { RightSidebarToggle } from './chrome/RightSidebarToggle'
 import { TitlebarMainStrip } from './chrome/TitlebarMainStrip'
 import type { AppChromeLayout } from './chrome/use-app-chrome-layout'
 import { ForkWikiPageMount } from '../components/orca-fork/wiki/ForkWikiPageMount' // orca-fork: workspace wiki
+import { ForkAppearanceRuntime } from '../components/orca-fork/appearance/ForkAppearanceRuntime' // orca-fork:
 import type { FloatingWorkspacePanelState } from '../components/floating-terminal/workspace/use-floating-workspace-panel'
 import { ForkArtifactsSlot } from '../components/orca-fork/drive/ForkArtifactsSlot' // orca-fork:
 import { ForkPageSwitch } from '../components/orca-fork/page-switch/ForkPageSwitch' // orca-fork:
@@ -243,7 +244,11 @@ export function AppWorkspaceShell(props: {
                 <WorktreeSidebar layout={layout} scrollRefs={sidebarScrollRefs} />
               )
             ) : null}
-            <div className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden">
+            {/* orca-fork: data-orca-fork-main lets the Inset sidebar style raise the work area. */}
+            <div
+              className="flex flex-col flex-1 min-w-0 min-h-0 overflow-hidden"
+              data-orca-fork-main=""
+            >
               {/* Automations/artifacts own their headers; another titlebar would leave an empty stripe. */}
               {layout.stackedSidebarOpen &&
               layout.activeView !== 'automations' &&
@@ -301,6 +306,7 @@ export function AppWorkspaceShell(props: {
                   </Suspense>
                 </div>
                 <ForkWikiPageMount /> {/* orca-fork: workspace wiki */}
+                <ForkAppearanceRuntime /> {/* orca-fork: interface customization */}
                 <ForkPageSwitch /> {/* orca-fork: one full page at a time */}
                 {floatingWorkspace.showToggleButton && !capturingPluginShot ? (
                   <MemoFloatingTerminalToggleButton
