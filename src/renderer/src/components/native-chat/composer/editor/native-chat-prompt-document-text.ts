@@ -11,6 +11,11 @@ import {
   splitBotMentions
 } from '../../../../../../shared/bots/bot-mention-context'
 
+import {
+  forkGroupMentionContent,
+  forkGroupMentionLeafString
+} from '../../../orca-fork/group-mentions/fork-group-mention-content' // orca-fork
+
 export const IMAGE_REFERENCE_NODE = 'nativeChatImageReference'
 export const FILE_REFERENCE_NODE = 'nativeChatFileReference'
 /** A bot, or one of its chats, picked under `@`: a pill that reads as its `[Bot: <name>](bot:<id>)`
@@ -32,6 +37,11 @@ export function promptLeafString(
   if (type === IMAGE_REFERENCE_NODE) {
     return imageReferenceToken(String(attrs?.attachmentId))
   }
+  // orca-fork: #group pills
+  const group = forkGroupMentionLeafString(type, attrs)
+  if (group !== null) {
+    return group
+  }
   if (type === BOT_MENTION_NODE) {
     const chatId = typeof attrs?.chatId === 'string' && attrs.chatId ? attrs.chatId : undefined
     const server = typeof attrs?.server === 'string' && attrs.server ? attrs.server : undefined
@@ -42,18 +52,20 @@ export function promptLeafString(
 
 // A bot token in typed-over, pasted or restored text is the same mention picking puts there.
 function botMentionContent(text: string): JSONContent[] {
-  return splitBotMentions(text).map((part) =>
+  return splitBotMentions(text).flatMap((part): JSONContent[] =>
     typeof part === 'string'
-      ? { type: 'text', text: part }
-      : {
-          type: BOT_MENTION_NODE,
-          attrs: {
-            id: part.id,
-            name: part.name,
-            chatId: part.chatId ?? '',
-            server: part.server ?? ''
+      ? forkGroupMentionContent(part) // orca-fork: #group pills
+      : [
+          {
+            type: BOT_MENTION_NODE,
+            attrs: {
+              id: part.id,
+              name: part.name,
+              chatId: part.chatId ?? '',
+              server: part.server ?? ''
+            }
           }
-        }
+        ]
   )
 }
 
@@ -73,7 +85,7 @@ export function restorePromptBotMentions(document: JSONContent): JSONContent {
         return [node]
       }
       const parts = botMentionContent(node.text)
-      if (!parts.some((part) => part.type === BOT_MENTION_NODE)) {
+      if (!parts.some((part) => part.type !== 'text')) {
         return [node]
       }
       upgraded = true

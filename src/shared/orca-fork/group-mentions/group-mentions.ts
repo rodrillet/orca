@@ -59,3 +59,33 @@ export function groupOptions<G extends { name: string }>(
     .sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name))
     .slice(0, limit)
 }
+
+/** A picked group's link scheme: the message keeps the group's id, so a rename never breaks it. */
+export const GROUP_MENTION_PREFIX = 'bot-group:'
+
+const GROUP_MENTION = /\[#((?:\\[\\[\]]|[^\\[\]\n])+)\]\(bot-group:([\w-]+)\)/g
+
+/** What picking a group writes: `[#<name>](bot-group:<id>)`, the name escaped as link text. */
+export function groupMentionToken(group: { id: string; name: string }): string {
+  return `[#${group.name.replace(/[\\[\]]/g, '\\$&')}](${GROUP_MENTION_PREFIX}${group.id})`
+}
+
+export type GroupMention = { id: string; name: string }
+
+/** `text` cut at each group token: the text between, and each token's id and the name it was written with. */
+export function splitGroupMentions(text: string): (string | GroupMention)[] {
+  const parts: (string | GroupMention)[] = []
+  let last = 0
+  for (const match of text.matchAll(GROUP_MENTION)) {
+    const start = match.index ?? 0
+    if (start > last) {
+      parts.push(text.slice(last, start))
+    }
+    parts.push({ id: match[2], name: match[1].replace(/\\(.)/g, '$1') })
+    last = start + match[0].length
+  }
+  if (last < text.length) {
+    parts.push(text.slice(last))
+  }
+  return parts
+}

@@ -3,6 +3,7 @@ import { NativeChatSkillPill, skillLabel } from './NativeChatSkillPill'
 import { NativeChatImageReferencePill } from './NativeChatImageReferencePill'
 import { NativeChatBotMentionPill } from './NativeChatBotMentionPill'
 import { NativeChatPromptPillKeys } from './native-chat-prompt-pill-keys'
+import { ForkGroupMention } from '../../../orca-fork/group-mentions/ForkGroupMentionPill' // orca-fork
 import { formatNativeChatFileReference } from '../../../../../../shared/native-chat/input/composer/agent-image-paste'
 import { imageReferenceToken } from '../../../../../../shared/native-chat/attachments/native-chat-image-reference'
 import {
@@ -99,6 +100,7 @@ export const nativeChatPromptPills = [
   NativeChatFileReference,
   NativeChatImageReference,
   NativeChatBotMention,
+  ForkGroupMention, // orca-fork: #group pills
   NativeChatPromptPillKeys
 ]
 

@@ -29702,7 +29702,8 @@
       "otherProcess": "{{name}} · pid {{pid}}"
     },
     "groupMentions": {
-      "option": "{{name}} · {{count}} bots"
+      "option": "{{name}} · {{count}} bots",
+      "pillLabel": "Mentioned group: {{name}}"
     },
     "presence": {
       "working": "Working",

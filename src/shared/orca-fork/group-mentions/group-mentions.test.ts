@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { groupMentionQuery, groupOptions, groupSlug, splitGroupRefs } from './group-mentions'
+import {
+  groupMentionQuery,
+  groupMentionToken,
+  groupOptions,
+  groupSlug,
+  splitGroupMentions,
+  splitGroupRefs
+} from './group-mentions'
 
 describe('group mentions', () => {
   it('slugs a group name the way # inserts it', () => {
@@ -24,5 +31,15 @@ describe('group mentions', () => {
   it('ranks groups starting with the query first', () => {
     const groups = [{ name: 'Revendas' }, { name: 'Vendas' }, { name: 'Suporte' }]
     expect(groupOptions('vend', groups).map((g) => g.name)).toEqual(['Vendas', 'Revendas'])
+  })
+
+  it('keeps the picked group id in its token, whatever the name holds', () => {
+    const token = groupMentionToken({ id: 'g-1', name: 'Vendas [BR]' })
+    expect(token).toBe('[#Vendas \\[BR\\]](bot-group:g-1)')
+    expect(splitGroupMentions(`fale no ${token} hoje`)).toEqual([
+      'fale no ',
+      { id: 'g-1', name: 'Vendas [BR]' },
+      ' hoje'
+    ])
   })
 })
