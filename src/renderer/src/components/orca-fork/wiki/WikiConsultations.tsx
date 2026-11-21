@@ -182,9 +182,9 @@ export function ConsultationLog({
             {dayLabel(day.at)}
           </h4>
           <ul className="flex flex-col">
-            {day.entries.map((entry, index) => (
+            {day.entries.map((entry) => (
               <ConsultationRow
-                key={`${entry.pageId}:${entry.at}:${index}`}
+                key={`${wikiActorKey(entry.by)}:${entry.pageId}:${entry.at}`}
                 entry={entry}
                 hostId={hostId}
                 showPage={showPage}

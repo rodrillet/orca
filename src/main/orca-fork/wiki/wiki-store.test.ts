@@ -53,7 +53,7 @@ describe('WikiStore', () => {
     const wiki = openStore()
     const page = wiki.create('w', bot, { title: 'Runbook' })
     const other = wiki.create('w', bot, { title: 'Glossary' })
-    const now = Date.now()
+    const now = 1_800_000_000_000
     wiki.recordView(page.id, owner, null, now - 3000)
     wiki.recordView(
       page.id,
@@ -66,12 +66,12 @@ describe('WikiStore', () => {
       { actor: bot, count: 1, lastAt: now - 2000 },
       { actor: owner, count: 1, lastAt: now - 3000 }
     ])
-    const log = wiki.activity('w', { actorKey: 'bot:b1' })
+    const log = wiki.activity('w', { actorKey: 'bot:b1' }, now)
     expect(log.consultations.map((c) => [c.title, c.chatTitle, c.taskTitle])).toEqual([
       ['Glossary', 'Fix CI', null],
       ['Runbook', 'Fix CI', 'Ship it']
     ])
-    expect(wiki.activity('w', { page: 'runbook' }).consultations).toHaveLength(2)
+    expect(wiki.activity('w', { page: 'runbook' }, now).consultations).toHaveLength(2)
     expect(log.readers.map((r) => [r.key, r.count, r.pages])).toEqual([
       ['bot:b1', 2, 2],
       ['owner', 1, 1]

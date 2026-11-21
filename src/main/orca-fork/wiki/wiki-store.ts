@@ -54,9 +54,10 @@ export class WikiStore extends WikiStoreWrites {
 
   activity(
     workspaceId: ForkWikiWorkspaceId,
-    options: WikiActivityOptions = {}
+    options: WikiActivityOptions = {},
+    now = Date.now()
   ): WikiActivityResult {
-    return readWikiActivity((query) => this.sql(query), workspaceId, options)
+    return readWikiActivity((query) => this.sql(query), workspaceId, options, now)
   }
 
   mention(

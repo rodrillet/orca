@@ -5,7 +5,7 @@ import { BookOpen, ChevronRight, FileText, Folder, Pin, Plus, X } from 'lucide-r
 import { Button } from '@/components/ui/button'
 import { useTranslate } from '@/i18n/use-translate'
 import type { ExecutionHostId } from '../../../../../shared/execution-host/execution-host'
-import type { WikiPageSummary } from '../../../../../shared/orca-fork/wiki/wiki-types'
+import { wikiActorKey, type WikiPageSummary } from '../../../../../shared/orca-fork/wiki/wiki-types'
 import { setWikiTag, showWikiCenter } from './wiki-view-state'
 import { useWikiActivity, type WikiTarget } from './wiki-rpc'
 import { buildWikiTree, pagesInFolder, type WikiFolderNode } from './wiki-tree'
@@ -127,9 +127,9 @@ function ActivityPanels({
                 title={page.readers.map((r) => `${actorName(r.actor)} ${r.count}`).join(' · ')}
               >
                 <span className="flex shrink-0 -space-x-1.5">
-                  {page.readers.slice(0, 3).map((reader, index) => (
+                  {page.readers.slice(0, 3).map((reader) => (
                     <WikiActorAvatar
-                      key={index}
+                      key={wikiActorKey(reader.actor)}
                       actor={reader.actor}
                       hostId={target.hostId}
                       className="size-5 ring-2 ring-background"

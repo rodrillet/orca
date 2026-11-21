@@ -24971,7 +24971,6 @@
       "purgeText": "A página, suas versões e seu histórico de leituras serão removidos. Não dá para desfazer.",
       "purgeTitle": "Apagar \"{{title}}\" de vez?",
       "purgedTitle": "\"{{title}}\" apagada de vez",
-      "readBy": "Lida por",
       "recent": "Editadas recentemente",
       "restore": "Restaurar",
       "restoreThisVersion": "Restaurar esta versão",
@@ -24996,14 +24995,14 @@
       "trashHint": "Páginas apagadas ficam aqui com seu histórico até você apagá-las de vez.",
       "unreachable": "Não foi possível ler a wiki deste computador.",
       "unreachableHint": "Um servidor pareado precisa do orca-server do fork para guardar uma wiki. Escolha outro computador à esquerda.",
-      "viewerCount_many": "{{count}}×",
-      "viewerCount_one": "{{count}}×",
-      "viewerCount_other": "{{count}}×",
-      "views_many": "{{count}} leituras",
+      "views_many": "{{count}} consultas",
       "views_one": "{{count}} consulta",
       "views_other": "{{count}} consultas",
       "write": "Markdown",
-      "you": "Você"
+      "you": "Você",
+      "consultationCount_many": "{{count}} consultas",
+      "folderCount_many": "{{count}} páginas",
+      "results_many": "{{count}} resultados"
     },
     "drive": {
       "who": {

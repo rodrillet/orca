@@ -2853,13 +2853,10 @@
       "folderCount_other": "{{count}} pages",
       "matching_one": "{{count}} page matches",
       "matching_other": "{{count}} pages match",
-      "readBy": "Read by",
       "results_one": "{{count}} result",
       "results_other": "{{count}} results",
       "subtitle_one": "What your agents learned, in linked pages. {{count}} page.",
       "subtitle_other": "What your agents learned, in linked pages. {{count}} pages.",
-      "viewerCount_one": "{{count}}×",
-      "viewerCount_other": "{{count}}×",
       "views_one": "{{count}} view",
       "views_other": "{{count}} views"
     }

@@ -79,7 +79,7 @@ export function ForkWikiPage(): React.JSX.Element {
     case 'readers':
       main = <WikiReadersView target={target} actorKey={center.actorKey} />
       break
-    default:
+    case 'home':
       main = (
         <WikiHome
           target={target}

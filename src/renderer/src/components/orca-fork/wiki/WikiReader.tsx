@@ -6,7 +6,11 @@ import { ArchiveRestore, Clock, Copy, Eye, Pencil, Pin, PinOff, Trash2 } from 'l
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useTranslate } from '@/i18n/use-translate'
-import type { WikiPage, WikiPageSummary } from '../../../../../shared/orca-fork/wiki/wiki-types'
+import {
+  wikiActorKey,
+  type WikiPage,
+  type WikiPageSummary
+} from '../../../../../shared/orca-fork/wiki/wiki-types'
 import { useWikiPage, writeWiki, type WikiTarget } from './wiki-rpc'
 import { WikiMarkdown } from './WikiMarkdown'
 import { WikiEditor } from './WikiEditor'
@@ -250,9 +254,9 @@ export function WikiReader({
               >
                 {readers.length > 0 ? (
                   <span className="flex -space-x-1.5">
-                    {readers.slice(0, 3).map((viewer, index) => (
+                    {readers.slice(0, 3).map((viewer) => (
                       <WikiActorAvatar
-                        key={index}
+                        key={wikiActorKey(viewer.actor)}
                         actor={viewer.actor}
                         hostId={target.hostId}
                         className="size-4 ring-2 ring-background"
