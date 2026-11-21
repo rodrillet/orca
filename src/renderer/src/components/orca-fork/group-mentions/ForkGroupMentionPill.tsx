@@ -8,7 +8,6 @@ import { groupMentionToken } from '../../../../../shared/orca-fork/group-mention
 import { NativeChatPromptPill } from '../../native-chat/composer/editor/NativeChatPromptPill'
 import { useForkBotGroups } from './use-fork-bot-groups'
 import { FORK_GROUP_MENTION_NODE } from './fork-group-mention-content'
-import { ForkGroupGlyph } from './use-fork-group-mentions'
 
 function ForkGroupMentionPill({ node, selected }: NodeViewProps): React.JSX.Element {
   const t = useTranslate()
@@ -20,7 +19,6 @@ function ForkGroupMentionPill({ node, selected }: NodeViewProps): React.JSX.Elem
     <NodeViewWrapper as="span" className="inline" contentEditable={false} data-orca-fork-group={id}>
       <NativeChatPromptPill
         icon={Users}
-        avatar={group ? <ForkGroupGlyph group={group} /> : undefined}
         label={`#${name}`}
         spokenLabel={t('orcaFork.groupMentions.pillLabel', 'Mentioned group: {{name}}', { name })}
         muted={group === null}
