@@ -133,9 +133,21 @@ The experimental Agent Dashboard is on by default (`experimentalAgentDashboardPo
 `FORK_FEATURES.agentsBoard`) and opens on a **Bots** Kanban, with upstream's terminals board behind a
 Bots | Terminals switch. Columns A fazer / Em andamento / Precisa de você / Concluído; one card per bot
 item and per worker no item links, with the bot's photo and presence, PR/CI badge, machine and
-workspace. Dragging an item card (or "Move to…") calls `bots.items.owner.status`. Filters: workspace,
+workspace. Dragging an item card (or "Move to…") calls `bots.items.owner.status`. Each card says what was
+done (the item's close note or newest worker report, a worker's result), its done-means, who and where,
+start → end · duration, PR/CI and link counts; a click opens a detail drawer beside the board (status,
+times, by, PR; the item's full Activity with status changes, comments and worker results; each worker's
+report and PR; Drive files and Wiki pages written while it ran). Filters: workspace,
 machine, bot, tag (Phase 2 departments/sections), saved per `ForkWorkspaceId`. Linked both ways with the
 Tasks Agents view. Renderer only; stock `orca-server` works. Code: `src/renderer/src/components/orca-fork/agents-board/`.
+
+### One full page at a time
+
+The Wiki and the Agents board sit over the main area outside upstream's `activeView`, so
+`src/renderer/src/components/orca-fork/page-switch/` closes them on every page switch (a store
+subscription, so a batched there-and-back still counts), when the other one or the Drive opens, and when
+a sidebar page entry is picked again. Bot presence on the Agents views counts only workers on a turn
+(an open worker resting after its report is idle) and the Chat's status only while fresh and awake.
 
 ### Phase 5 — Shared agent computer (dropped)
 

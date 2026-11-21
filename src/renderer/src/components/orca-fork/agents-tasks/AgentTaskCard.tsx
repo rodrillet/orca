@@ -2,8 +2,6 @@
 import React from 'react'
 import { MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import StatusIndicator from '@/components/sidebar/workspace-card/surface/StatusIndicator'
-import { BotAvatar } from '@/components/bots/BotAvatar'
 import { BotRowLineView, useBotRowLine } from '@/components/bots/BotRowActivityLine'
 import { useBotItems } from '@/components/bots/items/use-bot-items'
 import { openBotItem } from '@/components/bots/items/bot-item-open'
@@ -23,6 +21,7 @@ import type { FolderWorkspace } from '../../../../../shared/folder-workspaces/fo
 import { useBotWorkList } from './use-bot-work-list'
 import { AgentPrBadge } from '../agents-board/AgentPrBadge'
 import { useBotPresence } from '../agents-board/use-bot-presence'
+import { PresenceBotAvatar } from '../agents-board/PresenceBotAvatar'
 
 const SHOWN_ITEMS = 5
 const SHOWN_WORKERS = 5
@@ -99,7 +98,7 @@ export function AgentTaskCard({
   )
   const runningWorkers = workers.filter((worker) => worker.state === 'working').length
 
-  const { status, label: statusText } = useBotPresence(bot, needsYouItems)
+  const { presence, label: statusText } = useBotPresence(bot, needsYouItems)
 
   const openItem = (item: BotItem): void => {
     if (openBotHome(bot)) {
@@ -115,11 +114,14 @@ export function AgentTaskCard({
       )}
     >
       <div className="flex min-w-0 items-center gap-2.5">
-        <BotAvatar bot={bot} className="size-9 shrink-0 rounded-md text-sm" />
+        <PresenceBotAvatar
+          bot={bot}
+          presence={presence}
+          className="size-9 shrink-0 rounded-md text-sm"
+        />
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-1.5">
             <span className="truncate text-sm font-medium">{bot.name}</span>
-            {offline ? null : <StatusIndicator status={status} />}
           </div>
           <div className="truncate text-xs text-muted-foreground">
             {statusText} · {hostLabel}

@@ -29741,7 +29741,6 @@
     },
     "agentsTasks": {
       "empty": "No bots on this computer or its paired servers yet.",
-      "idle": "Idle",
       "item": {
         "canceled": "Canceled",
         "done": "Done",
@@ -29752,12 +29751,9 @@
       "items": "Open items",
       "loading": "Loading…",
       "more": "+{{value0}} more",
-      "needsYou": "Needs you",
       "noItems": "No open items",
       "noWorkers": "No workers",
-      "offline": "Offline",
       "openChat": "Open chat",
-      "paused": "Paused",
       "pr": {
         "approved": "approved",
         "changes": "changes requested",
@@ -29780,7 +29776,6 @@
         "working": "Working"
       },
       "workers": "Workers",
-      "working": "Working",
       "openBoard": "Board"
     },
     "botOrganization": {
@@ -29846,6 +29841,47 @@
       "moveTo": "Move to…",
       "dropHere": "Drop here",
       "moveFailed": "Couldn't move the card",
+      "card": {
+        "result": "What was done",
+        "doneMeans": "Done means",
+        "links": "{{count}} links",
+        "workers": "{{count}} workers"
+      },
+      "duration": {
+        "seconds": "{{count}}s",
+        "minutes": "{{count}} min",
+        "hours": "{{hours}} h {{minutes}} min",
+        "days": "{{days}} d {{hours}} h"
+      },
+      "time": {
+        "ran": "{{start}} → {{end}} · {{duration}}",
+        "started": "started {{start}}",
+        "running": "since {{start}} · {{duration}}"
+      },
+      "detail": {
+        "state": {
+          "working": "Working",
+          "completed": "Finished",
+          "missing": "Record gone"
+        },
+        "workers": "Workers",
+        "links": "Links",
+        "noResult": "Nothing reported yet.",
+        "close": "Close",
+        "status": "Status",
+        "started": "Started",
+        "finished": "Finished",
+        "duration": "Duration",
+        "by": "By",
+        "pr": "PR",
+        "activity": "Activity",
+        "result": "Result",
+        "files": "Drive & Wiki",
+        "openInBot": "Open in the bot",
+        "driveUnsupported": "This machine's orca-server has no Drive.",
+        "noFiles": "No files saved during this work.",
+        "noPages": "No wiki pages written during this work."
+      },
       "openInTasks": "Agents in Tasks",
       "search": "Search tasks, bots or workspaces…",
       "searchLabel": "Search the board",

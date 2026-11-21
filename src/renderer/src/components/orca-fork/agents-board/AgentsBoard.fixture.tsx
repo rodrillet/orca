@@ -60,7 +60,24 @@ const ITEMS: Record<string, BotItem[]> = {
     makeTestBotItem(12, {
       title: 'Agents board: drag cards between columns',
       status: 'working',
-      lastActivityAt: NOW - 3 * MIN
+      doneMeans: 'Dragging a card moves the item on its host, and a failed move snaps back.',
+      createdAt: NOW - 50 * MIN,
+      lastActivityAt: NOW - 3 * MIN,
+      links: [
+        {
+          kind: 'dispatch',
+          ref: 'ctx_board',
+          latest: null,
+          title: 'Board drag & drop',
+          state: 'working',
+          host: null,
+          startedAt: NOW - 42 * MIN,
+          settledAt: null,
+          report: null,
+          pr: null
+        },
+        { kind: 'url', ref: 'https://ia.antonioanjos.com/tasks' }
+      ]
     }),
     makeTestBotItem(13, {
       title: 'Install the fork orca-server on the VPS',
@@ -71,8 +88,36 @@ const ITEMS: Record<string, BotItem[]> = {
     makeTestBotItem(9, {
       title: 'Sidebar unread counts',
       status: 'done',
+      createdAt: NOW - 200 * MIN,
       closedAt: NOW - 90 * MIN,
-      lastActivityAt: NOW - 90 * MIN
+      lastActivityAt: NOW - 90 * MIN,
+      closeNote: 'Each bot row counts its unread chats; merged in PR #9 with Fork CI green.',
+      links: [
+        {
+          kind: 'dispatch',
+          ref: 'ctx_unread',
+          latest: null,
+          title: 'Unread chat counts',
+          state: 'completed',
+          host: null,
+          startedAt: NOW - 180 * MIN,
+          settledAt: NOW - 95 * MIN,
+          report: {
+            subject: 'Unread counts shipped',
+            body: 'Added the count beside Up next and in expanded chat rows.'
+          },
+          pr: {
+            shown: true,
+            ref: 'rodrillet/orca#9',
+            number: 9,
+            url: 'https://github.com/rodrillet/orca/pull/9',
+            state: 'merged',
+            checks: 'success',
+            review: 'APPROVED',
+            checkedAt: NOW - 90 * MIN
+          }
+        }
+      ]
     })
   ],
   closer: [
@@ -156,10 +201,22 @@ export const board = defineFixture({
     const runtime: unknown = window.api.runtime
     Reflect.set(window.api, 'runtime', {
       ...(typeof runtime === 'object' ? runtime : {}),
-      call: async ({ method, params }: { method: string; params?: { botId?: string } }) => {
+      call: async ({
+        method,
+        params
+      }: {
+        method: string
+        params?: { botId?: string; item?: string }
+      }) => {
         const botId = params?.botId ?? ''
         if (method === 'bots.items.owner.list') {
           return { ok: true, result: { items: ITEMS[botId] ?? [], counts: {}, seenEventId: 'e0' } }
+        }
+        if (method === 'bots.items.owner.show') {
+          const item = Object.values(ITEMS)
+            .flat()
+            .find((entry) => entry.uid === params?.item)
+          return { ok: true, result: { item, events: [] } }
         }
         if (method === 'bots.work.list') {
           return { ok: true, result: { items: WORKERS[botId] ?? [], botName: botId } }
@@ -192,4 +249,22 @@ export const board = defineFixture({
       <AgentsBoard onClose={() => {}} />
     </div>
   )
+})
+
+export const detail = defineFixture({
+  ...board,
+  interact: async (frame) => {
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    frame
+      .querySelector<HTMLElement>(
+        '[data-agents-board-card$=":item:uid-9"] [data-agents-board-open]'
+      )
+      ?.click()
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    const tabs = [
+      ...document.querySelectorAll<HTMLElement>('[data-agents-board-detail] [role="tab"]')
+    ]
+    tabs.find((tab) => tab.textContent === 'Result')?.click()
+    await new Promise((resolve) => setTimeout(resolve, 200))
+  }
 })

@@ -20,6 +20,7 @@ import type { AppChromeLayout } from './chrome/use-app-chrome-layout'
 import { ForkWikiPageMount } from '../components/orca-fork/wiki/ForkWikiPageMount' // orca-fork: workspace wiki
 import type { FloatingWorkspacePanelState } from '../components/floating-terminal/workspace/use-floating-workspace-panel'
 import { ForkArtifactsSlot } from '../components/orca-fork/drive/ForkArtifactsSlot' // orca-fork:
+import { ForkPageSwitch } from '../components/orca-fork/page-switch/ForkPageSwitch' // orca-fork:
 
 // Skips the shell render each workspace switch causes; its props only change on toggle.
 const MemoFloatingTerminalToggleButton = memo(FloatingTerminalToggleButton)
@@ -300,6 +301,7 @@ export function AppWorkspaceShell(props: {
                   </Suspense>
                 </div>
                 <ForkWikiPageMount /> {/* orca-fork: workspace wiki */}
+                <ForkPageSwitch /> {/* orca-fork: one full page at a time */}
                 {floatingWorkspace.showToggleButton && !capturingPluginShot ? (
                   <MemoFloatingTerminalToggleButton
                     open={floatingWorkspace.open}

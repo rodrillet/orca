@@ -7,7 +7,7 @@ import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 let open = false
 const listeners = new Set<() => void>()
 
-function subscribe(listener: () => void): () => void {
+export function subscribeForkDrive(listener: () => void): () => void {
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
@@ -20,8 +20,12 @@ export function setForkDriveOpen(next: boolean): void {
   listeners.forEach((listener) => listener())
 }
 
+export function isForkDriveOpen(): boolean {
+  return open
+}
+
 export function useForkDriveOpen(): boolean {
-  const value = useSyncExternalStore(subscribe, () => open)
+  const value = useSyncExternalStore(subscribeForkDrive, () => open)
   return FORK_FEATURES.drive && value
 }
 
