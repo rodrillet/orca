@@ -29605,6 +29605,10 @@
       "groupOrganization": "Departments",
       "groupOrganizationDescription": "Departments and sections. Drag bots between them.",
       "groupBy": "Group by"
+    },
+    "teams": {
+      "builder": "Can build a team",
+      "builderDetail": "Creates the bots it proposes without asking you (up to {{cap}} a day) and shares a group with them. They hand work to each other without your approval."
     }
   }
 }
