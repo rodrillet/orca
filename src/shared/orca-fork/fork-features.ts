@@ -17,6 +17,15 @@ export const FORK_FEATURES = {
   botOrganization: true,
   /** Per-workspace Drive: chat uploads and agents' files on every machine, `orca files save`. */
   drive: true,
+  /** Channels (topic rooms of several bots) in collapsible categories, and context menus that create
+   *  channels, groups, categories, departments and bots from anywhere in the sidebar. */
+  chatStructure: true,
+  /** A file or folder path in chat shows as a badge whose menu opens, reveals or copies it. */
+  chatPathBadges: true,
+  /** Subtle typing and new-message sounds, as OpenBot's (Settings › Sounds toggle). */
+  chatSounds: true,
+  /** The Agents map: bots as nodes, their hand-offs, mentions and shared rooms as live edges. */
+  agentsMap: true,
   /** Workspace wiki: agents write what they learn, the owner reads and curates it (Wiki page). */
   workspaceWiki: true,
   /** Phase 4: a bot the owner lets build a team creates bots from its own offers. */

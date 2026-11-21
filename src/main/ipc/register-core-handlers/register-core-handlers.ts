@@ -106,6 +106,7 @@ import {
 } from './core-handler-lifecycle'
 import { registerBotOrganizationHandlers } from '../../orca-fork/organization/bot-organization-store' // orca-fork:
 import { registerForkWorkspacesHandlers } from '../../orca-fork/workspaces/fork-workspaces-store' // orca-fork:
+import { registerChatStructureHandlers } from '../../orca-fork/channels/chat-structure-store' // orca-fork:
 
 let registration: Promise<void> | null = null
 
@@ -199,6 +200,7 @@ export async function registerCoreHandlers(
     registerTelemetryHandlers(store)
     registerBotOrganizationHandlers() // orca-fork: Bots sidebar departments/sections
     registerForkWorkspacesHandlers() // orca-fork: Workspaces
+    registerChatStructureHandlers() // orca-fork: Channels and categories
     if (!lifecycleOptions.orcaAccount) {
       throw new Error('Orca account service must be initialized before core handlers')
     }

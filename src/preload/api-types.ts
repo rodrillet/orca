@@ -88,6 +88,7 @@ import type { LinkPreviewApi } from './api/link-preview/link-preview-api'
 import type { WorkspaceSessionApi } from './api/workspaces/workspace-session-api'
 import type { BotOrganizationApi } from './api/orca-fork/bot-organization-bridge' // orca-fork:
 import type { ForkWorkspacesApi } from './api/orca-fork/fork-workspaces-bridge' // orca-fork:
+import type { ChatStructureApi } from './api/orca-fork/chat-structure-bridge' // orca-fork:
 import type {
   FolderWorkspacesApi,
   SparsePresetsApi,
@@ -151,6 +152,7 @@ export type PreloadApi = {
   // orca-fork: Bots sidebar departments/sections
   orcaForkBotOrganization: BotOrganizationApi
   orcaForkWorkspaces: ForkWorkspacesApi // orca-fork: Workspaces
+  orcaForkChatStructure: ChatStructureApi // orca-fork: Channels and categories
   googleSetup: GoogleSetupApi
   slackHandOff: SlackHandOffApi
   skills: SkillsApi

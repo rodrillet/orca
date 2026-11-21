@@ -43,7 +43,6 @@ import { findBotGroupRoom, type BotGroup } from '../../../../shared/bots/bot-gro
 import { NewBotDialog } from './NewBotDialog'
 import { openBotShareLink } from './sharing/bot-share-receive-open'
 import { BotSidebarOptionsMenu } from './BotSidebarOptionsMenu'
-import { useBotSidebarArrangement } from './use-bot-sidebar-arrangement'
 import { ImportBotDialog } from './ImportBotDialog'
 import { botErrorMessage } from './bot-presentation'
 import { BotCollapsedPreview, useBotPreviewFacts } from './BotCollapsedPreview'
@@ -58,10 +57,12 @@ import { BotsRevealProvider } from './bots-sidebar-reveal-context'
 import { SidebarBotsEmptyState } from './SidebarBotsEmptyState'
 import { BotSidebarVirtualRows } from './BotSidebarVirtualRows'
 import {
+  isFlatList,
   useForkBotSidebarRows,
   withForkBotOrganizationRows
 } from '@/components/orca-fork/organization/fork-bot-sidebar-rows' // orca-fork:
 import { useForkWorkspaceOwners } from '@/components/orca-fork/workspaces/use-fork-workspace-scope' // orca-fork: the active workspace's bots and groups
+import { useForkChannelRows } from '@/components/orca-fork/channels/use-fork-channel-rows' // orca-fork: channels and categories
 
 // The + menu's rows only: 28px tall (a 20px line in the item's own 4px padding), roomier than other menus.
 const BOT_MENU_ROW = 'flex min-h-5 items-center gap-2'
@@ -103,16 +104,16 @@ export function SidebarBotsSection({
     () => getHostKeyedBotSidebarEntries(bots, groups, folderWorkspaces),
     [bots, groups, folderWorkspaces]
   )
-  const entries = useBotSidebarArrangement(savedEntries)
+  const { rows: channelRows, rest: entries } = useForkChannelRows(savedEntries) // orca-fork: channels
   const listRef = useRef<HTMLDivElement>(null)
   // Search shows the list in place and nothing drags while it is open. Its toggle lives only in the
   // unfolded header, so a search always starts unfolded.
   const search = useBotSidebarSearch({ listRef, savedEntries, onOpenBot })
   const searchOpen = search.open
   // Only the saved order can be dragged, as for workspaces.
-  const forkRows = useForkBotSidebarRows(entries) // orca-fork: grouped rows drag between groups instead
+  const forkRows = useForkBotSidebarRows(entries, channelRows) // orca-fork: grouped rows drag between groups instead
   const draggable =
-    useAppStore((s) => s.botSidebarView.sortBy === 'manual') && !searchOpen && forkRows === entries
+    useAppStore((s) => s.botSidebarView.sortBy === 'manual') && !searchOpen && isFlatList(forkRows)
   const rows = useMemo(
     () => entries.flatMap((entry) => (entry.kind === 'bot' ? [entry] : [])),
     [entries]
@@ -174,7 +175,7 @@ export function SidebarBotsSection({
     onCommitProjectGroupTabOrder: commitOrder,
     getScrollContainer: () => listRef.current
   })
-  const listShown = !collapsed && entries.length > 0
+  const listShown = !collapsed && forkRows.length > 0
   const reveal = useBotsSidebarReveal(listRef, listShown, savedEntries, search.endForReveal)
   const newBotLabel = t('bots.section.newBot', 'New bot')
   const newLabel = t('bots.section.new', 'New bot or group')
@@ -335,18 +336,18 @@ export function SidebarBotsSection({
             data-bot-sidebar-list=""
             className={cn(
               'bot-sidebar-scrollbar relative flex min-h-0 flex-col overflow-y-auto overscroll-y-contain [overflow-anchor:none]',
-              entries.length > 0 && 'pb-1 pl-1',
+              forkRows.length > 0 && 'pb-1 pl-1',
               collapsed && 'hidden'
             )}
           >
             {/* A room kept after its last bot went still lists, so it can be opened or deleted. */}
-            {savedEntries.length > 0 && entries.length === 0 ? (
+            {savedEntries.length > 0 && forkRows.length === 0 ? (
               collapsed ? null : (
                 <div className="px-4 text-xs text-muted-foreground">
                   {t('bots.options.allHidden', 'All bots are paused and hidden.')}
                 </div>
               )
-            ) : entries.length === 0 ? (
+            ) : forkRows.length === 0 ? (
               collapsed ? null : (
                 <SidebarBotsEmptyState onNewBot={openNewBot} />
               )
@@ -389,7 +390,7 @@ export function SidebarBotsSection({
                         drag={entryDrag}
                       />
                     )
-                  })}
+                  }, channelRows.length)}
                 />
                 {drag.state.draggingGroupId !== null && drag.state.dropIndicatorY !== null ? (
                   <WorktreeSidebarDropIndicator y={drag.state.dropIndicatorY} />

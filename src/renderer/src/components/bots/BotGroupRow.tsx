@@ -29,6 +29,10 @@ import {
 import { ForkBotMoveToMenu } from '../orca-fork/organization/ForkBotMoveToMenu' // orca-fork:
 import { ForkMoveToWorkspaceMenu } from '../orca-fork/workspaces/ForkMoveToWorkspaceMenu' // orca-fork:
 import { botSidebarEntryKey } from './bot-sidebar-entry-keys' // orca-fork:
+import {
+  ForkChannelMenuItems,
+  ForkSidebarNewSubmenu
+} from '../orca-fork/channels/ForkChannelMenuItems' // orca-fork: channels
 
 /** A group in the Bots section: its members' faces, then the room's newest post. */
 export function BotGroupRow({
@@ -113,7 +117,8 @@ export function BotGroupRow({
             <Users className="size-3.5" />
             {t('bots.groups.manageMembersMenu', 'Manage members…')}
           </ContextMenuItem>
-          {/* orca-fork: department/section from the row */}
+          {/* orca-fork: channel, department/section and New from the row */}
+          <ForkChannelMenuItems entryKey={botSidebarEntryKey(group)} />
           <ForkBotMoveToMenu entryKey={botSidebarEntryKey(group)} />
           <ForkMoveToWorkspaceMenu
             menu="context"
@@ -122,6 +127,7 @@ export function BotGroupRow({
           />
           {/* orca-fork: group photo */}
           <ForkGroupPhotoMenuItems groupId={group.id} menu="context" />
+          <ForkSidebarNewSubmenu />
         </>
       }
       menuFooter={

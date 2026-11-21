@@ -41,6 +41,7 @@ import { ForkBotUnreadChatCount } from '../orca-fork/sidebar/ForkBotUnreadChatCo
 import { ForkChangePhotoMenuItem } from '../orca-fork/sidebar/ForkChangePhotoMenuItem'
 import { ForkBotMoveToMenu } from '../orca-fork/organization/ForkBotMoveToMenu' // orca-fork:
 import { ForkMoveToWorkspaceMenu } from '../orca-fork/workspaces/ForkMoveToWorkspaceMenu' // orca-fork:
+import { ForkSidebarNewSubmenu } from '../orca-fork/channels/ForkChannelMenuItems' // orca-fork:
 import { BotHoverNeedsYou, revealBotHome } from './BotHoverNeedsYou'
 import { usageLimitStopTip } from './BotUsageLimitMark'
 import { BotUpNextCount } from './BotUpNextCount'
@@ -209,6 +210,7 @@ export function BotRow({
             hostId={bot.hostId}
             item={{ botKey: botSidebarEntryKey(bot) }}
           />
+          <ForkSidebarNewSubmenu /> {/* orca-fork: New channel, group, category… */}
           <ContextMenuItem
             disabled={offline}
             onSelect={() => run(updateBot(bot, { paused: !bot.paused }))}
