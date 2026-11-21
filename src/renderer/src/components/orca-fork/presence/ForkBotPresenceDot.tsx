@@ -6,6 +6,7 @@ import { useWorktreeActivityStatus } from '@/components/sidebar/workspace-card/a
 import { useTranslate } from '@/i18n/use-translate'
 import { useBotHostOffline } from '@/lib/bot-host-views'
 import type { BotOnHost } from '@/lib/bot-hosts'
+import type { Bot } from '../../../../../shared/bot-types'
 import { cn } from '@/lib/class-names'
 import { useAppStore } from '@/store'
 import { structuredAgentSessionStatusPaneKey } from '../../../../../shared/agent-session/view/structured-agent-session-tab'
@@ -33,41 +34,28 @@ function withChatState(status: WorktreeStatus, chatState: string | null): Worktr
   return status
 }
 
-type PresenceFields = { folderWorkspaceId: string; paused: boolean; chatSessionId: string | null }
+/** A picture's bot: a listed `Bot` carries its home, pause and Chat; one carried by a message or card doesn't. */
+export type PresenceBot = BotOnHost &
+  Partial<Pick<Bot, 'folderWorkspaceId' | 'paused' | 'chatSessionId'>>
 
-/** What a listed bot carries for its presence; null for a bot as a message or card carried it. */
-function presenceFields(bot: object): PresenceFields | null {
-  if (!('folderWorkspaceId' in bot) || typeof bot.folderWorkspaceId !== 'string') {
-    return null
-  }
-  return {
-    folderWorkspaceId: bot.folderWorkspaceId,
-    paused: 'paused' in bot && bot.paused === true,
-    chatSessionId:
-      'chatSessionId' in bot && typeof bot.chatSessionId === 'string' ? bot.chatSessionId : null
-  }
-}
-
-/** Read from the picture's own bot (a listed `Bot`), never a catalog, so any picture can carry it. */
-export function useForkBotPresence(ref: object & BotOnHost, blocked = false): BotPresence | null {
-  const bot = presenceFields(ref)
-  const workspaceId = bot ? folderWorkspaceKey(bot.folderWorkspaceId) : ''
+export function useForkBotPresence(bot: PresenceBot, blocked = false): BotPresence | null {
+  const workspaceId = bot.folderWorkspaceId ? folderWorkspaceKey(bot.folderWorkspaceId) : ''
   const status = useWorktreeActivityStatus(workspaceId)
   const sleeping = useBotAvatarBadgeSleeping(workspaceId, status)
-  const offline = useBotHostOffline(ref.hostId)
+  const offline = useBotHostOffline(bot.hostId)
   // Its Chat's own agent state: a turn on the bot's host shows even before its home's panes report.
   const chatState = useAppStore((s) =>
-    bot?.chatSessionId
+    bot.chatSessionId
       ? (s.agentStatusByPaneKey.get(structuredAgentSessionStatusPaneKey(bot.chatSessionId))
           ?.state ?? null)
       : null
   )
-  if (!bot) {
+  if (!bot.folderWorkspaceId) {
     return null
   }
   return botPresence({
     status: withChatState(status, chatState),
-    paused: bot.paused,
+    paused: bot.paused === true,
     offline,
     sleeping: sleeping && chatState !== 'working',
     blocked
@@ -117,7 +105,7 @@ export function ForkBotPresenceDot({
   bot,
   blocked
 }: {
-  bot: object & BotOnHost
+  bot: PresenceBot
   blocked: boolean
 }): React.JSX.Element | null {
   const presence = useForkBotPresence(bot, blocked)
