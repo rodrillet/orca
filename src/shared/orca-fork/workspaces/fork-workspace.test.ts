@@ -3,6 +3,7 @@ import {
   FORK_WORKSPACE_NO_REPOS,
   emptyForkWorkspaces,
   forkWorkspaceOfItem,
+  forkWorkspaceProjectsToClaim,
   forkWorkspaceRepoFilter,
   type ForkWorkspace,
   type ForkWorkspacesDocument
@@ -47,5 +48,13 @@ describe('fork workspaces', () => {
     doc = edits.remove('ws_side')(doc)
     expect(forkWorkspaceOfItem(doc, 'local', { botKey: 'local/b1' })?.id).toBe('host:local')
     expect(edits.remove('host:runtime:vps')(doc)).toBe(doc)
+  })
+
+  it('claims a project the filter shows in a workspace that is not its machine’s home', () => {
+    const doc = twoOnThisMac()
+    expect(forkWorkspaceProjectsToClaim(doc, 'ws_side', ['site', 'api'], repos)).toEqual(['site'])
+    expect(forkWorkspaceProjectsToClaim(doc, 'host:local', ['site'], repos)).toEqual([])
+    const moved = edits.move('local', { repoId: 'site' }, 'ws_side')(doc)
+    expect(forkWorkspaceProjectsToClaim(moved, 'ws_side', ['site'], repos)).toEqual([])
   })
 })

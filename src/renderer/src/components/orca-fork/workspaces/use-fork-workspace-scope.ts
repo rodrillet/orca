@@ -6,8 +6,10 @@ import { botSidebarEntryKey } from '@/components/bots/bot-sidebar-entry-keys'
 import { getRepoExecutionHostId } from '../../../../../shared/execution-host/execution-host'
 import { FORK_FEATURES } from '../../../../../shared/orca-fork/fork-features'
 import {
+  DEFAULT_FORK_WORKSPACE_ID,
   activeForkWorkspace,
   forkWorkspaceOfItem,
+  forkWorkspaceProjectsToClaim,
   forkWorkspaceRepoFilter
 } from '../../../../../shared/orca-fork/workspaces/fork-workspace'
 import { forkWorkspaceEdits } from '../../../../../shared/orca-fork/workspaces/fork-workspace-edits'
@@ -27,24 +29,38 @@ export function useForkWorkspaceScope(machines: readonly ForkWorkspaceMachine[])
     [machines]
   )
 
+  const localLabel = machines.find((m) => !m.paired)?.label
   useEffect(() => {
-    if (FORK_FEATURES.workspaces && ready && paired.length > 0) {
+    if (!FORK_FEATURES.workspaces || !ready) {
+      return
+    }
+    // A fresh document's workspace takes this computer's name ("Local Mac") in the UI language.
+    if (localLabel && forkWorkspacesStore.get().revision === 0) {
+      forkWorkspacesStore.edit(
+        forkWorkspaceEdits.update(DEFAULT_FORK_WORKSPACE_ID, { name: localLabel })
+      )
+    }
+    if (paired.length > 0) {
       forkWorkspacesStore.edit(forkWorkspaceEdits.ensureMachines(paired, Date.now()))
     }
-  }, [ready, paired])
+  }, [ready, paired, localLabel])
 
   const active = activeForkWorkspace(doc)
-  const repoFilter = useMemo(
-    () =>
-      forkWorkspaceRepoFilter(
-        doc,
-        active.id,
-        repos.map((repo) => ({ id: repo.id, hostId: getRepoExecutionHostId(repo) }))
-      ),
-    [doc, active.id, repos]
+  const hostedRepos = useMemo(
+    () => repos.map((repo) => ({ id: repo.id, hostId: getRepoExecutionHostId(repo) })),
+    [repos]
   )
-  const hostIds = useMemo(() => [active.hostId], [active.hostId])
-  const scope = `${hostIds.join(',')}|${repoFilter.join(',')}`
+  const repoFilter = useMemo(
+    () => forkWorkspaceRepoFilter(doc, active.id, hostedRepos),
+    [doc, active.id, hostedRepos]
+  )
+  // With this computer alone there is nothing to narrow, and the sidebar's filter badge stays quiet.
+  const onlyMachine = machines.length < 2
+  const hostIds = useMemo(
+    () => (onlyMachine ? null : [active.hostId]),
+    [onlyMachine, active.hostId]
+  )
+  const scope = `${hostIds?.join(',') ?? '*'}|${repoFilter.join(',')}`
 
   useEffect(() => {
     if (!FORK_FEATURES.workspaces || !ready || appliedScope === scope) {
@@ -56,6 +72,23 @@ export function useForkWorkspaceScope(machines: readonly ForkWorkspaceMachine[])
     state.setAgentsVisibleHostIds(hostIds)
     state.setFilterRepoIds(repoFilter)
   }, [ready, scope, hostIds, repoFilter])
+
+  const storeRepoFilter = useAppStore((s) => s.filterRepoIds)
+  useEffect(() => {
+    if (!FORK_FEATURES.workspaces || !ready || appliedScope !== scope) {
+      return
+    }
+    // Read after the effect above, which may have just written it on a workspace switch.
+    const current = useAppStore.getState().filterRepoIds
+    // A catalog refresh drops ids no repo has, which would turn "no projects" into "every project".
+    if (current.length === 0 && repoFilter.length > 0) {
+      useAppStore.getState().setFilterRepoIds(repoFilter)
+      return
+    }
+    for (const repoId of forkWorkspaceProjectsToClaim(doc, active.id, current, hostedRepos)) {
+      forkWorkspacesStore.edit(forkWorkspaceEdits.move(active.hostId, { repoId }, active.id))
+    }
+  }, [ready, scope, storeRepoFilter, repoFilter, doc, active.id, active.hostId, hostedRepos])
 }
 
 /** Bots or bot groups narrowed to the active workspace (their machine's, or the one they were moved to). */

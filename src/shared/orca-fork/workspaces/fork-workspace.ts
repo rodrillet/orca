@@ -211,3 +211,26 @@ export function forkWorkspaceShowsDepartment(
   const owner = doc.workspaces.find((ws) => ws.departmentIds?.includes(departmentId))
   return !owner || owner.id === workspaceId
 }
+
+/**
+ * Projects the sidebar's filter shows in a workspace that doesn't hold them yet (a project just added
+ * there, or picked in the filter): its machine's unclaimed ones, which then move into the workspace.
+ */
+export function forkWorkspaceProjectsToClaim(
+  doc: ForkWorkspacesDocument,
+  workspaceId: ForkWorkspaceId,
+  filterRepoIds: readonly string[],
+  repos: readonly { id: string; hostId: ExecutionHostId }[]
+): string[] {
+  const ws = doc.workspaces.find((w) => w.id === workspaceId)
+  const home = ws ? forkWorkspaceHomeOf(doc, ws.hostId) : null
+  if (!ws || !home || home.id === ws.id) {
+    return []
+  }
+  const hostOf = new Map(repos.map((repo) => [repo.id, repo.hostId]))
+  return filterRepoIds.filter(
+    (id) =>
+      hostOf.get(id) === ws.hostId &&
+      forkWorkspaceOfItem(doc, ws.hostId, { repoId: id })?.id === home.id
+  )
+}
