@@ -12,10 +12,13 @@ import { WikiMarkdown } from './WikiMarkdown'
 
 export type WikiDraft = { title: string; folder: string; tags: string; body: string }
 
+/** A new page's title may carry its folder: "Infra/VPS/" starts an untitled page in Infra/VPS. */
 export function draftOf(page: WikiPage | null, title = ''): WikiDraft {
-  return page
-    ? { title: page.title, folder: page.folder, tags: page.tags.join(', '), body: page.body }
-    : { title, folder: '', tags: '', body: '' }
+  if (page) {
+    return { title: page.title, folder: page.folder, tags: page.tags.join(', '), body: page.body }
+  }
+  const parts = title.split('/')
+  return { title: parts.pop()?.trim() ?? '', folder: parts.join('/'), tags: '', body: '' }
 }
 
 function tagsOf(draft: WikiDraft): string[] {

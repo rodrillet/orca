@@ -8,6 +8,12 @@ export type WikiCenter =
   | { kind: 'page'; slug: string }
   | { kind: 'new'; title: string }
   | { kind: 'trash' }
+  /** Every page in a folder and its subfolders (a space or a section of one). */
+  | { kind: 'folder'; folder: string }
+  /** The workspace's consultation log. */
+  | { kind: 'consultations' }
+  /** Who reads the wiki; with `actorKey`, what that agent (or the owner) read. */
+  | { kind: 'readers'; actorKey: string | null }
 
 export type WikiViewState = {
   open: boolean

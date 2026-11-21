@@ -149,6 +149,23 @@ subscription, so a batched there-and-back still counts), when the other one or t
 a sidebar page entry is picked again. Bot presence on the Agents views counts only workers on a turn
 (an open worker resting after its report is idle) and the Chat's status only while fresh and awake.
 
+### Wiki (agentes.chat's wiki, with consultations)
+
+Per-workspace wiki on the host that runs the bots (`userData/orca-fork-wiki.sqlite`), laid out as
+agentes.chat's: left column Home · Consultations · Agents · Trash, the pinned pages, a tree of spaces
+(top-level folders) and sections (subfolders), tags; home with pinned and recently edited pages, "What the
+agents consult most" (7 days, owner reads excluded), the spaces and the latest consultations; a page reads
+in one column (path, actions, title, meta line, text) with "About the page" under it (agents that use it,
+its consultation log, where it is mentioned, history).
+
+- **Consultations**: every `orca wiki show` (and the owner opening a page) logs who, when, the agent's chat
+  (`callerSessionId` → title) and, for a dispatched worker, its orchestration task (`ORCA_TERMINAL_HANDLE`
+  → active dispatch → task title). `orcaFork.wiki.activity` answers the log (all, one reader, one page),
+  readers and the popular pages; `orca wiki consultations` prints it. `orcaFork.wiki.pin` pins a page.
+- **Migration**: opening an older wiki adds the new columns (`pinned`, `chat_title`, `task_id`,
+  `task_title`); pages, versions and reads stay. A paired server without the new methods still shows the
+  pages; the Consultations/Agents views say to install the fork's latest `orca-server` there.
+
 ### Phase 5 — Shared agent computer (dropped)
 
 Dropped by the owner (2026-11-21): a desktop per machine costs too much RAM/CPU on the VPS. Nothing

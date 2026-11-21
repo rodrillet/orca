@@ -244,6 +244,7 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
       'wiki search',
       'wiki list',
       'wiki show',
+      'wiki consultations',
       'wiki create',
       'wiki update',
       'wiki tag',

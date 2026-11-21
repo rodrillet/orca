@@ -3,8 +3,10 @@
 import type { Bot } from '../../../shared/bot-types'
 import {
   DEFAULT_FORK_WIKI_WORKSPACE_ID,
-  type WikiActor
+  type WikiActor,
+  type WikiReadContext
 } from '../../../shared/orca-fork/wiki/wiki-types'
+import { readAgentSessionRecordStore } from '../../runtime/orchestration/addressing/session-lineage/structured-session-lineage'
 import { getRepoIdFromWorktreeId } from '../../../shared/worktree/id'
 import { folderWorkspaceKey } from '../../../shared/workspace/identity/workspace-scope'
 import { botOfCaller } from '../../bots/bot-of-caller'
@@ -18,6 +20,7 @@ export type WikiScope = {
   callerSessionId?: string
   agentName?: string
   callerWorkspaceIds?: string[]
+  callerTerminalHandle?: string
 }
 
 let placement: Promise<WikiPlacement> | null = null
@@ -68,6 +71,45 @@ export function callerChat(params: WikiScope, context: RpcContext): string | nul
   return context.pairedDeviceId === undefined && isAgentRpcCaller(context.caller)
     ? (params.callerSessionId ?? null)
     : null
+}
+
+export function chatTitle(sessionId: string): string | null {
+  return readAgentSessionRecordStore()?.getRecord(sessionId)?.conversationName ?? null
+}
+
+/** The orchestration task the calling worker terminal is on; best effort, never fails the read. */
+function callerTask(
+  params: WikiScope,
+  context: RpcContext
+): { taskId: string; taskTitle: string } | null {
+  const handle = params.callerTerminalHandle?.trim()
+  if (!handle || context.pairedDeviceId !== undefined || !isAgentRpcCaller(context.caller)) {
+    return null
+  }
+  try {
+    const db = context.runtime.getOrchestrationDb()
+    const dispatch = db.getActiveDispatchForTerminal(handle)
+    const task = dispatch ? db.getTask(dispatch.task_id) : undefined
+    if (!task) {
+      return null
+    }
+    const title = task.task_title ?? task.display_name ?? task.spec.split('\n')[0] ?? task.id
+    return { taskId: task.id, taskTitle: title.trim().slice(0, 200) || task.id }
+  } catch {
+    return null
+  }
+}
+
+/** Where a read comes from, for the page's consultation log. */
+export function readContext(params: WikiScope, context: RpcContext): WikiReadContext {
+  const chatId = callerChat(params, context)
+  const task = callerTask(params, context)
+  return {
+    chatId,
+    chatTitle: chatId ? chatTitle(chatId) : null,
+    taskId: task?.taskId ?? null,
+    taskTitle: task?.taskTitle ?? null
+  }
 }
 
 export function actor(params: WikiScope, context: RpcContext): WikiActor {

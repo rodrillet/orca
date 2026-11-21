@@ -33,6 +33,8 @@ export const forkWikiDb: WikiRemote = {
   list: remote('list'),
   show: remote('show'),
   recordView: remote('recordView'),
+  activity: remote('activity'),
+  pin: remote('pin'),
   create: remote('create'),
   update: remote('update'),
   tag: remote('tag'),

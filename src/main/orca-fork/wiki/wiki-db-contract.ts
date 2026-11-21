@@ -2,11 +2,13 @@
 // the runtime's thread imports only this.
 import type {
   ForkWikiWorkspaceId,
+  WikiActivityResult,
   WikiActor,
   WikiBacklinkKind,
   WikiListResult,
   WikiPage,
   WikiPageSummary,
+  WikiReadContext,
   WikiVersion
 } from '../../../shared/orca-fork/wiki/wiki-types'
 
@@ -53,6 +55,14 @@ export function normalizeWikiPlacement(value: unknown): WikiPlacement {
   }
 }
 
+/** The consultation log: everyone's, one reader's (`actorKey`) or one page's; older than `before` pages back. */
+export type WikiActivityOptions = {
+  actorKey?: string
+  page?: string
+  before?: number
+  limit?: number
+}
+
 export type WikiListOptions = { query?: string; tag?: string; trash?: boolean; limit?: number }
 export type WikiMentionSource = {
   kind: Exclude<WikiBacklinkKind, 'page'>
@@ -64,7 +74,9 @@ export type WikiMentionSource = {
 export type WikiDbOps = {
   list: (workspaceId: ForkWikiWorkspaceId, options?: WikiListOptions) => WikiListResult
   show: (workspaceId: ForkWikiWorkspaceId, ref: string, trash?: boolean) => WikiPage
-  recordView: (pageId: string, actor: WikiActor, chatId: string | null) => void
+  recordView: (pageId: string, actor: WikiActor, context: Partial<WikiReadContext> | null) => void
+  activity: (workspaceId: ForkWikiWorkspaceId, options?: WikiActivityOptions) => WikiActivityResult
+  pin: (workspaceId: ForkWikiWorkspaceId, ref: string, pinned: boolean) => WikiPage
   create: (workspaceId: ForkWikiWorkspaceId, actor: WikiActor, input: WikiCreateInput) => WikiPage
   update: (
     workspaceId: ForkWikiWorkspaceId,
@@ -108,6 +120,8 @@ export const FORK_WIKI_DB_OPS: readonly WikiDbOp[] = [
   'list',
   'show',
   'recordView',
+  'activity',
+  'pin',
   'create',
   'update',
   'tag',

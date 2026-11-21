@@ -1,5 +1,9 @@
 // orca-fork: the wiki's tables and how their rows read back.
-import { WIKI_LIMITS, type WikiActor } from '../../../shared/orca-fork/wiki/wiki-types'
+import {
+  WIKI_LIMITS,
+  type WikiActor,
+  type WikiView
+} from '../../../shared/orca-fork/wiki/wiki-types'
 import { wikiSlug } from '../../../shared/orca-fork/wiki/wiki-links'
 
 import { WikiError } from './wiki-error'
@@ -37,6 +41,17 @@ export function actorOf(value: unknown): WikiActor {
     }
   }
   return { kind: 'owner' }
+}
+
+export function viewOf(row: Row): WikiView {
+  return {
+    at: num(row.at),
+    by: actorOf(row.by),
+    chatId: text(row.chat_id) || null,
+    chatTitle: text(row.chat_title) || null,
+    taskId: text(row.task_id) || null,
+    taskTitle: text(row.task_title) || null
+  }
 }
 
 export function tagsOf(value: unknown): string[] {
@@ -94,6 +109,7 @@ create table if not exists wiki_pages (
   updated_by text not null,
   view_count integer not null default 0,
   last_viewed_at integer,
+  pinned integer not null default 0,
   deleted_at integer,
   deleted_by text
 );
@@ -117,9 +133,13 @@ create table if not exists wiki_views (
   at integer not null,
   actor_key text not null,
   by text not null,
-  chat_id text
+  chat_id text,
+  chat_title text,
+  task_id text,
+  task_title text
 );
 create index if not exists wiki_views_page on wiki_views (page_id, at);
+create index if not exists wiki_views_at on wiki_views (at);
 create table if not exists wiki_mentions (
   page_id text not null,
   kind text not null,
@@ -132,3 +152,11 @@ create table if not exists wiki_mentions (
 create index if not exists wiki_mentions_source on wiki_mentions (kind, source_id);
 create table if not exists wiki_settings (key text primary key, value text not null);
 `
+
+/** Columns later versions added, for wikis made before them (existing pages keep every row). */
+export const MIGRATIONS: readonly { table: string; column: string; definition: string }[] = [
+  { table: 'wiki_pages', column: 'pinned', definition: 'integer not null default 0' },
+  { table: 'wiki_views', column: 'chat_title', definition: 'text' },
+  { table: 'wiki_views', column: 'task_id', definition: 'text' },
+  { table: 'wiki_views', column: 'task_title', definition: 'text' }
+]
